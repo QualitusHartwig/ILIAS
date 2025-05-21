@@ -1751,7 +1751,7 @@ abstract class ilTestPlayerAbstractGUI extends ilTestServiceGUI
                 $question_gui = $this->object->createQuestionGUI("", $question);
                 $template = new ilTemplate("tpl.il_as_qpl_question_printview.html", true, true, "Modules/TestQuestionPool");
                 $template->setVariable("COUNTER_QUESTION", $counter . ". ");
-                $template->setVariable("QUESTION_TITLE", $question_gui->object->getTitle());
+                $template->setVariable("QUESTION_TITLE", $question_gui->object->getTitleForHTMLOutput());
 
                 $show_question_only = ($this->object->getShowSolutionAnswersOnly()) ? true : false;
                 $result_output = $question_gui->getSolutionOutput($active_id, $pass, false, false, $show_question_only, $this->object->getShowSolutionFeedback());
@@ -2829,6 +2829,7 @@ JS;
         // Forced feedback will change the navigation saving command
         $config['forcedInstantFeedback'] = $this->object->isForceInstantFeedbackEnabled();
         $config['nextQuestionLocks'] = $this->object->isFollowupQuestionAnswerFixationEnabled();
+        $config['autosaveFailureMessage'] = $this->lng->txt('autosave_failed');
 
         $this->tpl->addJavascript('./Modules/Test/js/ilTestPlayerQuestionEditControl.js');
         $this->tpl->addOnLoadCode('il.TestPlayerQuestionEditControl.init(' . json_encode($config) . ')');

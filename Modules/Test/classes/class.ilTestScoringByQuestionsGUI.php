@@ -20,8 +20,8 @@ include_once 'Modules/Test/classes/inc.AssessmentConstants.php';
 
 class ilTestScoringByQuestionsGUI extends ilTestScoringGUI
 {
-    public const ONLY_FINALIZED = 1;
-    public const EXCEPT_FINALIZED = 2;
+    public const EXCEPT_FINALIZED = 1;
+    public const ONLY_FINALIZED = 2;
 
     private \ILIAS\HTTP\GlobalHttpState $http;
 
@@ -75,7 +75,7 @@ class ilTestScoringByQuestionsGUI extends ilTestScoringGUI
 
         $qst_id = (int) $table->getFilterItemByPostVar('question')->getValue();
         $passNr = $table->getFilterItemByPostVar('pass')->getValue();
-        $finalized_filter = $table->getFilterItemByPostVar('finalize_evaluation')->getValue();
+        $finalized_filter = (int) $table->getFilterItemByPostVar('finalize_evaluation')->getValue();
         $answered_filter = $table->getFilterItemByPostVar('only_answered')->getChecked();
         $table_data = [];
         $selected_questionData = null;
@@ -109,31 +109,26 @@ class ilTestScoringByQuestionsGUI extends ilTestScoringGUI
                         $feedback = $complete_feedback[$active_id][$passNr - 1][$qst_id];
                     }
 
-                    $check_filter =
-                        ($finalized_filter != self::ONLY_FINALIZED || $finalized_evaluation) &&
-                        ($finalized_filter != self::EXCEPT_FINALIZED || !$finalized_evaluation);
-
-                    $check_answered = $answered_filter == false || $is_answered;
-
-                    if (
-                        isset($questionData['qid']) &&
-                        $questionData['qid'] == $selected_questionData['question_id'] &&
-                        $check_filter &&
-                        $check_answered
-                    ) {
-                        $table_data[] = [
-                                'pass_id' => $passNr - 1,
-                                'active_id' => $active_id,
-                                'qst_id' => $questionData['qid'],
-                                'reached_points' => assQuestion::_getReachedPoints(
-                                    $active_id,
-                                    (int) $questionData['qid'],
-                                    $passNr - 1
-                                ),
-                                'maximum_points' => assQuestion::_getMaximumPoints((int) $questionData['qid']),
-                                'name' => $participant->getName()
-                            ] + $feedback;
+                    if (!isset($questionData['qid'])
+                        || $questionData['qid'] !== $selected_questionData['question_id']
+                        || $finalized_filter === self::ONLY_FINALIZED && !$finalized_evaluation
+                        || $finalized_filter === self::EXCEPT_FINALIZED && $finalized_evaluation
+                        || $answered_filter === true && !$is_answered) {
+                        continue;
                     }
+
+                    $table_data[] = [
+                        'pass_id' => $passNr - 1,
+                        'active_id' => $active_id,
+                        'qst_id' => $questionData['qid'],
+                        'reached_points' => assQuestion::_getReachedPoints(
+                            $active_id,
+                            (int) $questionData['qid'],
+                            $passNr - 1
+                        ),
+                        'maximum_points' => assQuestion::_getMaximumPoints((int) $questionData['qid']),
+                        'name' => $participant->getName()
+                    ] + $feedback;
                 }
             }
         } else {
@@ -365,7 +360,7 @@ class ilTestScoringByQuestionsGUI extends ilTestScoringGUI
 
             if ($lastAndHopefullyCurrentQuestionId) {
                 $question = assQuestion::_instantiateQuestion($lastAndHopefullyCurrentQuestionId);
-                $qTitle = $question->getTitle();
+                $qTitle = $question->getTitleForHTMLOutput();
             }
 
             $msg = sprintf(
@@ -494,7 +489,7 @@ class ilTestScoringByQuestionsGUI extends ilTestScoringGUI
         $max_points = $question_gui->object->getMaximumPoints();
 
         $this->appendUserNameToModal($tmp_tpl, $participant);
-        $this->appendQuestionTitleToModal($tmp_tpl, $question_id, $max_points, $question_gui->object->getTitle());
+        $this->appendQuestionTitleToModal($tmp_tpl, $question_id, $max_points, $question_gui->object->getTitleForHTMLOutput());
         $this->appendSolutionAndPointsToModal(
             $tmp_tpl,
             $result_output,
@@ -512,7 +507,7 @@ class ilTestScoringByQuestionsGUI extends ilTestScoringGUI
         $tmp_tpl->setVariable('TEXT_SOLUTION_OUTPUT', $this->lng->txt('question'));
         $tmp_tpl->setVariable('TEXT_RECEIVED_POINTS', $this->lng->txt('scoring'));
         $add_title = ' [' . $this->lng->txt('question_id_short') . ': ' . $question_id . ']';
-        $question_title = $this->object->getQuestionTitle($question_gui->object->getTitle());
+        $question_title = $this->object->getQuestionTitle($question_gui->object->getTitleForHTMLOutput());
         $lng = $this->lng->txt('points');
         if ($max_points == 1) {
             $lng = $this->lng->txt('point');

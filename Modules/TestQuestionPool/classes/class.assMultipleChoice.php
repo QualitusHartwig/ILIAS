@@ -238,10 +238,10 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
             $this->setQuestion(ilRTE::_replaceMediaObjectImageSrc($data["question_text"] ?? '', 1));
             $shuffle = (is_null($data['shuffle'])) ? true : $data['shuffle'];
             $this->setShuffle((bool) $shuffle);
-            if ($data['thumb_size'] !== null && $data['thumb_size'] >= self::MINIMUM_THUMB_SIZE) {
+            if ($data['thumb_size'] !== null && $data['thumb_size'] >= $this->getMinimumThumbSize()) {
                 $this->setThumbSize($data['thumb_size']);
             }
-            $this->isSingleline = ($data['allow_images']) ? false : true;
+            $this->isSingleline = $data['allow_images'] === null || $data['allow_images'] === '0';
             $this->lastChange = $data['tstamp'];
             $this->setSelectionLimit((int) $data['selection_limit'] > 0 ? (int) $data['selection_limit'] : null);
             $this->feedback_setting = $data['feedback_setting'];
@@ -1138,7 +1138,7 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
         $result = array();
         $result['id'] = $this->getId();
         $result['type'] = (string) $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['nr_of_tries'] = $this->getNrOfTries();
         $result['shuffle'] = $this->getShuffle();
@@ -1482,7 +1482,7 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
         return $config;
     }
 
-    public function isSingleline()
+    public function isSingleline(): bool
     {
         return (bool) $this->isSingleline;
     }

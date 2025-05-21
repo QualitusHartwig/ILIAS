@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -13,16 +14,17 @@
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
  *
- ********************************************************************
- */
+ *********************************************************************/
 
-/**
- * Class ilDclFormulaFieldModel
- * @author  Michael Herren <mh@studer-raimann.ch>
- * @version 1.0.0
- */
 class ilDclFormulaFieldModel extends ilDclBaseFieldModel
 {
+    public const SUPPORTED_FIELDS = [
+        ilDclDatatype::INPUTFORMAT_NUMBER,
+        ilDclDatatype::INPUTFORMAT_TEXT,
+        ilDclDatatype::INPUTFORMAT_BOOLEAN,
+        ilDclDatatype::INPUTFORMAT_DATETIME,
+    ];
+
     /**
      * Returns a query-object for building the record-loader-sql-query
      */

@@ -243,8 +243,13 @@ class assKprimChoice extends assQuestion implements ilObjQuestionScoringAdjustab
                 $this->setOptionLabel($data['opt_label']);
             }
 
-            $this->setCustomTrueOptionLabel($data['custom_true']);
-            $this->setCustomFalseOptionLabel($data['custom_false']);
+            if ($data['custom_true'] !== null) {
+                $this->setCustomTrueOptionLabel($data['custom_true']);
+            }
+
+            if ($data['custom_false'] !== null) {
+                $this->setCustomFalseOptionLabel($data['custom_false']);
+            }
 
             if ($data['score_partsol'] !== null) {
                 $this->setScorePartialSolutionEnabled((bool) $data['score_partsol']);
@@ -945,7 +950,7 @@ class assKprimChoice extends assQuestion implements ilObjQuestionScoringAdjustab
         $result = array();
         $result['id'] = $this->getId();
         $result['type'] = $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['instruction'] = $this->getInstructionTextTranslation(
             $this->lng,

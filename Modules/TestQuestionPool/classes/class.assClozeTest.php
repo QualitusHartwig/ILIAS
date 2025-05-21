@@ -1657,7 +1657,7 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
         $result = [];
         $result['id'] = $this->getId();
         $result['type'] = (string) $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['clozetext'] = $this->formatSAQuestion($this->getClozeText());
         $result['nr_of_tries'] = $this->getNrOfTries();
@@ -1837,7 +1837,11 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
                                     break;
                                 case CLOZE_SELECT:
                                     $answer = $this->gaps[$gap_key]->getItem($gap_answers[$gap_key]);
-                                    $answertext = $answer->getAnswertext();
+                                    $answertext = '';
+                                    if ($answer !== null) {
+                                        $answertext = $answer->getAnswertext();
+                                    }
+
                                     if ($answertext != $combination_gap_answer['answer']) {
                                         $combination_fulfilled = false;
                                     }

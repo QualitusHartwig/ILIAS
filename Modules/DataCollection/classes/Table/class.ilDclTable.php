@@ -16,16 +16,6 @@
  *
  *********************************************************************/
 
-/**
- * Class ilDclBaseFieldModel
- * @author  Martin Studer <ms@studer-raimann.ch>
- * @author  Marcel Raimann <mr@studer-raimann.ch>
- * @author  Fabian Schmid <fs@studer-raimann.ch>
- * @author  Oskar Truffer <ot@studer-raimann.ch>
- * @author  Stefan Wanzenried <sw@studer-raimann.ch>
- * @version $Id:
- * @ingroup ModulesDataCollection
- */
 class ilDclTable
 {
     protected int $id = 0;
@@ -86,6 +76,7 @@ class ilDclTable
     protected ILIAS\Refinery\Factory $refinery;
     protected ilObjUser $user;
     protected ilDBInterface $db;
+    protected bool $show_invalid = false;
 
     public function __construct(int $a_id = 0)
     {
@@ -401,7 +392,9 @@ class ilDclTable
             $fields = [];
             while ($rec = $this->db->fetchAssoc($set)) {
                 $field = ilDclCache::buildFieldFromRecord($rec);
-                $fields[] = $field;
+                if ($this->show_invalid || in_array($field->getDatatypeId(), array_keys(ilDclDatatype::getAllDatatype()))) {
+                    $fields[] = $field;
+                }
             }
             $this->fields = $fields;
 
@@ -536,23 +529,18 @@ class ilDclTable
      */
     public function getFieldsForFormula(): array
     {
-        $unsupported = [
-            ilDclDatatype::INPUTFORMAT_ILIAS_REF,
-            ilDclDatatype::INPUTFORMAT_FORMULA,
-            ilDclDatatype::INPUTFORMAT_MOB,
-            ilDclDatatype::INPUTFORMAT_REFERENCELIST,
-            ilDclDatatype::INPUTFORMAT_REFERENCE,
-            ilDclDatatype::INPUTFORMAT_FILE,
-            ilDclDatatype::INPUTFORMAT_RATING,
-        ];
-
-        $this->loadCustomFields();
-        $return = $this->getStandardFields();
-        /**
-         * @var $field ilDclBaseFieldModel
-         */
-        foreach ($this->fields as $field) {
-            if (!in_array($field->getDatatypeId(), $unsupported)) {
+        $syntax_chars = array_merge(
+            array_keys(ilDclExpressionParser::getOperators()),
+            ilDclExpressionParser::getFunctions(),
+            ['(', ')', ',']
+        );
+        foreach ($this->getFields() as $field) {
+            if (in_array($field->getDatatypeId(), ilDclFormulaFieldModel::SUPPORTED_FIELDS)) {
+                foreach ($syntax_chars as $element) {
+                    if (str_contains($field->getTitle(), $element)) {
+                        continue 2;
+                    }
+                }
                 $return[] = $field;
             }
         }
@@ -1049,6 +1037,9 @@ class ilDclTable
             if (!$orig_field->isStandardField()) {
                 $class_name = get_class($orig_field);
                 $new_field = new $class_name();
+                if ($new_field instanceof ilDclReferenceFieldModel && $new_field->getFieldRef()->getTableId() === 0) {
+                    continue;
+                }
                 $new_field->setTableId($this->getId());
                 $new_field->cloneStructure($orig_field->getId());
                 $new_fields[$orig_field->getId()] = $new_field;
@@ -1299,6 +1290,16 @@ class ilDclTable
             $total_record_ids = $sort_query_object->applyCustomSorting($sort_field, $total_record_ids, $direction);
         }
 
+        if ($sort === 'n_comments') {
+            global $DIC;
+            $comments_nr = [];
+            foreach ($total_record_ids as $id) {
+                $comments_nr[$id] = $DIC->notes()->domain()->getNrOfCommentsForContext($DIC->notes()->data()->context($this->getObjId(), $id, 'dcl'));
+            }
+            uasort($comments_nr, static fn ($a, $b) => ($direction === 'asc' ? 1 : -1) * ($a <=> $b));
+            $total_record_ids = array_keys($comments_nr);
+        }
+
         // Now slice the array to load only the needed records in memory
         $record_ids = array_slice($total_record_ids, $offset, $limit);
 
@@ -1308,5 +1309,10 @@ class ilDclTable
         }
 
         return ['records' => $records, 'total' => count($total_record_ids)];
+    }
+
+    public function showInvalidFields(bool $value): void
+    {
+        $this->show_invalid = $value;
     }
 }

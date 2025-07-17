@@ -13,7 +13,8 @@
  * us at:
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
- */
+ *
+ *********************************************************************/
 
 declare(strict_types=1);
 
@@ -73,18 +74,13 @@ class ilMDKeywordExposer extends AbstractModificationProvider
                 );
             }
 
-            if ($settings = ilMDSettings::_getInstance()->isCopyrightSelectionActive()) {
+            // Copyright
+            if ($this->md->copyrightHelper()->isCopyrightSelectionActive()) {
                 $reader = $this->copyrightReader($object_id);
-                // Copyright
-                $copyright = $reader->firstData($paths->copyright())->value();
-                $copyright_id = ilMDCopyrightSelectionEntry::_extractEntryId($copyright);
-                if ($copyright_id > 0) {
-                    $entry = new ilMDCopyrightSelectionEntry($copyright_id);
-                    $copyright = $entry->getTitle();
-                }
-                if ($copyright === '') {
-                    $entry = new ilMDCopyrightSelectionEntry(ilMDCopyrightSelectionEntry::getDefault());
-                    $copyright = $entry->getTitle();
+                if ($this->md->copyrightHelper()->hasPresetCopyright($reader)) {
+                    $copyright = $this->md->copyrightHelper()->readPresetCopyright($reader)->presentAsString();
+                } else {
+                    $copyright = $this->md->copyrightHelper()->readCustomCopyright($reader);
                 }
                 $this->globalScreen()->layout()->meta()->addMetaDatum(
                     $this->data->htmlMetadata()->userDefined('copyright', $copyright)

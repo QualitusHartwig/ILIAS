@@ -21,7 +21,6 @@ declare(strict_types=1);
 use ILIAS\TestQuestionPool\Questions\QuestionLMExportable;
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
 use ILIAS\TestQuestionPool\ManipulateImagesInChoiceQuestionsTrait;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
 
 /**
@@ -181,12 +180,15 @@ class assKprimChoice extends assQuestion implements ilObjQuestionScoringAdjustab
         $this->answers = array_map($clean_answer_text, $answers);
     }
 
+    /**
+     * @return array<ilAssKprimChoiceAnswer>
+     */
     public function getAnswers(): array
     {
         return $this->answers;
     }
 
-    public function getAnswer($position)
+    public function getAnswer($position): ?ilAssKprimChoiceAnswer
     {
         foreach ($this->getAnswers() as $answer) {
             if ($answer->getPosition() == $position) {
@@ -239,8 +241,13 @@ class assKprimChoice extends assQuestion implements ilObjQuestionScoringAdjustab
                 $this->setOptionLabel($data['opt_label']);
             }
 
-            $this->setCustomTrueOptionLabel($data['custom_true']);
-            $this->setCustomFalseOptionLabel($data['custom_false']);
+            if ($data['custom_true'] !== null) {
+                $this->setCustomTrueOptionLabel($data['custom_true']);
+            }
+
+            if ($data['custom_false'] !== null) {
+                $this->setCustomFalseOptionLabel($data['custom_false']);
+            }
 
             if ($data['score_partsol'] !== null) {
                 $this->setScorePartialSolutionEnabled((bool) $data['score_partsol']);
@@ -477,7 +484,7 @@ class assKprimChoice extends assQuestion implements ilObjQuestionScoringAdjustab
         };
     }
 
-    public function isValidOptionLabel(string $option_label): bool
+    public function isValidOptionLabel(?string $option_label): bool
     {
         $valid_labels = $this->getValidOptionLabels();
         return in_array($option_label, $valid_labels);
@@ -594,7 +601,7 @@ class assKprimChoice extends assQuestion implements ilObjQuestionScoringAdjustab
         return 0;
     }
 
-    private function removeAnswerImage($position): void
+    public function removeAnswerImage($position): void
     {
         $answer = $this->getAnswer($position);
 
@@ -707,7 +714,7 @@ class assKprimChoice extends assQuestion implements ilObjQuestionScoringAdjustab
         $result = [];
         $result['id'] = $this->getId();
         $result['type'] = $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['instruction'] = $this->getInstructionTextTranslation(
             $this->lng,
@@ -771,38 +778,6 @@ class assKprimChoice extends assQuestion implements ilObjQuestionScoringAdjustab
         return 'feedback_correct_kprim';
     }
 
-    public static function isObligationPossible(int $questionId): bool
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $solution = $this->getSolutionValues($active_id, $pass);
-
-        $i = 1;
-        foreach ($this->getAnswers() as $id => $answer) {
-            $worksheet->setCell($startrow + $i, $col, $answer->getAnswertext());
-            $worksheet->setBold($worksheet->getColumnCoord($col) . ($startrow + $i));
-            $correctness = false;
-            foreach ($solution as $solutionvalue) {
-                if ($id == $solutionvalue['value1']) {
-                    $correctness = $solutionvalue['value2'];
-                    break;
-                }
-            }
-            $worksheet->setCell($startrow + $i, $col + 2, $correctness);
-            $i++;
-        }
-
-        return $startrow + $i + 1;
-    }
-
     public function moveAnswerDown($position): bool
     {
         if ($position < 0 || $position >= (self::NUM_REQUIRED_ANSWERS - 1)) {
@@ -850,7 +825,7 @@ class assKprimChoice extends assQuestion implements ilObjQuestionScoringAdjustab
     {
         $result = [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_KPRIM_OPTION_LABEL => $additional_info
                 ->getTagForLangVar($this->getLangVarForOptionLabel($this->getOptionLabel())),
@@ -868,7 +843,7 @@ class assKprimChoice extends assQuestion implements ilObjQuestionScoringAdjustab
         $answers = [];
         foreach ($this->getAnswers() as $key => $answer) {
             $answers[$key + 1] = [
-                AdditionalInformationGenerator::KEY_QUESTION_ANSWER_OPTION => $this->formatSAQuestion($answer->getAnswertext()),
+                AdditionalInformationGenerator::KEY_QUESTION_ANSWER_OPTION => $this->formatSAQuestion($answer->getAnswertext() ?? ''),
                 AdditionalInformationGenerator::KEY_QUESTION_ANSWER_OPTION_CORRECTNESS => $additional_info->getTrueFalseTagForBool((bool) $answer->getCorrectness()),
                 AdditionalInformationGenerator::KEY_QUESTION_ANSWER_OPTION_ORDER => (int) $answer->getPosition(),
                 AdditionalInformationGenerator::KEY_QUESTION_ANSWER_OPTION_IMAGE => (string) $answer->getImageFile(),
@@ -883,29 +858,66 @@ class assKprimChoice extends assQuestion implements ilObjQuestionScoringAdjustab
         return $result;
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
     ): array {
         $parsed_solution = [];
-        $true_option_label = $this->getTrueOptionLabel($this->getOptionLabel());
-        $false_option_label = $this->getFalseOptionLabel($this->getOptionLabel());
+        $true_option_label = $this->getOptionLabel() === self::OPTION_LABEL_CUSTOM
+            ? $this->getCustomTrueOptionLabel()
+            : $this->getTrueOptionLabel($this->getOptionLabel());
+        $false_option_label = $this->getOptionLabel() === self::OPTION_LABEL_CUSTOM
+            ? $this->getCustomFalseOptionLabel()
+            : $this->getFalseOptionLabel($this->getOptionLabel());
         foreach ($this->getAnswers() as $id => $answer) {
             $value = $additional_info->getNoneTag();
             foreach ($solution_values as $solution) {
-                if ($solution['value1'] != $id) {
+                if ($solution['value1'] !== (string) $id) {
                     continue;
                 }
 
-                if ($solution['value2']) {
+                $value = $false_option_label;
+                if ($solution['value2'] === '1') {
                     $value = $true_option_label;
-                } else {
-                    $value = $false_option_label;
                 }
                 break;
             }
             $parsed_solution[$answer->getAnswertext()] = $value;
         }
         return $parsed_solution;
+    }
+
+    public function solutionValuesToText(array $solution_values): array
+    {
+        $parsed_solution = [];
+        $true_option_label = $this->getTrueOptionLabelTranslation($this->lng, $this->getOptionLabel());
+        $false_option_label = $this->getFalseOptionLabelTranslation($this->lng, $this->getOptionLabel());
+        foreach ($this->getAnswers() as $id => $answer) {
+            $value = $this->lng->txt('none');
+            foreach ($solution_values as $solution) {
+                if ($solution['value1'] !== (string) $id) {
+                    continue;
+                }
+
+                $value = $false_option_label;
+                if ($solution['value2'] === '1') {
+                    $value = $true_option_label;
+                }
+                break;
+            }
+            $parsed_solution[] = "{$answer->getAnswertext()} ({$value})";
+        }
+        return $parsed_solution;
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): array
+    {
+        $true_option_label = $this->getTrueOptionLabelTranslation($this->lng, $this->getOptionLabel());
+        $false_option_label = $this->getFalseOptionLabelTranslation($this->lng, $this->getOptionLabel());
+        return array_map(
+            fn(ilAssKprimChoiceAnswer $v): string => $v->getAnswertext()
+                . ' (' . $v->getCorrectness() ? $true_option_label : $false_option_label . ')',
+            $this->getAnswers()
+        );
     }
 }

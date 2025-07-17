@@ -18,6 +18,7 @@ import Dropdown from './Dropdown';
 
 il.UI = il.UI || {};
 il.UI.dropdown = {};
+il.UI.dropdown.opened = null;
 il.UI.dropdown.init = function (htmlElement) {
   return new Dropdown(htmlElement);
 };

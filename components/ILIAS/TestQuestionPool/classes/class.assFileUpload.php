@@ -20,9 +20,7 @@ declare(strict_types=1);
 
 use ILIAS\TestQuestionPool\QuestionPoolDIC;
 use ILIAS\Test\Participants\ParticipantRepository;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
-
 use ILIAS\FileDelivery\Delivery\Disposition;
 use ILIAS\FileUpload\Exception\IllegalStateException;
 
@@ -53,6 +51,8 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
 
     protected string $allowedextensions = '';
 
+    private ?string $current_cmd;
+
     /** @var boolean Indicates whether completion by submission is enabled or not */
     protected $completion_by_submission = false;
 
@@ -70,18 +70,19 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
      * @see assQuestion:__construct()
      */
     public function __construct(
-        $title = '',
-        $comment = '',
-        $author = '',
-        $owner = -1,
-        $question = ''
+        string $title = '',
+        string $comment = '',
+        string $author = '',
+        int $owner = -1,
+        string $question = ''
     ) {
         parent::__construct($title, $comment, $author, $owner, $question);
+        /** @var ILIAS\DI\Container $DIC */
         global $DIC;
         $this->irss = $DIC->resourceStorage();
         $this->file_delivery = $DIC->fileDelivery();
-        $this->file_upload = $DIC->upload();
-
+        $this->file_upload = $DIC['upload'];
+        $this->current_cmd = $DIC['ilCtrl']->getCmd();
         $local_dic = QuestionPoolDIC::dic();
         $this->participant_repository = $local_dic['participant_repository'];
     }
@@ -245,7 +246,7 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
             // check suffixes
             if (count($this->getAllowedExtensionsArray())) {
                 $filename_arr = pathinfo($upload_result->getName());
-                $suffix = $filename_arr['extension'];
+                $suffix = $filename_arr['extension'] ?? '';
                 $mimetype = $upload_result->getMimeType();
                 if ($suffix === '') {
                     $this->tpl->setOnScreenMessage('failure', $this->lng->txt('form_msg_file_missing_file_ext'), true);
@@ -370,7 +371,7 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
 
                 if ($data['value2'] === 'rid') {
                     $rid = $this->irss->manage()->find($data['value1']);
-                    if($rid === null) {
+                    if ($rid === null) {
                         continue;
                     }
                     $revision = $this->irss->manage()->getCurrentRevision($rid);
@@ -536,7 +537,11 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
         $test_id = $this->participant_repository->lookupTestIdByActiveId($active_id);
 
         try {
-            $upload_handling_required = $this->isFileUploadAvailable() && $this->checkUpload();
+            $upload_handling_required = $this->current_cmd !== 'submitSolution'
+                && $this->current_cmd !== 'showInstantResponse'
+                && !$this->isFileDeletionAction()
+                && $this->isFileUploadAvailable()
+                && $this->checkUpload();
         } catch (IllegalStateException $e) {
             $this->tpl->setOnScreenMessage('failure', $e->getMessage(), true);
             return false;
@@ -568,7 +573,9 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
 
                 if ($this->isFileDeletionAction()) {
                     if ($this->isFileDeletionSubmitAvailable()) {
-                        foreach ($_POST[self::DELETE_FILES_TBL_POSTVAR] as $solution_id) {
+                        $delete_files = $this->questionpool_request->intArray(self::DELETE_FILES_TBL_POSTVAR);
+
+                        foreach ($delete_files as $solution_id) {
                             $this->removeSolutionRecordById($solution_id);
                         }
                     } else {
@@ -576,7 +583,9 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
                     }
                 } else {
                     if ($this->isFileReuseHandlingRequired()) {
-                        foreach ($_POST[self::REUSE_FILES_TBL_POSTVAR] as $solutionId) {
+                        $reuse_files = $this->questionpool_request->intArray(self::REUSE_FILES_TBL_POSTVAR);
+
+                        foreach ($reuse_files as $solutionId) {
                             $solution = $this->getSolutionRecordById($solutionId);
 
                             $this->saveCurrentSolution(
@@ -629,10 +638,12 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
     {
         $rids_to_delete = [];
         if ($this->isFileDeletionAction() && $this->isFileDeletionSubmitAvailable()) {
+            $delete_files = $this->questionpool_request->intArray(self::DELETE_FILES_TBL_POSTVAR);
+
             $res = $this->db->query(
                 "SELECT value1 FROM tst_solutions WHERE value2 = 'rid' AND " . $this->db->in(
                     'solution_id',
-                    $_POST[self::DELETE_FILES_TBL_POSTVAR],
+                    $delete_files,
                     false,
                     'integer'
                 )
@@ -696,14 +707,17 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
             // hey: prevPassSolutions - readability spree - get a chance to understand the code
             if ($this->isFileDeletionSubmitAvailable()) {
                 // hey.
-                $userSolution = $this->deletePreviewFileUploads($previewSession->getUserId(), $userSolution, $_POST['deletefiles']);
+                $delete_files = $this->questionpool_request->strArray(self::DELETE_FILES_TBL_POSTVAR);
+
+                $userSolution = $this->deletePreviewFileUploads($previewSession->getUserId(), $userSolution, $delete_files);
             } else {
                 $this->tpl->setOnScreenMessage('info', $this->lng->txt('no_checkbox'), true);
             }
         } else {
             // hey: prevPassSolutions - readability spree - get a chance to understand the code
             try {
-                $fileUploadAvailable = $this->isFileUploadAvailable();
+                $fileUploadAvailable = $this->current_cmd !== 'instantResponse'
+                    && $this->isFileUploadAvailable();
             } catch (IllegalStateException $e) {
                 $this->tpl->setOnScreenMessage('failure', $e->getMessage(), true);
                 return;
@@ -739,29 +753,6 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
         $previewSession->setParticipantsSolution($userSolution);
     }
 
-    protected function handleSubmission(int $active_id, int $pass, bool $obligations_answered, bool $authorized): void
-    {
-        if (!$authorized
-            || !$this->isCompletionBySubmissionEnabled()
-            || !$this->getUploadedFiles($active_id, $pass, $authorized)) {
-            return;
-        }
-
-        if ($this->isCompletionBySubmissionEnabled()) {
-            $maxpoints = $this->questionrepository->getForQuestionId($this->getId())
-                ->getMaximumPoints();
-        }
-
-        $points = $maxpoints;
-
-        assQuestion::_setReachedPoints($active_id, $this->getId(), $points, $maxpoints, $pass, true, $obligations_answered);
-
-        ilLPStatusWrapper::_updateStatus(
-            ilObjTest::_getObjectIDFromActiveID((int) $active_id),
-            ilObjTestAccess::_getParticipantId((int) $active_id)
-        );
-    }
-
     public function getQuestionType(): string
     {
         return 'assFileUpload';
@@ -791,28 +782,6 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
     public function getRTETextWithMediaObjects(): string
     {
         return parent::getRTETextWithMediaObjects();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $i = 1;
-        $solutions = $this->getSolutionValues($active_id, $pass);
-        foreach ($solutions as $solution) {
-            $worksheet->setCell($startrow + $i, $col, $this->lng->txt('result'));
-            $worksheet->setBold($worksheet->getColumnCoord($col) . ($startrow + $i));
-            if (strlen($solution['value1'])) {
-                $worksheet->setCell($startrow + $i, $col + 2, $solution['value1']);
-                $worksheet->setCell($startrow + $i, $col + 3, $solution['value2']);
-            }
-            $i++;
-        }
-
-        return $startrow + $i + 1;
     }
 
     public function getBestSolution($active_id, $pass): array
@@ -897,11 +866,6 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
         return $this;
     }
 
-    public static function isObligationPossible(int $question_id): bool
-    {
-        return true;
-    }
-
     public function buildTestPresentationConfig(): ilTestQuestionConfig
     {
         return parent::buildTestPresentationConfig()
@@ -951,7 +915,7 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
     {
         return [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_REACHABLE_POINTS => $this->getPoints(),
             AdditionalInformationGenerator::KEY_QUESTION_UPLOAD_MAXSIZE => $this->getMaxFilesizeAsString(),
@@ -964,7 +928,7 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
         ];
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
     ): array {
@@ -972,5 +936,18 @@ class assFileUpload extends assQuestion implements ilObjQuestionScoringAdjustabl
             static fn(array $v): string => "{$v['value1']} - {$v['value2']}",
             $solution_values
         );
+    }
+
+    public function solutionValuesToText(array $solution_values): array
+    {
+        return array_map(
+            static fn(array $v): string => "{$v['value1']} - {$v['value2']}",
+            $solution_values
+        );
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): string
+    {
+        return '';
     }
 }

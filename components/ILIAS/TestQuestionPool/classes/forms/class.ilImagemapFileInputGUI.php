@@ -16,6 +16,8 @@
  *
  *********************************************************************/
 
+use ILIAS\TestQuestionPool\QuestionPoolDIC;
+use ILIAS\TestQuestionPool\ilTestLegacyFormsHelper;
 use ILIAS\UI\Renderer;
 use ILIAS\UI\Component\Symbol\Glyph\Factory as GlyphFactory;
 
@@ -35,6 +37,7 @@ class ilImagemapFileInputGUI extends ilImageFileInputGUI
 
     protected $pointsUncheckedFieldEnabled = false;
 
+    protected ilTestLegacyFormsHelper $forms_helper;
     protected GlyphFactory $glyph_factory;
     protected Renderer $renderer;
 
@@ -49,6 +52,8 @@ class ilImagemapFileInputGUI extends ilImageFileInputGUI
         parent::__construct($a_title, $a_postvar);
 
         global $DIC;
+
+        $this->forms_helper = new ilTestLegacyFormsHelper();
         $this->glyph_factory = $DIC->ui()->factory()->symbol()->glyph();
         $this->renderer = $DIC->ui()->renderer();
     }
@@ -371,6 +376,8 @@ class ilImagemapFileInputGUI extends ilImageFileInputGUI
         $template->setVariable("POST_VAR", $this->getPostVar());
         $template->setVariable("ID", $this->getFieldId());
         $template->setVariable("TXT_BROWSE", $lng->txt("select_file"));
+        $template->setVariable('MAX_SIZE_WARNING', $this->lng->txt('form_msg_file_size_exceeds'));
+        $template->setVariable('MAX_SIZE', $this->upload_limit->getPhpUploadLimitInBytes());
         $template->setVariable("TXT_MAX_SIZE", $lng->txt("file_notice") . " " .
         $this->getMaxFileSizeString());
 

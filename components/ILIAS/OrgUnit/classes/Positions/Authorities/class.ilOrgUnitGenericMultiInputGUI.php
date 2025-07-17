@@ -14,13 +14,13 @@
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
  *
- ********************************************************************
- */
+ *********************************************************************/
 
 declare(strict_types=1);
 
 use ILIAS\UI\Factory as UIFactory;
 use ILIAS\UI\Renderer as UIRenderer;
+use ILIAS\UI\Implementation\Render\Loader as UIRendererLoader;
 
 /**
  * Class ilDclGenericMultiInputGUI
@@ -55,6 +55,7 @@ class ilOrgUnitGenericMultiInputGUI extends ilFormPropertyGUI
 
     protected UIFactory $ui_factory;
     protected UIRenderer $ui_renderer;
+    protected UIRendererLoader $renderer_loader;
 
     public function __construct(string $a_title = "", string $a_postvar = "")
     {
@@ -66,6 +67,7 @@ class ilOrgUnitGenericMultiInputGUI extends ilFormPropertyGUI
         global $DIC;
         $this->ui_factory = $DIC['ui.factory'];
         $this->ui_renderer = $DIC['ui.renderer'];
+        $this->renderer_loader = $DIC["ui.component_renderer_loader"];
 
     }
 
@@ -225,7 +227,6 @@ class ilOrgUnitGenericMultiInputGUI extends ilFormPropertyGUI
     public function render(int|string $iterator_id = 0, bool $clean_render = false): string
     {
         $first_label = true;
-        //		$tpl = new \ilTemplate("tpl.multi_line_input.html", true, true, 'Customizing/global/plugins/Services/Repository/RepositoryObject/LiveVoting');
         $tpl = new ilTemplate("tpl.prop_generic_multi_line.html", true, true, 'components/ILIAS/OrgUnit');
 
         $class = 'multi_input_line';
@@ -375,16 +376,24 @@ class ilOrgUnitGenericMultiInputGUI extends ilFormPropertyGUI
                 $tpl->setCurrentBlock('multi_icons');
                 $tpl->setVariable('IMAGE_PLUS', $this->getGlyph('add'));
                 $tpl->setVariable('IMAGE_MINUS', $this->getGlyph('remove'));
+
                 $tpl->parseCurrentBlock();
                 $output .= $tpl->get();
             }
         }
         if ($this->getMulti()) {
-            $output = "<div id='{$this->getFieldId()}' class='multi_line_input'>{$output}</div>";
-
+            $output = "<div style=\"display:none;\" id='{$this->getFieldId()}' class='multi_line_input'>{$output}</div>";
+            $config = json_encode($this->input_options);
+            $options = json_encode([
+                'limit' => 999999,
+                'sortable' => false,
+                'locale' => $this->lng->getLangKey()
+            ]);
             global $tpl;
-            $options = json_encode($this->input_options);
-            $tpl->addOnLoadCode("$('#{$this->getFieldId()}').multi_line_input({$this->getFieldId()}, '{$options}')");
+            $tpl->addOnLoadCode("
+                il.DataCollection.genericMultiLineInit('{$this->getFieldId()}',$config,$options);
+                document.body.querySelector('#{$this->getFieldId()}').removeAttribute('style');
+            ");
         }
 
         $a_tpl->setCurrentBlock("prop_generic");
@@ -456,10 +465,10 @@ class ilOrgUnitGenericMultiInputGUI extends ilFormPropertyGUI
          * do not render an a-tag around the glyph.
          * should be outdated and removed when Glyphs loose their Clickable
          */
-        // $renderer = $this->ui_renderer->withAdditionalContext(
-        //     $this->ui_factory->button()->bulky($symbol, '', '')
-        // );
-
-        return $this->ui_renderer->render($symbol);
+        $renderer = $this->renderer_loader->getRendererFor(
+            $symbol,
+            [$this->ui_factory->button()->bulky($symbol, '', '')]
+        );
+        return $renderer->render($symbol, $this->ui_renderer);
     }
 }

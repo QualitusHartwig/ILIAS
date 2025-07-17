@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=1);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=1);
 
 /**
 * Class ilObjSCORMLearningModuleGUI
@@ -774,7 +774,7 @@ class ilObjSCORMLearningModuleGUI extends ilObjSAHSLearningModuleGUI
             $ilToolbar = $DIC->toolbar();
             $ilToolbar->addButton(
                 $this->lng->txt('import'),
-                $this->ctrl->getLinkTarget($this, 'importForm')
+                $this->ctrl->getLinkTarget($this, 'trackingImportForm')
             );
             $ilToolbar->addButton(
                 $this->lng->txt('cont_export_all'),
@@ -879,7 +879,7 @@ class ilObjSCORMLearningModuleGUI extends ilObjSAHSLearningModuleGUI
      * gui functions for GUI export
      * @throws ilCtrlException
      */
-    protected function import(): void
+    protected function importTracking(): void
     {
         $form = $this->initTrackingImportForm("");
         if ($form->checkInput()) {
@@ -892,25 +892,41 @@ class ilObjSCORMLearningModuleGUI extends ilObjSAHSLearningModuleGUI
                     break;
                 case false:
                     $this->tpl->setOnScreenMessage('info', $this->lng->txt('err_check_input'));
-                    $this->importForm();
+                    $this->trackingImportForm();
                     break;
             }
         }
         $this->tpl->setOnScreenMessage('info', $this->lng->txt('err_check_input'));
         $form->setValuesByPost();
-        $this->importForm();
+        $this->trackingImportForm();
+    }
+
+    /**
+     * Show import form
+     * @throws ilCtrlException
+     */
+    protected function trackingImportForm(): void
+    {
+        global $DIC;
+        $ilTabs = $DIC->tabs();
+
+        $ilTabs->clearTargets();
+        $ilTabs->setBackTarget($this->lng->txt('back'), $this->ctrl->getLinkTarget($this, 'showTrackingItems'));
+
+        $form = $this->initTrackingImportForm();
+        $this->tpl->setContent($form->getHTML());
     }
 
     /**
      * Init import form
      * @throws ilCtrlException
      */
-    protected function initTrackingImportForm(string $new_type): ilPropertyFormGUI
+    protected function initTrackingImportForm(): ilPropertyFormGUI
     {
         $form = new ilPropertyFormGUI();
         $form->setFormAction($this->ctrl->getFormAction($this));
         $form->setTitle($this->lng->txt('cont_import_tracking'));
-        $form->addCommandButton('import', $this->lng->txt('import'));
+        $form->addCommandButton('importTracking', $this->lng->txt('import'));
         $form->addCommandButton('showTrackingItems', $this->lng->txt('cancel'));
 
         $csv = new ilFileInputGUI($this->lng->txt('select_file'), 'csv');

@@ -47,19 +47,19 @@ use DateTimeZone;
 class MailFolderTableUI implements \ILIAS\UI\Component\Table\DataRetrieval
 {
     // table actions
-    public const ACTION_SHOW = 'show';
-    public const ACTION_EDIT = 'edit';
-    public const ACTION_REPLY = 'reply';
-    public const ACTION_FORWARD = 'forward';
-    public const ACTION_DOWNLOAD_ATTACHMENT = 'download';
-    public const ACTION_PRINT = 'print';
-    public const ACTION_PROFILE = 'profile';
-    public const ACTION_MOVE_TO = 'moveTo';
-    public const ACTION_DELETE = 'delete';
-    public const ACTION_MARK_READ = 'markRead';
-    public const ACTION_MARK_UNREAD = 'marUnread';
+    public const string ACTION_SHOW = 'show';
+    public const string ACTION_EDIT = 'edit';
+    public const string ACTION_REPLY = 'reply';
+    public const string ACTION_FORWARD = 'forward';
+    public const string ACTION_DOWNLOAD_ATTACHMENT = 'download';
+    public const string ACTION_PRINT = 'print';
+    public const string ACTION_PROFILE = 'profile';
+    public const string ACTION_MOVE_TO = 'moveTo';
+    public const string ACTION_DELETE = 'delete';
+    public const string ACTION_MARK_READ = 'markRead';
+    public const string ACTION_MARK_UNREAD = 'marUnread';
 
-    /** @var string[] */
+    /** @var array<int, string> */
     private array $avatars = [];
 
     /**
@@ -81,6 +81,7 @@ class MailFolderTableUI implements \ILIAS\UI\Component\Table\DataRetrieval
         private readonly DataFactory $data_factory,
         private readonly Refinery $refinery,
         private readonly DateFormat $date_format,
+        private readonly string $time_format,
         private readonly DateTimeZone $user_time_zone
     ) {
     }
@@ -90,11 +91,12 @@ class MailFolderTableUI implements \ILIAS\UI\Component\Table\DataRetrieval
         return $this->ui_factory
             ->table()
             ->data(
+                $this,
                 $this->getTableTitle(),
                 $this->getColumnDefinition(),
-                $this
             )
             ->withId(self::class)
+            ->withOrder(new Order('date', Order::DESC))
             ->withActions($this->getActions())
             ->withRequest($this->http_request);
     }
@@ -104,6 +106,12 @@ class MailFolderTableUI implements \ILIAS\UI\Component\Table\DataRetrieval
      */
     private function getColumnDefinition(): array
     {
+        if ((int) $this->time_format === \ilCalendarSettings::TIME_FORMAT_12) {
+            $date_format = $this->data_factory->dateFormat()->withTime12($this->date_format);
+        } else {
+            $date_format = $this->data_factory->dateFormat()->withTime24($this->date_format);
+        }
+
         $columns = [
             'status' => $this->ui_factory
                 ->table()
@@ -138,7 +146,7 @@ class MailFolderTableUI implements \ILIAS\UI\Component\Table\DataRetrieval
             'attachments' => $this->ui_factory
                 ->table()
                 ->column()
-                ->status($this->ui_renderer->render($this->ui_factory->symbol()->glyph()->attachment()))
+                ->status($this->lng->txt('attachments'))
                 ->withIsSortable(true),
 
             'date' => $this->ui_factory
@@ -146,7 +154,7 @@ class MailFolderTableUI implements \ILIAS\UI\Component\Table\DataRetrieval
                 ->column()
                 ->date(
                     $this->lng->txt('date'),
-                    $this->data_factory->dateFormat()->withTime24($this->date_format)
+                    $date_format
                 )
                 ->withIsSortable(true),
         ];
@@ -325,32 +333,41 @@ class MailFolderTableUI implements \ILIAS\UI\Component\Table\DataRetrieval
     private function getTableTitle(): string
     {
         if ($this->current_folder->hasIncomingMails() && $this->search->getUnread() > 0) {
-            return sprintf(
+            return \sprintf(
                 '%s: %s (%s %s)',
                 $this->current_folder->getTitle(),
                 $this->search->getCount() === 1
                     ? $this->lng->txt('mail_1')
-                    : sprintf($this->lng->txt('mail_s'), $this->search->getCount()),
+                    : \sprintf($this->lng->txt('mail_s'), $this->search->getCount()),
                 $this->search->getUnread(),
                 $this->lng->txt('unread')
             );
         }
 
-        return sprintf(
+        return \sprintf(
             '%s: %s',
             $this->current_folder->getTitle(),
             $this->search->getCount() === 1
                 ? $this->lng->txt('mail_1')
-                : sprintf($this->lng->txt('mail_s'), $this->search->getCount()),
+                : \sprintf($this->lng->txt('mail_s'), $this->search->getCount()),
         );
     }
 
     private function getAvatar(MailRecordData $record): string
     {
-        if (!array_key_exists($record->getSenderId(), $this->avatars)) {
-            $user = ilMailUserCache::getUserObjectById($record->getSenderId());
-            $this->avatars[$record->getSenderId()] = isset($user)
-                ? $this->ui_renderer->render($user->getAvatar())
+        if (!\array_key_exists($record->getSenderId(), $this->avatars)) {
+            if ($record->getSenderId() === ANONYMOUS_USER_ID) {
+                $avatar = $this->ui_factory->symbol()->avatar()->picture(
+                    \ilUtil::getImagePath('logo/ilias_logo_centered.png'),
+                    $this->getSender($record)
+                );
+            } else {
+                $user = ilMailUserCache::getUserObjectById($record->getSenderId());
+                $avatar = $user?->getAvatar();
+            }
+
+            $this->avatars[$record->getSenderId()] = $avatar
+                ? $this->ui_renderer->render($avatar)
                 : '';
         }
 
@@ -370,7 +387,8 @@ class MailFolderTableUI implements \ILIAS\UI\Component\Table\DataRetrieval
             return ilMail::_getIliasMailerName();
         }
 
-        if (!empty($user = ilMailUserCache::getUserObjectById($record->getSenderId()))) {
+        $user = ilMailUserCache::getUserObjectById($record->getSenderId());
+        if ($user !== null) {
             if ($user->hasPublicProfile()) {
                 return $this->ui_renderer->render(
                     $this->ui_factory->link()->standard(

@@ -67,6 +67,7 @@ export default class UI {
   /**
    * @type {pageModifier}
    */
+
   //  pageModifier;
 
   /**
@@ -78,7 +79,7 @@ export default class UI {
    * @param {IIMUIModifier} uiModifier
    */
   constructor(client, dispatcher, actionFactory, iimModel, uiModel, toolSlate, uiModifier) {
-    this.debug = true;
+    this.debug = false;
     this.client = client;
     this.dispatcher = dispatcher;
     this.actionFactory = actionFactory;
@@ -172,7 +173,6 @@ export default class UI {
   initShapeEditor() {
     const el = document.getElementById('il-copg-iim-main');
     const mob = el.querySelector('.ilc_Mob');
-    console.log('initShapeEditor');
     if (mob) {
       this.shapeEditor = new ShapeEditor(mob);
       const ed = this.shapeEditor;
@@ -230,14 +230,14 @@ export default class UI {
 
   addTrigger() {
     const trigger = this.iimModel.getCurrentTrigger();
-    this.showTriggerProperties();
+    this.showTriggerProperties(true);
     this.shapeEditor.addShape(trigger.getShape());
     this.shapeEditor.repaint();
   }
 
   editTrigger(nr) {
     const trigger = this.iimModel.getCurrentTrigger();
-    this.showTriggerProperties();
+    this.showTriggerProperties(false);
     this.setEditorAddMode();
     this.shapeEditor.removeAllShapes();
     this.shapeEditor.addShape(trigger.getShape(), true);
@@ -267,7 +267,29 @@ export default class UI {
     return `form/input_${nr}`;
   }
 
-  showTriggerProperties() {
+  showTriggerDeleteButton() {
+    document.querySelectorAll("form [data-copg-ed-type='form-button']").forEach((button) => {
+      const act = button.dataset.copgEdAction;
+      if (act === ACTIONS.E_TRIGGER_DELETE) {
+        button.style.display = '';
+      }
+    });
+  }
+
+  updateTriggerProperties() {
+    const shapeSelect = document.querySelector(`#copg-iim-trigger-prop-form [name="${this.formInput(1)}"]`);
+    const modeSelect = document.querySelector(`#copg-iim-trigger-prop-form [name="${this.formInput(2)}"]`).closest('.c-input');
+    const classSelect = document.querySelector(`#copg-iim-trigger-prop-form [name="${this.formInput(3)}"]`).closest('.c-input');
+    if (shapeSelect.value === 'Marker') {
+      modeSelect.style.display = 'none';
+      classSelect.style.display = 'none';
+    } else {
+      modeSelect.style.display = '';
+      classSelect.style.display = '';
+    }
+  }
+
+  showTriggerProperties(add) {
     const dispatch = this.dispatcher;
     const action = this.actionFactory;
     const tr = this.iimModel.getCurrentTrigger();
@@ -275,12 +297,20 @@ export default class UI {
     this.setInputValueByName('#copg-iim-trigger-prop-form', this.formInput(0), tr.title);
     if (tr.getShape()) {
       this.setInputValueByName('#copg-iim-trigger-prop-form', this.formInput(1), tr.area.shapeType);
+      this.setInputValueByName('#copg-iim-trigger-prop-form', this.formInput(2), tr.area.hMode);
+      this.setInputValueByName('#copg-iim-trigger-prop-form', this.formInput(3), tr.area.hClass);
     } else {
       this.setInputValueByName('#copg-iim-trigger-prop-form', this.formInput(1), 'Marker');
     }
     this.initTriggerViewControl();
     this.initBackButton();
     model = this.iimModel;
+    const shapeSelect = document.querySelector(`#copg-iim-trigger-prop-form [name="${this.formInput(1)}"]`);
+    shapeSelect.addEventListener('change', (event) => {
+      this.updateTriggerProperties();
+    });
+    this.updateTriggerProperties();
+
     document.querySelectorAll("form [data-copg-ed-type='form-button']").forEach((button) => {
       const act = button.dataset.copgEdAction;
       button.addEventListener('click', (event) => {
@@ -298,10 +328,21 @@ export default class UI {
               this.getInputValueByName(this.formInput(0)),
               this.getInputValueByName(this.formInput(1)),
               coords,
+              this.getInputValueByName(this.formInput(2)),
+              this.getInputValueByName(this.formInput(3)),
+            ));
+            break;
+          case ACTIONS.E_TRIGGER_DELETE:
+            event.preventDefault();
+            dispatch.dispatch(action.interactiveImage().editor().deleteTrigger(
+              model.getCurrentTrigger().nr,
             ));
             break;
         }
       });
+      if (add && act === ACTIONS.E_TRIGGER_DELETE) {
+        button.style.display = 'none';
+      }
     });
     document.querySelectorAll(`form [name='${this.formInput(1)}']`).forEach((select) => {
       select.addEventListener('change', (event) => {
@@ -326,6 +367,14 @@ export default class UI {
   setInputValueByName(sel, name, value) {
     const path = `${sel} input[name='${name}'],select[name='${name}']`;
     const el = document.querySelector(path);
+    if (el && el.options) {
+      const options = Array.from(el.options);
+      options.forEach((option) => {
+        if (option.hidden) {
+          el.removeChild(option);
+        }
+      });
+    }
     if (el) {
       el.value = value;
     }
@@ -391,16 +440,18 @@ export default class UI {
     this.shapeEditor.removeAllMarkers();
     this.removeDummyPopup();
     if (showOverlay && overlay) {
-      this.setInputValueByName('#copg-iim-trigger-overlay-form', this.formInput(0), overlay.getSrc());
+      this.setInputValueByName(
+        '#copg-iim-trigger-overlay-form',
+        this.formInput(0),
+        overlay.getSrc(),
+      );
       this.shapeEditor.addOverlay(overlay, true);
     }
     this.shapeEditor.removeAllShapes();
     if (trigger.getShape()) {
       this.shapeEditor.addShape(trigger.getShape(), edit);
     }
-    console.log('A');
     if (trigger.getMarker()) {
-      console.log('B');
       this.shapeEditor.addMarker(trigger.getMarker(), edit);
     }
     this.shapeEditor.repaint();
@@ -454,7 +505,11 @@ export default class UI {
       if (size == '') {
         size = 'md';
       }
-      this.setInputValueByName('#copg-iim-trigger-overlay-form', this.formInput(0), tr.getPopupNr());
+      this.setInputValueByName(
+        '#copg-iim-trigger-overlay-form',
+        this.formInput(0),
+        tr.getPopupNr(),
+      );
       this.setInputValueByName('#copg-iim-trigger-overlay-form', this.formInput(1), size);
     }
     this.showCurrentShape();
@@ -476,10 +531,17 @@ export default class UI {
     dummy.setAttribute('data-copg-iim-type', 'dummmy-popup');
     let ln = 160;
     switch (size) {
-      case 'sm': ln = 40; break;
-      case 'lg': ln = 360; break;
+      case 'sm':
+        ln = 40;
+        break;
+      case 'lg':
+        ln = 360;
+        break;
     }
-    dummy.innerHTML = this.uiModel.popupDummy.replace('###content###', `${this.uiModel.lore.substr(0, ln)}...`);
+    dummy.innerHTML = this.uiModel.popupDummy.replace(
+      '###content###',
+      `${this.uiModel.lore.substr(0, ln)}...`,
+    );
     mainEl.appendChild(dummy);
     const popEl = mainEl.querySelector("[data-copg-cont-type='iim-popup']");
     popEl.classList.remove('copg-iim-popup-md');
@@ -580,9 +642,15 @@ export default class UI {
 
   refreshTriggerViewControl() {
     const model = this.iimModel;
-    const prop = document.querySelector("[data-copg-ed-type='view-control'][data-copg-ed-action='trigger.properties']");
-    const ov = document.querySelector("[data-copg-ed-type='view-control'][data-copg-ed-action='trigger.overlay']");
-    const pop = document.querySelector("[data-copg-ed-type='view-control'][data-copg-ed-action='trigger.popup']");
+    const prop = document.querySelector(
+      "[data-copg-ed-type='view-control'][data-copg-ed-action='trigger.properties']",
+    );
+    const ov = document.querySelector(
+      "[data-copg-ed-type='view-control'][data-copg-ed-action='trigger.overlay']",
+    );
+    const pop = document.querySelector(
+      "[data-copg-ed-type='view-control'][data-copg-ed-action='trigger.popup']",
+    );
     prop.classList.remove('engaged');
     ov.classList.remove('engaged');
     pop.classList.remove('engaged');
@@ -616,7 +684,7 @@ export default class UI {
         switch (act) {
           case ACTIONS.E_SAVE_SETTINGS:
             event.preventDefault();
-            const form = document.querySelector('#copg-editor-slate-content form');
+            const form = document.querySelector('#copg-editor-slate-content .modal-body form');
             dispatch.dispatch(action.interactiveImage().editor().saveSettings(
               form,
             ));
@@ -639,7 +707,7 @@ export default class UI {
     this.initOverlayList();
     document.querySelectorAll("[data-copg-ed-type='button']").forEach((button) => {
       const act = button.dataset.copgEdAction;
-      button.addEventListener('click', (event) => {
+      button.addEventListener('click', () => {
         switch (act) {
           case ACTIONS.E_TRIGGER_OVERLAY_ADD:
             dispatch.dispatch(action.interactiveImage().editor().addTriggerOverlay());
@@ -671,12 +739,24 @@ export default class UI {
     this.fillItemList(items);
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  hideAllAddDropdowns() {
+    document.querySelectorAll('#copg-editor-slate-content ul.dropdown-menu').forEach((el) => {
+      el.style.display = 'none';
+      el.dataset.copgDDShown = '0';
+    });
+  }
+
   fillItemList(items) {
-    let newNode; let newLiNode; let liTempl; let
+    let newNode;
+    let newLiNode;
+    let liTempl;
+    let
       liParent;
     const dispatch = this.dispatcher;
     const templEl = document.querySelector('#copg-editor-slate-content .il-std-item-container');
     const parent = templEl.parentNode;
+
     items.forEach((item) => {
       newNode = templEl.cloneNode(true);
       for (const [key, value] of Object.entries(item.placeholders)) {
@@ -696,12 +776,28 @@ export default class UI {
         newLiNode = liParent.appendChild(newLiNode);
         newLiNode.addEventListener('click', () => {
           dispatch.dispatch(action.action);
+          this.hideAllAddDropdowns();
         });
       });
       liTempl.remove();
       parent.appendChild(newNode);
     });
     templEl.remove();
+
+    const ddButtons = parent.querySelectorAll('div.dropdown > button');
+    ddButtons.forEach((b) => {
+      b.addEventListener('click', () => {
+        const ul = b.parentNode.querySelector('ul');
+        if (ul.dataset.copgDDShown !== '1') {
+          this.hideAllAddDropdowns();
+          ul.style.display = 'block';
+          ul.dataset.copgDDShown = '1';
+        } else {
+          ul.style.display = 'none';
+          ul.dataset.copgDDShown = '0';
+        }
+      });
+    });
   }
 
   showPopups() {
@@ -755,7 +851,7 @@ export default class UI {
       this.uiModel.overlayUpload,
       il.Language.txt('add'),
       (e) => {
-        const form = document.querySelector('#il-copg-ed-modal form');
+        const form = document.querySelector('#il-copg-ed-modal .modal-body form');
 
         // after_pcid, pcid, component, data
         dispatch.dispatch(action.interactiveImage().editor().uploadOverlay(
@@ -777,7 +873,7 @@ export default class UI {
       this.uiModel.popupForm,
       il.Language.txt('save'),
       (e) => {
-        const form = document.querySelector('#il-copg-ed-modal form');
+        const form = document.querySelector('#il-copg-ed-modal  .modal-body form');
 
         // after_pcid, pcid, component, data
         dispatch.dispatch(action.interactiveImage().editor().savePopup(

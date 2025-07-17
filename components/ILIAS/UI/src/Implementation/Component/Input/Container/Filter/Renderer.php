@@ -68,7 +68,7 @@ class Renderer extends AbstractComponentRenderer
         $this->renderToggleButton($tpl, $component, $default_renderer);
 
         // render inputs
-        $this->renderInputs($tpl, $component, $default_renderer);
+        $this->renderInputs($tpl, $component, $id, $default_renderer);
 
         return $tpl->get();
     }
@@ -100,32 +100,23 @@ class Renderer extends AbstractComponentRenderer
         $tpl->setVariable("ACTION", $component->getExpandAction());
         $tpl->parseCurrentBlock();
 
-        $opener_expand = $f->button()->bulky($f->symbol()->glyph()->expand(), $this->txt("filter"), "")
-            ->withAdditionalOnLoadCode(fn($id) => "$('#$id').on('click', function(event) {
-					il.UI.filter.onAjaxCmd(event, '$id', 'expand');
-					event.preventDefault();
-			    });");
-
         $tpl->setCurrentBlock("action");
         $tpl->setVariable("ACTION_NAME", "collapse");
         $tpl->setVariable("ACTION", $component->getCollapseAction());
         $tpl->parseCurrentBlock();
 
-        $opener_collapse = $f->button()->bulky($f->symbol()->glyph()->collapse(), $this->txt("filter"), "")
-            ->withAdditionalOnLoadCode(fn($id) => "$('#$id').on('click', function(event) {
-					il.UI.filter.onAjaxCmd(event, '$id', 'collapse');
-					event.preventDefault();
-			    });");
+        $tpl->setVariable("TITLE_FILTER", $this->txt("filter"));
+        $glyph_collapse = $f->symbol()->glyph()->collapse();
+        $tpl->setVariable("COLLAPSE_GLYPH", $default_renderer->render($glyph_collapse));
+        $glyph_expand = $f->symbol()->glyph()->expand();
+        $tpl->setVariable("EXPAND_GLYPH", $default_renderer->render($glyph_expand));
 
-        if ($component->isExpanded() == false) {
-            $opener = [$opener_collapse, $opener_expand];
-            $tpl->setVariable("OPENER", $default_renderer->render($opener));
-            $tpl->setVariable("INPUTS_ACTIVE_EXPANDED", "in");
-        } else {
-            $opener = [$opener_expand, $opener_collapse];
-            $tpl->setVariable("OPENER", $default_renderer->render($opener));
-            $tpl->setVariable("INPUTS_EXPANDED", "in");
-        }
+        $is_expanded = $component->isExpanded();
+        $tpl->setVariable("ARIA_EXPANDED", $is_expanded ? "true" : "false");
+        $tpl->setVariable("COLLAPSE_GLYPH_VISIBLE", $is_expanded ? 1 : 0);
+        $tpl->setVariable("EXPAND_GLYPH_VISIBLE", $is_expanded ? 0 : 1);
+        $tpl->setVariable("ACTIVE_INPUTS_EXPANDED", $is_expanded ? 0 : 1);
+        $tpl->setVariable("SECTION_INPUTS_EXPANDED", $is_expanded ? 1 : 0);
     }
 
     /**
@@ -207,6 +198,7 @@ class Renderer extends AbstractComponentRenderer
     protected function renderInputs(
         Template $tpl,
         Filter\Standard $component,
+        string $component_id,
         RendererInterface $default_renderer
     ): void {
         // pass information on what inputs should be initially rendered
@@ -234,6 +226,7 @@ class Renderer extends AbstractComponentRenderer
         }
         if (count($component->getInputs()) > 0) {
             $tpl->setCurrentBlock("active_inputs_section");
+            $tpl->setVariable("ID_FILTER_ACTIVE", $component_id);
             $tpl->parseCurrentBlock();
         }
 

@@ -60,7 +60,6 @@ class ilUserStartingPointRepository
     public function __construct(
         private readonly ilObjUser $user,
         private readonly ilDBInterface $db,
-        private ilGlobalTemplateInterface $tpl,
         private readonly LoggingServices $log,
         private readonly ilTree $tree,
         private readonly ilRbacReview $rbac_review,
@@ -568,7 +567,7 @@ class ilUserStartingPointRepository
      */
     public function setCurrentUserPersonalStartingPoint(
         int $starting_point_type,
-        int $ref_id = null
+        ?int $ref_id = null
     ): bool {
         if ($starting_point_type === 0) {
             $this->user->setPref('usr_starting_point', null);

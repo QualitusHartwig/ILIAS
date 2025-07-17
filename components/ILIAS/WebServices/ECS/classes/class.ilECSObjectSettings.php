@@ -353,7 +353,11 @@ abstract class ilECSObjectSettings
         $mids = array();
         foreach ((array) $selected_receivers as $sid_mid) {
             $tmp = explode('_', $sid_mid);
-            $mids[$tmp[0]][] = $tmp[1];
+            if(1 === count($tmp)) {
+                $mids[$tmp[0]][] = $tmp[0];
+            } else {
+                $mids[$tmp[0]][] = $tmp[1];
+            }
         }
 
         try {
@@ -479,7 +483,7 @@ abstract class ilECSObjectSettings
      * @param array $a_mids
      * @throws ilECSConnectorException
      */
-    protected function doUpdate(ilECSSetting $a_server, ilECSExport $a_export_settings, array $a_mids = null): void
+    protected function doUpdate(ilECSSetting $a_server, ilECSExport $a_export_settings, ?array $a_mids = null): void
     {
         $econtent_id = $a_export_settings->getEContentId();
         if (!$econtent_id) {

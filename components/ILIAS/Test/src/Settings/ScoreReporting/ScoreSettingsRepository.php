@@ -24,4 +24,5 @@ interface ScoreSettingsRepository
 {
     public function getFor(int $test_id): ScoreSettings;
     public function store(ScoreSettings $settings): void;
+    public function getSettingsResultSummaryByObjIds(array $obj_ids): array;
 }

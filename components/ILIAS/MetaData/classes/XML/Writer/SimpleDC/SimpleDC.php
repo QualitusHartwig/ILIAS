@@ -28,22 +28,26 @@ use ILIAS\MetaData\Paths\PathInterface;
 use ILIAS\MetaData\Paths\Filters\FilterType;
 use ILIAS\Data\ReferenceId;
 use ILIAS\MetaData\XML\Copyright\Links\LinkGeneratorInterface;
+use ILIAS\Data\Factory as DataFactory;
 
 class SimpleDC implements SimpleDCInterface
 {
     protected PathFactory $path_factory;
     protected NavigatorFactoryInterface $navigator_factory;
+    protected DataFactory $data_factory;
     protected CopyrightHandlerInterface $copyright_handler;
     protected LinkGeneratorInterface $link_generator;
 
     public function __construct(
         PathFactory $path_factory,
         NavigatorFactoryInterface $navigator_factory,
+        DataFactory $data_factory,
         CopyrightHandlerInterface $copyright_handler,
         LinkGeneratorInterface $link_generator
     ) {
         $this->path_factory = $path_factory;
         $this->navigator_factory = $navigator_factory;
+        $this->data_factory = $data_factory;
         $this->copyright_handler = $copyright_handler;
         $this->link_generator = $link_generator;
     }
@@ -96,7 +100,7 @@ class SimpleDC implements SimpleDCInterface
             ->withNextStep('contribute')
             ->withNextStep('role')
             ->withNextStep('value')
-            ->withAdditionalFilterAtCurrentStep(FilterType::DATA, 'author', 'Author')
+            ->withAdditionalFilterAtCurrentStep(FilterType::DATA, 'author')
             ->withNextStepToSuperElement()
             ->withNextStepToSuperElement()
             ->withNextStep('entity')
@@ -108,7 +112,7 @@ class SimpleDC implements SimpleDCInterface
             ->withNextStep('contribute')
             ->withNextStep('role')
             ->withNextStep('value')
-            ->withAdditionalFilterAtCurrentStep(FilterType::DATA, 'publisher', 'Publisher')
+            ->withAdditionalFilterAtCurrentStep(FilterType::DATA, 'publisher')
             ->withNextStepToSuperElement()
             ->withNextStepToSuperElement()
             ->withNextStep('entity')
@@ -119,6 +123,14 @@ class SimpleDC implements SimpleDCInterface
             ->withNextStep('lifeCycle')
             ->withNextStep('contribute')
             ->withNextStep('entity')
+            ->get();
+
+        $path_from_entity_to_role = $this->path_factory
+            ->custom()
+            ->withRelative(true)
+            ->withNextStepToSuperElement()
+            ->withNextStep('role')
+            ->withNextStep('value')
             ->get();
 
         $creators = [];
@@ -152,10 +164,17 @@ class SimpleDC implements SimpleDCInterface
                 continue;
             }
 
+            $role = $this->navigator_factory
+                ->navigator($path_from_entity_to_role, $any_contributor)
+                ->lastElementAtFinalStep()?->getData()?->value() ?? '';
+            $contributor = $any_contributor->getData()->value();
+            if ($role !== '') {
+                $contributor .= ' (' . $role . ')';
+            }
             $this->addNamespacedChildToXML(
                 $xml,
                 'contributor',
-                $any_contributor->getData()->value()
+                $contributor
             );
         }
     }
@@ -272,11 +291,14 @@ class SimpleDC implements SimpleDCInterface
             return;
         }
 
-        $link = $this->link_generator->generateLinkForReference(
-            new ReferenceId($object_ref_id),
-            $type
-        );
+        $link = $this->link_generator->generateLinkForReference($object_ref_id, $type);
         $this->addNamespacedChildToXML($xml, 'identifier', (string) $link);
+
+        if (!$this->link_generator->doesReferenceHavePublicAccessExport($object_ref_id)) {
+            return;
+        }
+        $download_link = $this->link_generator->generateLinkForPublicAccessExportOfReference($object_ref_id);
+        $this->addNamespacedChildToXML($xml, 'identifier', (string) $download_link);
     }
 
     protected function addLanguagesToXML(\SimpleXMLElement $xml, SetInterface $set): void
@@ -303,7 +325,7 @@ class SimpleDC implements SimpleDCInterface
             ->withNextStep('relation')
             ->withNextStep('kind')
             ->withNextStep('value')
-            ->withAdditionalFilterAtCurrentStep(FilterType::DATA, 'isbasedon', 'IsBasedOn')
+            ->withAdditionalFilterAtCurrentStep(FilterType::DATA, 'isbasedon')
             ->withNextStepToSuperElement()
             ->withNextStepToSuperElement()
             ->withNextStep('resource')
@@ -429,6 +451,8 @@ class SimpleDC implements SimpleDCInterface
         if ($value === '') {
             return null;
         }
-        return $xml->addChild($name, $value, "http://purl.org/dc/elements/1.1/");
+        $child_xml = $xml->addChild($name, null, "http://purl.org/dc/elements/1.1/");
+        $child_xml[0] = $value;
+        return $child_xml;
     }
 }

@@ -36,16 +36,13 @@ use ILIAS\MetaData\XML\Version;
 use ILIAS\MetaData\XML\Dictionary\TagInterface;
 use ILIAS\MetaData\XML\Dictionary\NullTag;
 use ILIAS\MetaData\XML\SpecialCase;
-use ILIAS\MetaData\Manipulator\ScaffoldProvider\NullScaffoldProvider;
-use ILIAS\MetaData\Manipulator\ScaffoldProvider\ScaffoldProviderInterface;
 use ILIAS\MetaData\Paths\NullFactory as NullPathFactory;
 use ILIAS\MetaData\Paths\BuilderInterface;
 use ILIAS\MetaData\Paths\NullBuilder;
 use ILIAS\MetaData\Paths\PathInterface;
 use ILIAS\MetaData\Paths\NullPath;
 use ILIAS\MetaData\Manipulator\NullManipulator;
-
-use function PHPUnit\Framework\assertGreaterThanOrEqual;
+use ILIAS\MetaData\Elements\Data\NullData;
 
 class StandardTest extends TestCase
 {
@@ -79,7 +76,7 @@ class StandardTest extends TestCase
 
             public function getData(): DataInterface
             {
-                return new class ($this->element_as_array) implements DataInterface {
+                return new class ($this->element_as_array) extends NullData {
                     public function __construct(protected array $element_as_array)
                     {
                     }
@@ -284,6 +281,43 @@ class StandardTest extends TestCase
         <el1.2.1>val1.2.1</el1.2.1>
         <el1.2.2>val1.2.2</el1.2.2>
     </el1.2>
+</el1>
+XML;
+
+        $writer = $this->getStandardWriter();
+        $set = $this->getSet($set_array);
+        $xml = $writer->write($set);
+
+        $this->assertXmlStringEqualsXmlString($expected_xml, $xml->asXML());
+    }
+
+    public function testWriteWithDuplicateElementNames(): void
+    {
+        $set_array = [
+            'name' => 'el1',
+            'type' => Type::NULL,
+            'value' => '',
+            'subs' => [
+                [
+                    'name' => 'name',
+                    'type' => Type::STRING,
+                    'value' => 'value1',
+                    'subs' => []
+                ],
+                [
+                    'name' => 'name',
+                    'type' => Type::STRING,
+                    'value' => 'value2',
+                    'subs' => []
+                ]
+            ]
+        ];
+
+        $expected_xml = <<<XML
+<?xml version="1.0"?>
+<el1>
+    <name>value1</name>
+    <name>value2</name>
 </el1>
 XML;
 
@@ -702,6 +736,82 @@ XML;
 <el1>
     <el1.1/>
     <el1.2/>
+</el1>
+XML;
+
+        $writer = $this->getStandardWriter();
+        $set = $this->getSet($set_array);
+        $xml = $writer->write($set);
+
+        $this->assertXmlStringEqualsXmlString($expected_xml, $xml->asXML());
+    }
+
+    public function testWriteWithDataContainingSpecialCharacters(): void
+    {
+        $set_array = [
+            'name' => 'el1',
+            'type' => Type::NULL,
+            'value' => '',
+            'subs' => [
+                [
+                    'name' => 'el1.1',
+                    'type' => Type::VOCAB_VALUE,
+                    'value' => 'This contains !@#$%^&*(){}[]<>?=+\/|"\' a bunch of special characters.',
+                    'subs' => []
+                ]
+            ]
+        ];
+
+        $expected_xml = <<<XML
+<?xml version="1.0"?>
+<el1>
+    <el1.1>This contains !@#$%^&amp;*(){}[]&lt;&gt;?=+\/|"' a bunch of special characters.</el1.1>
+</el1>
+XML;
+
+        $writer = $this->getStandardWriter();
+        $set = $this->getSet($set_array);
+        $xml = $writer->write($set);
+
+        $this->assertXmlStringEqualsXmlString($expected_xml, $xml->asXML());
+    }
+
+    public function testWriteWithLangStringContainingSpecialCharacters(): void
+    {
+        $set_array = [
+            'name' => 'el1',
+            'type' => Type::NULL,
+            'value' => '',
+            'subs' => [
+                [
+                    'name' => 'el1.1',
+                    'type' => Type::NULL,
+                    'value' => '',
+                    'specials' => [SpecialCase::LANGSTRING],
+                    'subs' => [
+                        [
+                            'name' => 'string',
+                            'type' => Type::STRING,
+                            'value' => 'This contains !@#$%^&*(){}[]<>?=+\/|"\' a bunch of special characters.',
+                            'subs' => []
+                        ],
+                        [
+                            'name' => 'language',
+                            'type' => Type::LANG,
+                            'value' => 'br',
+                            'subs' => []
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $expected_xml = <<<XML
+<?xml version="1.0"?>
+<el1>
+    <el1.1>
+        <string language="br">This contains !@#$%^&amp;*(){}[]&lt;&gt;?=+\/|"' a bunch of special characters.</string>
+    </el1.1>
 </el1>
 XML;
 

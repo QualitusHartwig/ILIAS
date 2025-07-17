@@ -160,6 +160,7 @@ class ilTrMatrixTableGUI extends ilLPTableBaseGUI
             );
         }
         $this->setExportFormats(array(self::EXPORT_CSV, self::EXPORT_EXCEL));
+        $this->setSelectAllCheckbox('uid');
     }
 
     public function initFilter(): void
@@ -325,7 +326,7 @@ class ilTrMatrixTableGUI extends ilLPTableBaseGUI
 
     public function getItems(
         array $a_user_fields,
-        array $a_privary_fields = null
+        ?array $a_privary_fields = null
     ): array {
 
         // #17081
@@ -477,6 +478,21 @@ class ilTrMatrixTableGUI extends ilLPTableBaseGUI
                             }
                         }
                     }
+                }
+            }
+
+            /*
+             * ilTrQuery does not read out any information about org units
+             * (nor should it), so it needs to be added here.
+             */
+            if (in_array('org_units', $a_user_fields)) {
+                foreach (($data['set'] ?? []) as $key => $usr_data) {
+                    if (!isset($usr_data['usr_id'])) {
+                        continue;
+                    }
+                    $usr_id = (int) $usr_data['usr_id'];
+                    $org_units = ilOrgUnitPathStorage::getTextRepresentationOfUsersOrgUnits($usr_id);
+                    $data["set"][$key]['org_units'] = $org_units;
                 }
             }
 

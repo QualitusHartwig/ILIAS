@@ -37,7 +37,9 @@ class MarkSchema
     /**
      * @var array<\ILIAS\Test\Scoring\Marks\Mark>
      */
-    public array $mark_steps;
+    private array $mark_steps;
+    private int $nr_of_passed_marks;
+    private int $nr_of_zero_percentage_marks;
 
     public function __construct(
         private int $test_id
@@ -57,6 +59,16 @@ class MarkSchema
         return $this->test_id;
     }
 
+    public function hasSinglePassedMark(): bool
+    {
+        return $this->nr_of_passed_marks === 1;
+    }
+
+    public function hasSingleZeroPercentageMark(): bool
+    {
+        return $this->nr_of_zero_percentage_marks === 1;
+    }
+
     /**
      * Creates a simple mark schema for two mark steps:
      * failed and passed.
@@ -73,27 +85,26 @@ class MarkSchema
      * @param integer   $passed_passed       Indicates the passed status of the passed mark (0 = failed, 1 = passed).
      */
     public function createSimpleSchema(
-        string $txt_failed_short = "failed",
-        string $txt_failed_official = "failed",
+        string $txt_failed_short = 'failed',
+        string $txt_failed_official = 'failed',
         float $percentage_failed = 0,
         bool $failed_passed = false,
-        string $txt_passed_short = "passed",
-        string $txt_passed_official = "passed",
+        string $txt_passed_short = 'passed',
+        string $txt_passed_official = 'passed',
         float $percentage_passed = 50,
         bool $passed_passed = true
     ): self {
-        $mark_steps = [
+        return $this->withMarkSteps([
             new Mark($txt_failed_short, $txt_failed_official, $percentage_failed, $failed_passed),
             new Mark($txt_passed_short, $txt_passed_official, $percentage_passed, $passed_passed)
-        ];
-        return $this->withMarkSteps($mark_steps);
+        ]);
     }
 
     public function getMatchingMark(
         float $percentage
     ): ?Mark {
         $reached = round($percentage, 2);
-        foreach ($this->mark_steps as $step) {
+        foreach (array_reverse($this->mark_steps) as $step) {
             $level = round($step->getMinimumLevel(), 2);
             if ($reached >= $level) {
                 return $step;
@@ -104,22 +115,26 @@ class MarkSchema
 
     public function checkForMissingZeroPercentage(): bool
     {
-        foreach ($this->mark_steps as $step) {
-            if ($step->getMinimumLevel() === 0.0) {
-                return false;
-            }
-        }
-        return true;
+        return $this->nr_of_zero_percentage_marks === 0;
     }
 
-    public function checkForMissingPassed(): bool|string
+    public function checkForMissingPassed(): bool
     {
+        return $this->nr_of_passed_marks === 0;
+    }
+
+    public function checkForFailedAfterPassed(): bool
+    {
+        $has_to_be_passed = false;
         foreach ($this->mark_steps as $step) {
+            if ($has_to_be_passed && !$step->getPassed()) {
+                return true;
+            }
             if ($step->getPassed() === true) {
-                return false;
+                $has_to_be_passed = true;
             }
         }
-        return true;
+        return false;
     }
 
     /**
@@ -137,6 +152,19 @@ class MarkSchema
     {
         $clone = clone $this;
         $clone->mark_steps = $this->sort($mark_steps);
+        [$clone->nr_of_passed_marks, $clone->nr_of_zero_percentage_marks] = array_reduce(
+            $mark_steps,
+            function (array $c, Mark $v): array {
+                if ($v->getPassed()) {
+                    $c[0]++;
+                }
+                if ($v->getMinimumLevel() === 0.0) {
+                    $c[1]++;
+                }
+                return $c;
+            },
+            [0, 0]
+        );
         return $clone;
     }
 
@@ -147,7 +175,7 @@ class MarkSchema
             function ($a, $b): int {
                 if ($a->getMinimumLevel() === $b->getMinimumLevel()) {
                     $res = strcmp($a->getShortName(), $b->getShortName());
-                    if ($res == 0) {
+                    if ($res === 0) {
                         return strcmp($a->getOfficialName(), $b->getOfficialName());
                     } else {
                         return $res;

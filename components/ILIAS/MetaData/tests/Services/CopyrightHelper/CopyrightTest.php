@@ -30,18 +30,17 @@ use ILIAS\MetaData\Copyright\NullCopyrightData;
 use ILIAS\MetaData\Copyright\Identifiers\NullHandler;
 use ILIAS\MetaData\Copyright\NullRenderer;
 use PHPUnit\Framework\MockObject\MockObject;
-use ILIAS\UI\Component\Legacy\Legacy;
-use ILIAS\UI\Implementation\Component\Legacy\Legacy as ILegacy;
+use ILIAS\UI\Component\Legacy\Content;
+use ILIAS\UI\Implementation\Component\Legacy\Content as ILegacy;
 use PHPUnit\Framework\MockObject\Rule\AnyInvokedCount;
 use ILIAS\MetaData\Copyright\CopyrightData;
 
 class CopyrightTest extends TestCase
 {
-    protected function getLegacyComponent(): MockObject|Legacy
+    protected function getLegacyComponent(): MockObject|Content
     {
         return $this->getMockBuilder(ILegacy::class)
                     ->disableOriginalConstructor()
-                    ->addMethods(['exposeData'])
                     ->getMock();
     }
 
@@ -49,19 +48,18 @@ class CopyrightTest extends TestCase
     {
         $legacy_component = $this->getLegacyComponent();
         return new class ($legacy_component, $this->any()) extends NullRenderer {
+            public ?string $exposed_copyright_data = null;
+
             public function __construct(
-                protected MockObject|Legacy $legacy,
+                protected MockObject|Content $legacy,
                 protected AnyInvokedCount $any
             ) {
             }
 
             public function toUIComponents(CopyrightDataInterface $copyright): array
             {
-                $legacy_clone = clone $this->legacy;
-                $legacy_clone->expects($this->any)
-                             ->method('exposeData')
-                             ->willReturn($copyright->exposed_data);
-                return [$legacy_clone];
+                $this->exposed_copyright_data = $copyright->exposed_data;
+                return [$this->legacy];
             }
 
             public function toString(CopyrightDataInterface $copyright): string
@@ -264,8 +262,9 @@ class CopyrightTest extends TestCase
 
     public function testPresentAsUIComponents(): void
     {
+        $renderer = $this->getRenderer();
         $copyright = new Copyright(
-            $this->getRenderer(),
+            $renderer,
             $this->getIdentifierHandler(),
             $this->getEntry(
                 false,
@@ -281,7 +280,7 @@ class CopyrightTest extends TestCase
 
         $this->assertCount(1, $components);
         /** @noinspection PhpUndefinedMethodInspection */
-        $this->assertSame('data of copyright', $components[0]->exposeData());
+        $this->assertSame('data of copyright', $renderer->exposed_copyright_data);
     }
 
     public function testPresentAsString(): void

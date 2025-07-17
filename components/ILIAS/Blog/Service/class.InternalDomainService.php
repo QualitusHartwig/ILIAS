@@ -23,8 +23,13 @@ namespace ILIAS\Blog;
 use ILIAS\DI\Container;
 use ILIAS\Repository\GlobalDICDomainServices;
 use ILIAS\Blog\Exercise\BlogExercise;
-use ILIAS\Blog\Access\BlogAccess;
+use ILIAS\Blog\Permission\PermissionManager;
 use ILIAS\Blog\ReadingTime\ReadingTimeManager;
+use ILIAS\Blog\Settings\SettingsManager;
+use ILIAS\Blog\Posting\PostingManager;
+use ILIAS\Notes;
+use ILIAS\Blog\News\NewsManager;
+use ILIAS\Blog\Notification\NotificationManager;
 
 /**
  * @author Alexander Killing <killing@leifos.de>
@@ -33,17 +38,16 @@ class InternalDomainService
 {
     use GlobalDICDomainServices;
 
-    protected InternalRepoService $repo_service;
-    protected InternalDataService $data_service;
+    protected static array $instance = [];
+    protected Container $dic;
 
     public function __construct(
         Container $DIC,
-        InternalRepoService $repo_service,
-        InternalDataService $data_service
+        protected InternalRepoService $repo,
+        protected InternalDataService $data
     ) {
-        $this->repo_service = $repo_service;
-        $this->data_service = $data_service;
         $this->initDomainServices($DIC);
+        $this->dic = $DIC;
     }
 
     public function exercise(int $a_node_id): BlogExercise
@@ -55,14 +59,14 @@ class InternalDomainService
         );
     }
 
-    public function blogAccess(
+    public function perm(
         $access_handler,
         ?int $node_id,
         int $id_type,
         int $user_id,
         int $owner
-    ): BlogAccess {
-        return new BlogAccess(
+    ): PermissionManager {
+        return new PermissionManager(
             $access_handler,
             $node_id,
             $id_type,
@@ -74,6 +78,46 @@ class InternalDomainService
     public function readingTime(): ReadingTimeManager
     {
         return new ReadingTimeManager();
+    }
+
+    public function notes(): Notes\DomainService
+    {
+        return $this->dic->notes()->domain();
+    }
+
+    public function blogSettings(): SettingsManager
+    {
+        return self::$instance["settings"] ??
+            self::$instance["settings"] = new SettingsManager(
+                $this->data,
+                $this->repo,
+                $this
+            );
+    }
+
+    public function posting(): PostingManager
+    {
+        return self::$instance["posting"] ??= new PostingManager(
+            $this->data,
+            $this->repo,
+            $this
+        );
+    }
+
+    public function news(): NewsManager
+    {
+        return self::$instance["news"] ??= new NewsManager(
+            $this->data,
+            $this->repo,
+            $this
+        );
+    }
+
+    public function notification(): NotificationManager
+    {
+        return self::$instance["notification"] ??= new NotificationManager(
+            $this
+        );
     }
 
 }

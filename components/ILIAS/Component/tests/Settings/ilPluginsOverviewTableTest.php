@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -13,8 +14,7 @@
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
  *
- ********************************************************************
- */
+ *********************************************************************/
 
 declare(strict_types=1);
 
@@ -61,9 +61,7 @@ class ilPluginsOverviewTableTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider getImportantFieldData
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getImportantFieldData')]
     public function testGetImportantFields(bool $installed, bool $active): void
     {
         $obj = new class ($this->parent_gui, $this->ctrl, $this->ui, $this->renderer, $this->lng, []) extends ilPluginsOverviewTable {

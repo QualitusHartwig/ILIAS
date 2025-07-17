@@ -21,7 +21,7 @@ declare(strict_types=1);
 namespace ILIAS\Exercise\TutorFeedbackFile;
 
 use ILIAS\ResourceStorage\Stakeholder\ResourceStakeholder;
-use ILIAS\Exercise\IRSS\ResourceInformation;
+use ILIAS\Repository\IRSS\ResourceInformation;
 use ILIAS\Exercise\InternalRepoService;
 use ILIAS\Exercise\InternalDomainService;
 use ILIAS\ResourceStorage\Events\Event;
@@ -167,7 +167,6 @@ class TutorFeedbackFileManager
     {
         $this->repo->createCollection($this->ass_id, $participant_id);
     }
-
 
     public function deleteCollection(int $participant_id): void
     {

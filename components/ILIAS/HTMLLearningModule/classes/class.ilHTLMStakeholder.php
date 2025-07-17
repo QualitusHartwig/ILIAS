@@ -24,10 +24,6 @@ use ILIAS\ResourceStorage\Identification\ResourceIdentification;
  */
 class ilHTLMStakeholder extends AbstractResourceStakeholder
 {
-    public function __construct()
-    {
-    }
-
     public function getId(): string
     {
         return 'htlm';
@@ -35,7 +31,7 @@ class ilHTLMStakeholder extends AbstractResourceStakeholder
 
     public function getOwnerOfNewResources(): int
     {
-        return 0;
+        return $this->default_owner;
     }
 
     public function getLocationURIForResourceUsage(ResourceIdentification $identification): ?string

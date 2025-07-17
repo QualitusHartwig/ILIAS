@@ -71,10 +71,6 @@ class ilForumThreadFormGUI extends ilPropertyFormGUI
         $message->setRows(15);
         $message->setRequired(true);
         $message->setUseRte(true);
-        $message->addPlugin('latex');
-        $message->addButton('latex');
-        $message->addButton('pastelatex');
-        $message->addPlugin('ilfrmquote');
         $message->usePurifier(true);
         $message->setRTERootBlockElement('');
         $message->setRTESupport($this->user->getId(), 'frm~', 'frm_post', 'tpl.tinymce_frm_post.js', false, '5.6.0');

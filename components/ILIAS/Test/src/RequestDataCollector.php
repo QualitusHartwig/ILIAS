@@ -22,8 +22,11 @@ namespace ILIAS\Test;
 
 use ILIAS\HTTP\Services as HTTPServices;
 use ILIAS\Refinery\Factory as Refinery;
+use ILIAS\Refinery\Transformation;
 use ILIAS\Repository\BaseGUIRequest;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
+use function array_map;
 
 class RequestDataCollector
 {
@@ -35,13 +38,10 @@ class RequestDataCollector
         HTTPServices $http,
         Refinery $refinery
     ) {
-        $this->initRequest(
-            $http,
-            $refinery
-        );
+        $this->initRequest($http, $refinery);
     }
 
-    public function getRequest(): RequestInterface
+    public function getRequest(): ServerRequestInterface
     {
         return $this->http->request();
     }
@@ -97,13 +97,42 @@ class RequestDataCollector
         return $this->int('pass_id');
     }
 
+    public function retrieveBoolFromPost(string $key): ?bool
+    {
+        if (!$this->http->wrapper()->post()->has($key)) {
+            return null;
+        }
+
+        return $this->http->wrapper()->post()->retrieve(
+            $key,
+            $this->refinery->byTrying([
+                $this->refinery->kindlyTo()->bool(),
+                $this->refinery->always(null)
+            ])
+        );
+    }
+
+    public function isInstanceResponseRequested(): bool
+    {
+        if (!$this->http->wrapper()->query()->has('instresp')) {
+            return false;
+        }
+
+        return $this->http->wrapper()->query()->retrieve(
+            'instresp',
+            $this->refinery->byTrying([
+                $this->refinery->kindlyTo()->bool(),
+                $this->refinery->always(false)
+            ])
+        );
+    }
+
     /**
      * @return mixed|null
      */
-    public function raw(string $key)
+    public function raw(string $key): mixed
     {
-        $no_transform = $this->refinery->identity();
-        return $this->get($key, $no_transform);
+        return $this->get($key, $this->refinery->identity());
     }
 
     public function strVal(string $key): string
@@ -116,35 +145,63 @@ class RequestDataCollector
         return $this->http->request()->getParsedBody();
     }
 
-    public function getArrayOfIntsFromPost(string $key): ?array
+    /**
+     * @deprecated
+     */
+    public function getPostKeys(): array
     {
-        $p = $this->http->wrapper()->post();
-        $r = $this->refinery;
-        if (!$p->has($key)) {
-            return null;
-        }
+        return $this->http->wrapper()->post()->keys();
+    }
 
-        return $p->retrieve(
+    public function isPostRequest(): bool
+    {
+        return $this->http->request()->getMethod() === 'POST';
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function retrieveArrayOfStringsFromPost(string $key): array
+    {
+        return $this->retrieveArrayFromPost($key, $this->refinery->kindlyTo()->string());
+    }
+
+    /**
+     * @return array<int>
+     */
+    public function retrieveArrayOfIntsFromPost(string $key): array
+    {
+        return $this->retrieveArrayFromPost($key, $this->refinery->kindlyTo()->int());
+    }
+
+    private function retrieveArrayFromPost(string $key, Transformation $transformation): array
+    {
+        return $this->http->wrapper()->post()->retrieve(
             $key,
-            $r->container()->mapValues(
-                $r->kindlyTo()->int()
-            )
+            $this->refinery->byTrying([
+                $this->refinery->kindlyTo()->listOf($transformation),
+                $this->refinery->always([])
+            ])
         );
     }
 
-    public function getArrayOfStringsFromPost(string $key): ?array
+    /**
+     * @return array|string<int>
+     */
+    public function getMultiSelectionIds(string $key): array|string
     {
-        $p = $this->http->wrapper()->post();
+        $p = $this->http->wrapper()->query();
         $r = $this->refinery;
+
         if (!$p->has($key)) {
-            return null;
+            return [];
         }
 
         return $p->retrieve(
             $key,
-            $r->container()->mapValues(
-                $r->kindlyTo()->string()
-            )
+            $r->custom()->transformation(function ($value) {
+                return $value === 'ALL_OBJECTS' || $value[0] === 'ALL_OBJECTS' ? 'ALL_OBJECTS' : array_map('intval', $value);
+            })
         );
     }
 }

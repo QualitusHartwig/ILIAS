@@ -138,50 +138,15 @@ class ilPCTabsGUI extends ilPageContentGUI
         }
         $radg->addOption($op1);
 
-
-
-        // type: horizontal accordion
-        /*
-        $op2 = new ilRadioOption($lng->txt("cont_tabs_acc_hor"), ilPCTabs::ACCORDION_HOR);
-
-        $templ = $this->getTemplateOptions("haccordion");
-        if (count($templ) > 0) {
-            $hchar_prop = new ilAdvSelectInputGUI(
-                $this->lng->txt("cont_characteristic"),
-                "haccord_templ"
-            );
-            foreach ($templ as $k => $te) {
-                $t = explode(":", $k);
-                $html = $this->style->lookupTemplatePreview($t[1]) . '<div style="clear:both" class="small">' . $te . "</div>";
-                $hchar_prop->addOption($k, $te, $html);
-                if ($t[2] == "HorizontalAccordion") {
-                    $hchar_prop->setValue($k);
-                }
-            }
-            $op2->addSubItem($hchar_prop);
-        } else {
-            $hchar_prop = new ilHiddenInputGUI("haccord_templ");
-            $this->form->addItem($hchar_prop);
-        }
-
-        $radg->addOption($op2);*/
-
         // type: carousel
         $op3 = new ilRadioOption($lng->txt("cont_tabs_carousel"), ilPCTabs::CAROUSEL);
         $templ = $this->getTemplateOptions("carousel");
         if (count($templ) > 0) {
-            $cchar_prop = new ilAdvSelectInputGUI(
+            $cchar_prop = new ilSelectInputGUI(
                 $this->lng->txt("cont_characteristic"),
                 "carousel_templ"
             );
-            foreach ($templ as $k => $te) {
-                $t = explode(":", $k);
-                $html = $this->style->lookupTemplatePreview($t[1]) . '<div style="clear:both" class="small">' . $te . "</div>";
-                $cchar_prop->addOption($k, $te, $html);
-                if ($t[2] == "Carousel") {
-                    $cchar_prop->setValue($k);
-                }
-            }
+            $cchar_prop->setOptions($templ);
             $op3->addSubItem($cchar_prop);
         } else {
             $cchar_prop = new ilHiddenInputGUI("carousel_templ");
@@ -263,7 +228,7 @@ class ilPCTabsGUI extends ilPageContentGUI
 
         // save/cancel buttons
         if ($a_mode == "create") {
-            $this->form->addCommandButton("create_section", $lng->txt("save"));
+            $this->form->addCommandButton("create", $lng->txt("save"));
             $this->form->addCommandButton("cancelCreate", $lng->txt("cancel"));
         } else {
             $this->form->addCommandButton("update", $lng->txt("save"));
@@ -617,7 +582,7 @@ class ilPCTabsGUI extends ilPageContentGUI
             $content = $this->getTabContent($cap["pc_id"]);
             $items[] = $ui->factory()->panel()->standard(
                 $cap["caption"],
-                $ui->factory()->legacy($content)
+                $ui->factory()->legacy()->content($content)
             )
                 ->withActions($dd);
             $cnt++;

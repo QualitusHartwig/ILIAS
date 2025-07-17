@@ -37,6 +37,8 @@ use ILIAS\Data\DataSize;
 use ILIAS\UI\Implementation\Component\Input\Input;
 use ILIAS\Data\FiveStarRatingScale;
 use ILIAS\UI\Implementation\Component\Input\Container\Filter\ProxyFilterField;
+use ILIAS\Data\URI;
+use ILIAS\UI\Implementation\Component\ComponentHelper;
 
 /**
  * Class Renderer
@@ -44,7 +46,7 @@ use ILIAS\UI\Implementation\Component\Input\Container\Filter\ProxyFilterField;
  */
 class Renderer extends AbstractComponentRenderer
 {
-    public const DYNAMIC_INPUT_ID_PLACEHOLDER = 'DYNAMIC_INPUT_ID';
+    use ComponentHelper;
 
     public const DATETIME_DATEPICKER_MINMAX_FORMAT = 'Y-m-d\Th:m';
     public const DATE_DATEPICKER_MINMAX_FORMAT = 'Y-m-d';
@@ -148,11 +150,17 @@ class Renderer extends AbstractComponentRenderer
             case ($component instanceof F\Hidden):
                 return $this->renderHiddenField($component);
 
-            case ($component instanceof F\ColorPicker):
-                return $this->renderColorPickerField($component, $default_renderer);
+            case ($component instanceof F\ColorSelect):
+                return $this->renderColorSelectField($component, $default_renderer);
 
             case ($component instanceof F\Rating):
                 return $this->renderRatingField($component, $default_renderer);
+
+            case ($component instanceof F\TreeMultiSelect):
+                return $this->renderTreeMultiSelectField($component, $default_renderer);
+
+            case ($component instanceof F\TreeSelect):
+                return $this->renderTreeSelectField($component, $default_renderer);
 
             default:
                 $this->cannotHandleComponent($component);
@@ -163,25 +171,28 @@ class Renderer extends AbstractComponentRenderer
         FormInput $component,
         string $label,
         string $input_html,
-        string $id_pointing_to_input = '',
-        string $dependant_group_html = '',
-        bool $bind_label_with_for = true
+        ?string $id_for_label = null,
+        ?string $dependant_group_html = null
     ): string {
         $tpl = $this->getTemplate("tpl.context_form.html", true, true);
 
         $tpl->setVariable("LABEL", $label);
         $tpl->setVariable("INPUT", $input_html);
-
-        if ($id_pointing_to_input && $bind_label_with_for) {
-            $tpl->setCurrentBlock('for');
-            $tpl->setVariable("ID", $id_pointing_to_input);
-            $tpl->parseCurrentBlock();
-        }
-
-        $ui_component = $this->getComponentCanonicalNameAttribute($component);
-        $tpl->setVariable("UI_COMPONENT", $ui_component);
+        $tpl->setVariable("UI_COMPONENT_NAME", $this->getComponentCanonicalNameAttribute($component));
         $tpl->setVariable("INPUT_NAME", $component->getName());
 
+        if ($component->getOnLoadCode() !== null) {
+            $binding_id = $this->bindJavaScript($component) ?? $this->createId();
+            $tpl->setVariable("BINDING_ID", $binding_id);
+        }
+
+        if ($id_for_label) {
+            $tpl->setCurrentBlock('for');
+            $tpl->setVariable("ID", $id_for_label);
+            $tpl->parseCurrentBlock();
+        } else {
+            $tpl->touchBlock('tabindex');
+        }
 
         $byline = $component->getByline();
         if ($byline) {
@@ -190,32 +201,30 @@ class Renderer extends AbstractComponentRenderer
 
         $required = $component->isRequired();
         if ($required) {
-            $tpl->touchBlock("required");
+            $tpl->setCurrentBlock('required');
+            $tpl->setVariable("REQUIRED_ARIA", $this->txt('required_field'));
+            $tpl->parseCurrentBlock();
         }
 
         if ($component->isDisabled()) {
-            $tpl->setVariable("DISABLED", 'disabled="disabled"');
+            $tpl->touchBlock("disabled");
         }
 
         $error = $component->getError();
         if ($error) {
+            $error_id = $this->createId();
+            $tpl->setVariable("ERROR_LABEL", $this->txt("ui_error"));
+            $tpl->setVariable("ERROR_ID", $error_id);
             $tpl->setVariable("ERROR", $error);
-            if ($id_pointing_to_input) {
-                $tpl->setVariable("ERROR_FOR_ID", $id_pointing_to_input);
+            if ($id_for_label) {
+                $tpl->setVariable("ERROR_FOR_ID", $id_for_label);
             }
         }
 
-        if($dependant_group_html !== '') {
+        if ($dependant_group_html) {
             $tpl->setVariable("DEPENDANT_GROUP", $dependant_group_html);
         }
         return $tpl->get();
-    }
-
-    protected function maybeDisable(FormInput $component, Template $tpl): void
-    {
-        if ($component->isDisabled()) {
-            $tpl->setVariable("DISABLED", 'disabled="disabled"');
-        }
     }
 
     protected function applyName(FormInput $component, Template $tpl): ?string
@@ -240,7 +249,7 @@ class Renderer extends AbstractComponentRenderer
      * for this specific component and the placement of {VALUE} in its template.
      * Please note: this may not work for customized templates!
      */
-    protected function applyValue(FormInput $component, Template $tpl, callable $escape = null): void
+    protected function applyValue(FormInput $component, Template $tpl, ?callable $escape = null): void
     {
         $value = $component->getValue();
         if (!is_null($escape)) {
@@ -273,10 +282,11 @@ class Renderer extends AbstractComponentRenderer
 
     protected function renderLinkField(F\Link $component, RendererInterface $default_renderer): string
     {
+        $input_html = $default_renderer->render($component->getInputs());
         return $this->wrapInFormContext(
             $component,
             $component->getLabel(),
-            $default_renderer->render($component->getInputs())
+            $input_html,
         );
     }
 
@@ -290,8 +300,10 @@ class Renderer extends AbstractComponentRenderer
         }
 
         $this->applyValue($component, $tpl, $this->escapeSpecialChars());
-        $id = $this->bindJSandApplyId($component, $tpl);
-        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $id);
+
+        $label_id = $this->createId();
+        $tpl->setVariable('ID', $label_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $label_id);
     }
 
     protected function renderNumericField(F\Numeric $component, RendererInterface $default_renderer): string
@@ -299,8 +311,10 @@ class Renderer extends AbstractComponentRenderer
         $tpl = $this->getTemplate("tpl.numeric.html", true, true);
         $this->applyName($component, $tpl);
         $this->applyValue($component, $tpl, $this->escapeSpecialChars());
-        $id = $this->bindJSandApplyId($component, $tpl);
-        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $id);
+
+        $label_id = $this->createId();
+        $tpl->setVariable('ID', $label_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $label_id);
     }
 
     protected function renderCheckboxField(F\Checkbox $component, RendererInterface $default_renderer): string
@@ -312,8 +326,9 @@ class Renderer extends AbstractComponentRenderer
             $tpl->touchBlock("value");
         }
 
-        $id = $this->bindJSandApplyId($component, $tpl);
-        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $id);
+        $label_id = $this->createId();
+        $tpl->setVariable('ID', $label_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $label_id);
     }
 
     protected function renderOptionalGroup(F\OptionalGroup $component, RendererInterface $default_renderer): string
@@ -324,24 +339,14 @@ class Renderer extends AbstractComponentRenderer
         if ($component->getValue()) {
             $tpl->setVariable("CHECKED", 'checked="checked"');
         }
-        $id = $this->bindJavaScript($component) ?? $this->createId();
-        $tpl->setVariable("OPTIONID", $id);
+
+        $label_id = $this->createId();
+        $tpl->setVariable('ID', $label_id);
+
         $label = $tpl->get();
+        $input_html = $default_renderer->render($component->getInputs());
 
-        $input_html = '';
-        foreach ($component->getInputs() as $key => $input) {
-            $input_html .= $default_renderer->render($input);
-        }
-
-        return $this->wrapInFormContext(
-            $component,
-            $label,
-            $input_html,
-            //$id,
-            '',
-            '',
-            false
-        );
+        return $this->wrapInFormContext($component, $label, $input_html, $label_id);
     }
 
     protected function renderSwitchableGroup(F\SwitchableGroup $component, RendererInterface $default_renderer): string
@@ -351,13 +356,15 @@ class Renderer extends AbstractComponentRenderer
             list($value, ) = $component->getValue();
         }
 
-
         $input_html = '';
         foreach ($component->getInputs() as $key => $group) {
             $tpl = $this->getTemplate("tpl.switchablegroup_label.html", true, true);
             $tpl->setVariable('LABEL', $group->getLabel());
             $tpl->setVariable("NAME", $component->getName());
             $tpl->setVariable("VALUE", $key);
+
+            $label_id = $this->createId();
+            $tpl->setVariable('ID', $label_id);
 
             if ($key == $value) {
                 $tpl->setVariable("CHECKED", 'checked="checked"');
@@ -366,20 +373,16 @@ class Renderer extends AbstractComponentRenderer
             $input_html .= $this->wrapInFormContext(
                 $group,
                 $tpl->get(),
-                $default_renderer->render($group)
+                $default_renderer->render($group),
+                $label_id
             );
         }
 
-        $id = $this->bindJavaScript($component) ?? $this->createId();
 
         return $this->wrapInFormContext(
             $component,
             $component->getLabel(),
-            $input_html,
-            //$id,
-            '',
-            '',
-            false
+            $input_html
         );
     }
 
@@ -394,7 +397,7 @@ class Renderer extends AbstractComponentRenderer
         if ($value) {
             $value = array_map(
                 function ($v) {
-                    return ['value' => urlencode($this->convertSpecialCharacters($v)), 'display' => $v];
+                    return ['value' => urlencode($v), 'display' => $v];
                 },
                 $value
             );
@@ -407,14 +410,15 @@ class Renderer extends AbstractComponentRenderer
                 return "il.UI.Input.tagInput.init('{$id}', {$encoded}, {$value});";
             }
         );
-        $id = $this->bindJSandApplyId($component, $tpl);
 
         if ($component->isDisabled()) {
             $tpl->setVariable("DISABLED", "disabled");
             $tpl->setVariable("READONLY", "readonly");
         }
 
-        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $id);
+        $label_id = $this->createId();
+        $tpl->setVariable('ID', $label_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $label_id);
     }
 
     protected function renderPasswordField(F\Password $component, RendererInterface $default_renderer): string
@@ -427,15 +431,16 @@ class Renderer extends AbstractComponentRenderer
             $sig_reveal = $component->getRevealSignal();
             $sig_mask = $component->getMaskSignal();
             $component = $component->withAdditionalOnLoadCode(function ($id) use ($sig_reveal, $sig_mask) {
-                $container_id = $id . "_container";
                 return
                     "$(document).on('$sig_reveal', function() {
-                        $('#$container_id').addClass('revealed');
-                        $('#$container_id')[0].getElementsByTagName('input')[0].type='text';
+                        const fieldContainer = document.querySelector('#$id .c-input__field .c-field-password');
+                        fieldContainer.classList.add('revealed');
+                        fieldContainer.getElementsByTagName('input').item(0).type='text';
                     });" .
                     "$(document).on('$sig_mask', function() {
-                        $('#$container_id').removeClass('revealed');
-                        $('#$container_id')[0].getElementsByTagName('input')[0].type='password';
+                        const fieldContainer = document.querySelector('#$id .c-input__field .c-field-password');
+                        fieldContainer.classList.remove('revealed');
+                        fieldContainer.getElementsByTagName('input').item(0).type='password';
                     });";
             });
 
@@ -448,10 +453,12 @@ class Renderer extends AbstractComponentRenderer
             $tpl->setVariable('PASSWORD_REVEAL', $default_renderer->render($glyph_reveal));
             $tpl->setVariable('PASSWORD_MASK', $default_renderer->render($glyph_mask));
         }
-        $id = $this->bindJSandApplyId($component, $tpl);
-        $tpl->setVariable('ID_CONTAINER', $id . "_container");
+
         $this->applyValue($component, $tpl, $this->escapeSpecialChars());
-        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $id);
+
+        $label_id = $this->createId();
+        $tpl->setVariable('ID', $label_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $label_id);
     }
 
     public function renderSelectField(F\Select $component, RendererInterface $default_renderer): string
@@ -470,7 +477,7 @@ class Renderer extends AbstractComponentRenderer
             $tpl->setVariable("HIDDEN", "hidden");
         }
 
-        if(!($value && $component->isRequired())) {
+        if (!($value && $component->isRequired())) {
             $tpl->setVariable("VALUE", null);
             $tpl->setVariable("VALUE_STR", $component->isRequired() ? $this->txt('ui_select_dropdown_label') : '-');
             $tpl->parseCurrentBlock();
@@ -486,8 +493,9 @@ class Renderer extends AbstractComponentRenderer
             $tpl->parseCurrentBlock();
         }
 
-        $id = $this->bindJSandApplyId($component, $tpl);
-        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $id);
+        $label_id = $this->createId();
+        $tpl->setVariable('ID', $label_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $label_id);
     }
 
     protected function renderMarkdownField(F\Markdown $component, RendererInterface $default_renderer): string
@@ -496,8 +504,9 @@ class Renderer extends AbstractComponentRenderer
         $component = $component->withAdditionalOnLoadCode(
             static function ($id) use ($component): string {
                 return "
+                    const id = document.querySelector('#$id .c-input__field textarea')?.id;
                     il.UI.Input.markdown.init(
-                        '$id',
+                        id,
                         '{$component->getMarkdownRenderer()->getAsyncUrl()}',
                         '{$component->getMarkdownRenderer()->getParameterName()}'
                     );
@@ -505,8 +514,9 @@ class Renderer extends AbstractComponentRenderer
             }
         );
 
+        $textarea_id = $this->createId();
         $textarea_tpl = $this->getPreparedTextareaTemplate($component);
-        $textarea_id = $this->bindJSandApplyId($component, $textarea_tpl);
+        $textarea_tpl->setVariable('ID', $textarea_id);
 
         $markdown_tpl = $this->getTemplate("tpl.markdown.html", true, true);
         $markdown_tpl->setVariable('TEXTAREA', $textarea_tpl->get());
@@ -543,7 +553,7 @@ class Renderer extends AbstractComponentRenderer
                 $glyph = $glyph->withUnavailableAction();
             }
 
-            $action = $this->getUIFactory()->button()->standard($default_renderer->render($glyph), '#');
+            $action = $this->getUIFactory()->button()->standard('', '#')->withSymbol($glyph);
 
             if ($component->isDisabled()) {
                 $action = $action->withUnavailableAction();
@@ -552,8 +562,7 @@ class Renderer extends AbstractComponentRenderer
             $markdown_tpl->setVariable($tpl_variable, $default_renderer->render($action));
         }
 
-        // label must point to the wrapped textarea input, not the markdown input.
-        return $this->wrapInFormContext($component, $component->getLabel(), $markdown_tpl->get(), $textarea_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $markdown_tpl->get());
     }
 
     protected function renderTextareaField(F\Textarea $component, RendererInterface $default_renderer): string
@@ -562,15 +571,17 @@ class Renderer extends AbstractComponentRenderer
         $component = $component->withAdditionalOnLoadCode(
             static function ($id): string {
                 return "
-                    il.UI.Input.textarea.init('$id');
+                    taId = document.querySelector('#$id .c-input__field textarea')?.id;
+                    il.UI.Input.textarea.init(taId);
                 ";
             }
         );
 
         $tpl = $this->getPreparedTextareaTemplate($component);
-        $id = $this->bindJSandApplyId($component, $tpl);
 
-        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $id);
+        $label_id = $this->createId();
+        $tpl->setVariable('ID', $label_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $label_id);
     }
 
     protected function getPreparedTextareaTemplate(F\Textarea $component): Template
@@ -589,15 +600,13 @@ class Renderer extends AbstractComponentRenderer
 
         $this->applyName($component, $tpl);
         $this->applyValue($component, $tpl, $this->htmlEntities());
-        $this->maybeDisable($component, $tpl);
-
         return $tpl;
     }
 
     protected function renderRadioField(F\Radio $component, RendererInterface $default_renderer): string
     {
         $tpl = $this->getTemplate("tpl.radio.html", true, true);
-        $id = $this->bindJSandApplyId($component, $tpl);
+        $id = $this->createId();
 
         foreach ($component->getOptions() as $value => $label) {
             $opt_id = $id . '_' . $value . '_opt';
@@ -629,8 +638,6 @@ class Renderer extends AbstractComponentRenderer
     protected function renderMultiSelectField(F\MultiSelect $component, RendererInterface $default_renderer): string
     {
         $tpl = $this->getTemplate("tpl.multiselect.html", true, true);
-        $id = $this->bindJSandApplyId($component, $tpl);
-        $tpl->setVariable("ID", $id);
 
         $options = $component->getOptions();
         if (count($options) > 0) {
@@ -645,10 +652,6 @@ class Renderer extends AbstractComponentRenderer
                 if ($value && in_array($opt_value, $value)) {
                     $tpl->setVariable("CHECKED", 'checked="checked"');
                 }
-
-                if ($component->isDisabled()) {
-                    $tpl->setVariable("DISABLED", 'disabled="disabled"');
-                }
                 $tpl->parseCurrentBlock();
             }
         } else {
@@ -661,8 +664,9 @@ class Renderer extends AbstractComponentRenderer
     protected function renderDateTimeField(F\DateTime $component, RendererInterface $default_renderer): string
     {
         list($component, $tpl) = $this->internalRenderDateTimeField($component, $default_renderer);
-        $id = $this->bindJSandApplyId($component, $tpl);
-        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $id);
+        $label_id = $this->createId();
+        $tpl->setVariable('ID', $label_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $label_id);
     }
 
     /**
@@ -716,7 +720,6 @@ class Renderer extends AbstractComponentRenderer
             }
             return null;
         });
-        $this->maybeDisable($component, $tpl);
         return [$component, $tpl];
     }
 
@@ -726,30 +729,38 @@ class Renderer extends AbstractComponentRenderer
 
         $input = array_shift($inputs); //from
         list($input, $tpl) = $this->internalRenderDateTimeField($input, $default_renderer);
-        $first_input_id = $this->bindJSandApplyId($input, $tpl);
-        $input_html = $this->wrapInFormContext($input, $input->getLabel(), $tpl->get(), $first_input_id);
+
+        $from_input_id = $this->createId();
+        $tpl->setVariable('ID', $from_input_id);
+        $input_html = $this->wrapInFormContext($input, $input->getLabel(), $tpl->get(), $from_input_id);
 
         $input = array_shift($inputs) //until
             ->withAdditionalPickerconfig(['useCurrent' => false]);
         list($input, $tpl) = $this->internalRenderDateTimeField($input, $default_renderer);
-        $first_input_id = $this->bindJSandApplyId($input, $tpl);
-
-        $input_html .= $this->wrapInFormContext($input, $input->getLabel(), $tpl->get(), $first_input_id);
+        $until_input_id = $this->createId();
+        $tpl->setVariable('ID', $until_input_id);
+        $input_html .= $this->wrapInFormContext($input, $input->getLabel(), $tpl->get(), $until_input_id);
 
         $tpl = $this->getTemplate("tpl.duration.html", true, true);
-        $id = $this->bindJSandApplyId($component, $tpl);
         $tpl->setVariable('DURATION', $input_html);
-        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $first_input_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get());//, $from_input_id);
     }
 
     protected function renderSection(F\Section $section, RendererInterface $default_renderer): string
     {
-        $inputs_html = "";
-        foreach ($section->getInputs() as $input) {
-            $inputs_html .= $default_renderer->render($input);
-        }
-        $id = $this->bindJavaScript($section) ?? $this->createId();
-        return $this->wrapInFormContext($section, $section->getLabel(), $inputs_html, $id, '', false);
+        $inputs_html = $default_renderer->render($section->getInputs());
+
+        $headline_tpl = $this->getTemplate("tpl.headlines.html", true, true);
+        $headline_tpl->setVariable("HEADLINE", $section->getLabel());
+        $nesting_level = $section->getNestingLevel() + 2;
+        if ($nesting_level > 6) {
+            $nesting_level = 6;
+        };
+        $headline_tpl->setVariable("LEVEL", $nesting_level);
+
+        $headline_html = $headline_tpl->get();
+
+        return $this->wrapInFormContext($section, $headline_html, $inputs_html);
     }
 
     protected function renderUrlField(F\Url $component, RendererInterface $default_renderer): string
@@ -757,14 +768,16 @@ class Renderer extends AbstractComponentRenderer
         $tpl = $this->getTemplate("tpl.url.html", true, true);
         $this->applyName($component, $tpl);
         $this->applyValue($component, $tpl, $this->escapeSpecialChars());
-        $id = $this->bindJSandApplyId($component, $tpl);
-        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $id);
+
+        $label_id = $this->createId();
+        $tpl->setVariable('ID', $label_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $label_id);
     }
 
-    protected function renderFileField(FI\File $input, RendererInterface $default_renderer): string
+    protected function renderFileField(F\File $input, RendererInterface $default_renderer): string
     {
         $template = $this->getTemplate('tpl.file.html', true, true);
-        foreach ($input->getDynamicInputs() as $metadata_input) {
+        foreach ($input->getGeneratedDynamicInputs() as $metadata_input) {
             $file_info = null;
             if (null !== ($data = $metadata_input->getValue())) {
                 $file_id = (!$input->hasMetadataInputs()) ?
@@ -793,10 +806,11 @@ class Renderer extends AbstractComponentRenderer
             $file_preview_template
         );
 
+        $template->setVariable('FILE_PREVIEW_TEMPLATE', $file_preview_template->get('block_file_preview'));
+
         $this->setHelpBlockForFileField($template, $input);
 
         $input = $this->initClientsideFileInput($input);
-        $input = $this->initClientsideRenderer($input, $file_preview_template->get('block_file_preview'));
 
         // display the action button (to choose files).
         $template->setVariable('ACTION_BUTTON', $default_renderer->render(
@@ -806,15 +820,10 @@ class Renderer extends AbstractComponentRenderer
             )
         ));
 
-        $js_id = $this->bindJSandApplyId($input, $template);
         return $this->wrapInFormContext(
             $input,
             $input->getLabel(),
             $template->get(),
-            //$default_renderer,
-            $js_id,
-            "",
-            false
         );
     }
 
@@ -822,8 +831,10 @@ class Renderer extends AbstractComponentRenderer
     {
         $template = $this->getTemplate('tpl.hidden.html', true, true);
         $this->applyName($input, $template);
-        $this->applyValue($input, $template);
-        $this->maybeDisable($input, $template);
+        $this->applyValue($input, $template, $this->escapeSpecialChars());
+        if ($input->isDisabled()) {
+            $template->setVariable("DISABLED", 'disabled="disabled"');
+        }
         $this->bindJSandApplyId($input, $template);
         return $template->get();
     }
@@ -834,15 +845,17 @@ class Renderer extends AbstractComponentRenderer
     public function registerResources(ResourceRegistry $registry): void
     {
         parent::registerResources($registry);
-        $registry->register('assets/js/tagify.min.js');
+        $registry->register('assets/js/tagify.js');
         $registry->register('assets/css/tagify.css');
         $registry->register('assets/js/tagInput.js');
 
         $registry->register('assets/js/dropzone.min.js');
         $registry->register('assets/js/dropzone.js');
         $registry->register('assets/js/input.js');
+        $registry->register('assets/js/core.js');
         $registry->register('assets/js/file.js');
-        $registry->register('assets/js/dynamic_inputs_renderer.js');
+        // workaround to manipulate the order of scripts
+        $registry->register('assets/js/drilldown.min.js');
         $registry->register('assets/js/input.factory.min.js');
     }
 
@@ -936,7 +949,7 @@ class Renderer extends AbstractComponentRenderer
     {
         return $input->withAdditionalOnLoadCode(
             function ($id) use ($input) {
-                $current_file_count = count($input->getDynamicInputs());
+                $current_file_count = count($input->getGeneratedDynamicInputs());
                 $translations = json_encode($input->getTranslations());
                 $is_disabled = ($input->isDisabled()) ? 'true' : 'false';
                 $php_upload_limit = $this->getUploadLimitResolver()->getPhpUploadLimitInBytes();
@@ -964,48 +977,6 @@ class Renderer extends AbstractComponentRenderer
         );
     }
 
-    protected function initClientsideRenderer(
-        FI\HasDynamicInputs $input,
-        string $template_html
-    ): FI\HasDynamicInputs {
-        $dynamic_inputs_template_html = $this->replaceTemplateIds($template_html);
-        $dynamic_input_count = count($input->getDynamicInputs());
-
-        // note that $dynamic_inputs_template_html is in tilted single quotes (`),
-        // because otherwise the html syntax might collide with normal ones.
-        return $input->withAdditionalOnLoadCode(function ($id) use (
-            $dynamic_inputs_template_html,
-            $dynamic_input_count
-        ) {
-            return "
-                $(document).ready(function () {
-                    il.UI.Input.DynamicInputsRenderer.init(
-                        '$id',
-                        `$dynamic_inputs_template_html`,
-                        $dynamic_input_count
-                    );
-                });
-            ";
-        });
-    }
-
-    protected function replaceTemplateIds(string $template_html): string
-    {
-        // regex matches anything between 'id="' and '"', hence the js_id.
-        preg_match_all('/(?<=id=")(.*?)(?=\s*")/', $template_html, $matches);
-        if (!empty($matches[0])) {
-            foreach ($matches[0] as $index => $js_id) {
-                $template_html = str_replace(
-                    $js_id,
-                    self::DYNAMIC_INPUT_ID_PLACEHOLDER . "_$index",
-                    $template_html
-                );
-            }
-        }
-
-        return $template_html;
-    }
-
     /**
      * Appends all given mime-types to a comma-separated string.
      * (that's only necessary due to a dropzone.js bug).
@@ -1021,20 +992,21 @@ class Renderer extends AbstractComponentRenderer
         return $mime_type_string;
     }
 
-    protected function renderColorPickerField(F\ColorPicker $component, RendererInterface $default_renderer): string
+    protected function renderColorSelectField(F\ColorSelect $component, RendererInterface $default_renderer): string
     {
-        $tpl = $this->getTemplate("tpl.colorpicker.html", true, true);
+        $tpl = $this->getTemplate("tpl.color_select.html", true, true);
         $this->applyName($component, $tpl);
         $tpl->setVariable('VALUE', $component->getValue());
-        $id = $this->bindJSandApplyId($component, $tpl);
 
-        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get());
+        $label_id = $this->createId();
+        $tpl->setVariable('ID', $label_id);
+        return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get(), $label_id);
     }
 
     protected function renderRatingField(F\Rating $component, RendererInterface $default_renderer): string
     {
         $tpl = $this->getTemplate("tpl.rating.html", true, true);
-        $id = $this->bindJSandApplyId($component, $tpl);
+        $id = $this->createId();
         $aria_description_id = $id . '_desc';
         $tpl->setVariable('DESCRIPTION_SRC_ID', $aria_description_id);
 
@@ -1057,7 +1029,7 @@ class Renderer extends AbstractComponentRenderer
             $tpl->parseCurrentBlock();
         }
 
-        if(!$component->isRequired()) {
+        if (!$component->isRequired()) {
             $tpl->setVariable('NEUTRAL_ID', $id . '-0');
             $tpl->setVariable('NEUTRAL_NAME', $component->getName());
             $tpl->setVariable('NEUTRAL_LABEL', $this->txt('reset_stars'));
@@ -1076,14 +1048,139 @@ class Renderer extends AbstractComponentRenderer
             $tpl->touchBlock('disabled');
         }
         if ($average = $component->getCurrentAverage()) {
-
             $average_title = sprintf($this->txt('rating_average'), $average);
-
             $tpl->setVariable('AVERAGE_VALUE', $average_title);
             $tpl->setVariable('AVERAGE_VALUE_PERCENT', $average / $option_count * self::CENTUM);
         }
 
         return $this->wrapInFormContext($component, $component->getLabel(), $tpl->get());
+    }
+
+    protected function renderTreeMultiSelectField(F\TreeMultiSelect $component, RendererInterface $default_renderer): string
+    {
+        $template = $this->prepareTreeSelectTemplate($component, $default_renderer);
+
+        if ($component->canSelectChildNodes()) {
+            $select_child_nodes = 'true';
+        } else {
+            $select_child_nodes = 'false';
+        }
+
+        $enriched_component = $component->withAdditionalOnLoadCode(
+            static fn($id) => "il.UI.Input.treeSelect.initTreeMultiSelect('$id', $select_child_nodes);"
+        );
+
+        $id = $this->bindJSandApplyId($enriched_component, $template);
+
+        return $this->wrapInFormContext($component, $component->getLabel(), $template->get(), $id);
+    }
+
+    protected function renderTreeSelectField(F\TreeSelect $component, RendererInterface $default_renderer): string
+    {
+        $template = $this->prepareTreeSelectTemplate($component, $default_renderer);
+
+        $enriched_component = $component->withAdditionalOnLoadCode(
+            static fn($id) => "il.UI.Input.treeSelect.initTreeSelect('$id');"
+        );
+
+        $id = $this->bindJSandApplyId($enriched_component, $template);
+
+        return $this->wrapInFormContext($component, $component->getLabel(), $template->get(), $id);
+    }
+
+    protected function prepareTreeSelectTemplate(
+        TreeSelect|TreeMultiSelect $component,
+        RendererInterface $default_renderer,
+    ): Template {
+        $template = $this->getTemplate('tpl.tree_select.html', true, true);
+
+        if ($component->isDisabled()) {
+            $template->setVariable('DISABLED', 'disabled');
+        }
+
+        $template->setVariable('SELECT_LABEL', $this->txt('select'));
+        $template->setVariable('CLOSE_LABEL', $this->txt('close'));
+        $template->setVariable('LABEL', $component->getLabel());
+
+        $template->setVariable('INPUT_TEMPLATE', $default_renderer->render(
+            $component->getTemplateForDynamicInputs()
+        ));
+        $template->setVariable('BREADCRUMB_TEMPLATE', $default_renderer->render(
+            $this->getUIFactory()->breadcrumbs([$this->getUIFactory()->link()->standard('label', '#')])
+        ));
+        $template->setVariable('BREADCRUMBS', $default_renderer->render(
+            $this->getUIFactory()->breadcrumbs([])
+        ));
+
+        $node_factory = $this->getUIFactory()->input()->field()->node();
+        $node_generator = $component->getNodeRetrieval()->getNodes(
+            $node_factory,
+            $this->getUIFactory()->symbol()->icon(),
+        );
+
+        $nodes = [];
+        foreach ($node_generator as $node) {
+            // check against public interface, will be delegated to rendering chain.
+            $this->checkArgInstanceOf('node', $node, Component\Input\Field\Node\Node::class);
+            $nodes[] = $node;
+        }
+
+        $template->setVariable('DRILLDOWN', $default_renderer->render(
+            $this->getUIFactory()->menu()->drilldown($component->getLabel(), $nodes)
+        ));
+
+        /** @var $dynamic_inputs_generator \Generator<FormInput> */
+        $dynamic_inputs_generator = (static fn() => yield from $component->getGeneratedDynamicInputs())();
+
+        $leaf_generator = $component->getNodeRetrieval()->getNodesAsLeaf(
+            $this->getUIFactory()->input()->field()->node(),
+            $this->getUIFactory()->symbol()->icon(),
+            $component->getValue(),
+        );
+
+        $lockstep_iterator = $this->iterateGeneratorsInLockstep($leaf_generator, $dynamic_inputs_generator);
+
+        foreach ($lockstep_iterator as [$leaf, $dynamic_input]) {
+            // check against internal interface, will not be delegated to rendering chain.
+            /** @var $leaf Node\Leaf */
+            $this->checkArgInstanceOf('leaf', $leaf, Node\Leaf::class);
+
+            $value_template = $this->getTemplate('tpl.tree_select.html', true, true);
+            $value_template->setCurrentBlock('with_value_template');
+            $value_template->setVariable('NODE_ID', (string) ($leaf->getId()));
+            $value_template->setVariable('NODE_NAME', $leaf->getName());
+            $value_template->setVariable('INPUT_TEMPLATE', $default_renderer->render($dynamic_input));
+            $value_template->setVariable('UNSELECT_NODE_LABEL', sprintf($this->txt('unselect_node'), $leaf->getName()));
+            $value_template->parseCurrentBlock();
+
+            $template->setCurrentBlock('with_value');
+            $template->setVariable('VALUE', $value_template->get('with_value_template'));
+            $template->parseCurrentBlock();
+        }
+
+        $this->toJS('unselect_node');
+        $this->toJS('select_node');
+
+        return $template;
+    }
+
+    /**
+     * Iterates over two Generators in lockstep, yielding their current values as paired arrays which
+     * can be destructured.
+     *
+     * @return \Generator<array{0: mixed, 1: mixed}>
+     * @throws LogicException If one Generator finishes before the other.
+     */
+    protected function iterateGeneratorsInLockstep(\Generator $a, \Generator $b): \Generator
+    {
+        while ($a->valid() && $b->valid()) {
+            yield [$a->current(), $b->current()];
+            $a->next();
+            $b->next();
+        }
+        if ($a->valid() || $b->valid()) {
+            throw new LogicException('Generators do not have equal lenghts.');
+        }
     }
 
     private function setHelpBlockForFileField(Template $template, FI\File $input): void

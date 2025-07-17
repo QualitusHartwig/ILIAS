@@ -20,21 +20,17 @@ declare(strict_types=1);
 
 namespace ILIAS\Test\Logging;
 
+use ILIAS\Test\Utilities\TitleColumnsBuilder;
 use ILIAS\TestQuestionPool\Questions\GeneralQuestionPropertiesRepository;
-
 use ILIAS\UI\Factory as UIFactory;
 use ILIAS\UI\Renderer as UIRenderer;
-use ILIAS\Data\Factory as DataFactory;
-use ILIAS\Data\DateFormat\DateFormat;
 use ILIAS\Data\Range;
 use ILIAS\Data\Order;
-use ILIAS\StaticURL\Services as StaticURLServices;
 use ILIAS\UI\Component\Table;
 use ILIAS\UI\Component\Input\Container\Filter\Standard as Filter;
 use ILIAS\UI\URLBuilder;
 use ILIAS\UI\URLBuilderToken;
 use ILIAS\FileDelivery\Delivery\StreamDelivery;
-use ILIAS\Filesystem\Stream\Streams;
 
 class LogTable implements Table\DataRetrieval
 {
@@ -52,7 +48,7 @@ class LogTable implements Table\DataRetrieval
     public const COLUMN_INTERACTION_TYPE = 'interaction_type';
 
     public const ACTION_ID_SHOW_ADDITIONAL_INFO = 'show_additional_information';
-    private const ACTION_ID_EXPORT_AS_CSV = 'export_as_csv';
+    private const ACTION_ID_EXPORT = 'export';
     private const ACTION_ID_DELETE = 'delete';
 
     private const FILTER_FIELD_PERIOD = 'period';
@@ -69,24 +65,25 @@ class LogTable implements Table\DataRetrieval
     private const ACTION_ADDITIONAL_INFORMATION = 'add_info';
     private const ACTION_EXPORT_AS_CSV = 'csv_export';
 
-    private const CSV_EXPORT_FILE_NAME = '_test_log_export.csv';
+    private const EXPORT_FILE_NAME = '_test_log_export';
 
     /**
-     *
      * @var array<string, string|array>
      */
-    private array $filter_data;
+    private ?array $filter_data = null;
+    private ?Filter $filter = null;
 
     public function __construct(
         private readonly TestLoggingRepository $logging_repository,
         private readonly TestLogger $logger,
+        private readonly TestLogViewer $log_viewer,
+        private readonly TitleColumnsBuilder $title_builder,
         private readonly GeneralQuestionPropertiesRepository $question_repo,
+        private readonly \ilUIService $ui_service,
         private readonly UIFactory $ui_factory,
         private readonly UIRenderer $ui_renderer,
-        private readonly DataFactory $data_factory,
         private readonly \ilLanguage $lng,
         private \ilGlobalTemplateInterface $tpl,
-        private readonly StaticURLServices $static_url,
         private readonly URLBuilder $url_builder,
         private readonly URLBuilderToken $action_parameter_token,
         private readonly URLBuilderToken $row_id_token,
@@ -100,23 +97,36 @@ class LogTable implements Table\DataRetrieval
     public function getTable(): Table\Data
     {
         return $this->ui_factory->table()->data(
+            $this,
             $this->lng->txt('history'),
             $this->getColums(),
-            $this
         )->withActions($this->getActions());
     }
 
-    /**
-     * Filters should be part of the Table; for now, since they are not fully
-     * integrated, they are rendered and applied seperately
-     */
-    public function getFilter(\ilUIService $ui_service): Filter
+    public function getFilter(): Filter
+    {
+        $this->initializeFilterAndData();
+        return $this->filter;
+    }
+
+    private function initializeFilterAndData(): void
+    {
+        if ($this->filter === null) {
+            $this->initializeFilter();
+        }
+
+        if ($this->filter_data === null) {
+            $this->filter_data = $this->ui_service->filter()->getData($this->filter) ?? [];
+        }
+    }
+
+    private function initializeFilter(): void
     {
         $field_factory = $this->ui_factory->input()->field();
         $filter_inputs = [
             self::FILTER_FIELD_PERIOD => $field_factory->duration($this->lng->txt('cal_period'))
                 ->withUseTime(true)
-                ->withFormat($this->buildUserDateTimeFormat())
+                ->withFormat($this->log_viewer->buildUserDateTimeFormat())
         ];
         if ($this->ref_id === null) {
             $filter_inputs[self::FILTER_FIELD_TEST_TITLE] = $field_factory->text($this->lng->txt('test'));
@@ -139,7 +149,7 @@ class LogTable implements Table\DataRetrieval
 
         $active = array_fill(0, count($filter_inputs), true);
 
-        $filter = $ui_service->filter()->standard(
+        $this->filter = $this->ui_service->filter()->standard(
             'log_table_filter_id',
             $this->unmaskCmdNodesFromBuilder($this->url_builder->buildURI()->__toString()),
             $filter_inputs,
@@ -147,8 +157,6 @@ class LogTable implements Table\DataRetrieval
             true,
             true
         );
-        $this->filter_data = $ui_service->filter()->getData($filter);
-        return $filter;
     }
 
 
@@ -157,7 +165,7 @@ class LogTable implements Table\DataRetrieval
         $f = $this->ui_factory->table()->column();
 
         $columns = [
-            self::COLUMN_DATE_TIME => $f->date($this->lng->txt('date_time'), $this->buildUserDateTimeFormat()),
+            self::COLUMN_DATE_TIME => $f->date($this->lng->txt('date_time'), $this->log_viewer->buildUserDateTimeFormat()),
             self::COLUMN_CORRESPONDING_TEST => $f->link($this->lng->txt('test'))->withIsOptional(true, true),
             self::COLUMN_ADMIN => $f->text($this->lng->txt('author'))->withIsOptional(true, true),
             self::COLUMN_PARTICIPANT => $f->text($this->lng->txt('tst_participant'))->withIsOptional(true, true)
@@ -182,7 +190,7 @@ class LogTable implements Table\DataRetrieval
         ?array $filter_data,
         ?array $additional_parameters
     ): \Generator {
-        list(
+        [
             $from_filter,
             $to_filter,
             $test_filter,
@@ -192,11 +200,11 @@ class LogTable implements Table\DataRetrieval
             $ip_filter,
             $log_entry_type_filter,
             $interaction_type_filter
-        ) = $this->prepareFilterData($this->filter_data);
+        ] = $this->prepareFilterData($this->filter_data);
 
         $environment = [
             'timezone' => new \DateTimeZone($this->current_user->getTimeZone()),
-            'date_format' => $this->buildUserDateTimeFormat()->toString()
+            'date_format' => $this->log_viewer->buildUserDateTimeFormat()->toString()
         ];
 
         foreach ($this->logging_repository->getLogs(
@@ -215,9 +223,7 @@ class LogTable implements Table\DataRetrieval
         ) as $interaction) {
             yield $interaction->getLogEntryAsDataTableRow(
                 $this->lng,
-                $this->static_url,
-                $this->question_repo,
-                $this->ui_factory,
+                $this->title_builder,
                 $row_builder,
                 $environment
             );
@@ -228,7 +234,7 @@ class LogTable implements Table\DataRetrieval
         ?array $filter_data,
         ?array $additional_parameters
     ): ?int {
-        list(
+        [
             $from_filter,
             $to_filter,
             $test_filter,
@@ -238,7 +244,7 @@ class LogTable implements Table\DataRetrieval
             $ip_filter,
             $log_entry_type_filter,
             $interaction_type_filter
-        ) = $this->prepareFilterData($this->filter_data);
+        ] = $this->prepareFilterData($this->filter_data);
 
         return $this->logging_repository->getLogsCount(
             $this->logger->getInteractionTypes(),
@@ -260,13 +266,13 @@ class LogTable implements Table\DataRetrieval
     ): void {
         match ($action) {
             self::ACTION_ADDITIONAL_INFORMATION => $this->showAdditionalDetails($affected_items[0]),
-            self::ACTION_EXPORT_AS_CSV => $this->exportTestUserInteractionsAsCSV($affected_items),
+            self::ACTION_EXPORT_AS_CSV => $this->exportTestUserInteractions($affected_items),
             self::ACTION_CONFIRM_DELETE => $this->showConfirmTestUserInteractionsDeletion($affected_items),
             self::ACTION_DELETE => $this->deleteTestUserInteractions($affected_items)
         };
     }
 
-    protected function showAdditionalDetails(string $affected_item): void
+    private function showAdditionalDetails(string $affected_item): void
     {
         $log = $this->logging_repository->getLog($affected_item);
         if ($log === null) {
@@ -275,7 +281,7 @@ class LogTable implements Table\DataRetrieval
 
         $environment = [
             'timezone' => new \DateTimeZone($this->current_user->getTimeZone()),
-            'date_format' => $this->buildUserDateTimeFormat()->toString()
+            'date_format' => $this->log_viewer->buildUserDateTimeFormat()->toString()
         ];
 
         echo $this->ui_renderer->renderAsync(
@@ -291,7 +297,7 @@ class LogTable implements Table\DataRetrieval
         exit;
     }
 
-    protected function showConfirmTestUserInteractionsDeletion(array $affected_items): void
+    private function showConfirmTestUserInteractionsDeletion(array $affected_items): void
     {
         if ($affected_items === []) {
             $this->showErrorModal($this->lng->txt('no_checkbox'));
@@ -310,7 +316,7 @@ class LogTable implements Table\DataRetrieval
         exit;
     }
 
-    protected function deleteTestUserInteractions(array $affected_items): void
+    private function deleteTestUserInteractions(array $affected_items): void
     {
         if ($this->ref_id !== null) {
             $this->tpl->setOnScreenMessage('failure', $this->lng->txt('log_deletion_not_allowed'));
@@ -321,59 +327,53 @@ class LogTable implements Table\DataRetrieval
         $this->tpl->setOnScreenMessage('success', $this->lng->txt('logs_deleted'));
     }
 
-    protected function exportTestUserInteractionsAsCSV(array $affected_items): void
+    private function exportTestUserInteractions(array $affected_items): void
     {
         if ($affected_items === []) {
             $this->tpl->setOnScreenMessage('info', $this->lng->txt('no_checkbox'));
             return;
         }
-        $environment = [
-            'timezone' => new \DateTimeZone($this->current_user->getTimeZone()),
-            'date_format' => $this->buildUserDateTimeFormat()->toString()
-        ];
 
-        if ($affected_items[0] === 'ALL_OBJECTS') {
-            $interactions = $this->logging_repository->getLogs(
-                $this->logger->getInteractionTypes(),
-                $this->ref_id !== null ? [$this->ref_id] : null
-            );
-        } else {
-            $interactions = $this->logging_repository->getLogsByUniqueIdentifiers($affected_items);
+        $this->log_viewer->buildExcelWorkbookForLogs(
+            $this->buildLogsFromAffectedItems($affected_items)
+        )->sendToClient(date('Y-m-d') . self::EXPORT_FILE_NAME);
+    }
+
+    private function buildLogsFromAffectedItems(array $affected_items): \Generator
+    {
+        if ($affected_items[0] !== 'ALL_OBJECTS') {
+            return $this->logging_repository->getLogsByUniqueIdentifiers($affected_items);
         }
 
-        $csv = $this->getColumHeadingsForCSV();
-        foreach ($interactions as $interaction) {
-            $csv .= $interaction->getLogEntryAsCsvRow(
-                $this->lng,
-                $this->question_repo,
-                $this->logger->getAdditionalInformationGenerator(),
-                $environment
-            );
-        }
-
-        $stream = fopen('php://memory', 'r+');
-        fwrite($stream, $csv);
-        rewind($stream);
-        $this->stream_delivery->deliver(
-            Streams::ofResource($stream),
-            date('Y-m-d') . self::CSV_EXPORT_FILE_NAME
+        $this->initializeFilterAndData();
+        [
+            $from_filter,
+            $to_filter,
+            $test_filter,
+            $admin_filter,
+            $pax_filter,
+            $question_filter,
+            $ip_filter,
+            $log_entry_type_filter,
+            $interaction_type_filter
+        ] = $this->prepareFilterData($this->filter_data);
+        return $this->logging_repository->getLogs(
+            $this->logger->getInteractionTypes(),
+            $this->ref_id !== null ? [$this->ref_id] : null,
+            null,
+            null,
+            $from_filter,
+            $to_filter,
+            $admin_filter,
+            $pax_filter,
+            $question_filter,
+            $ip_filter,
+            $log_entry_type_filter,
+            $interaction_type_filter
         );
     }
 
-    private function getColumHeadingsForCSV(): string
-    {
-        return $this->lng->txt('date_time') . ';'
-            . $this->lng->txt('test') . ';'
-            . $this->lng->txt('author') . ';'
-            . $this->lng->txt('tst_participant') . ';'
-            . $this->lng->txt('client_ip') . ';'
-            . $this->lng->txt('question') . ';'
-            . $this->lng->txt('log_entry_type') . ';'
-            . $this->lng->txt('interaction_type') . ';'
-            . $this->lng->txt('additional_info') . "\n";
-    }
-
-    protected function getActions(): array
+    private function getActions(): array
     {
         $af = $this->ui_factory->table()->action();
         $actions = [
@@ -385,8 +385,8 @@ class LogTable implements Table\DataRetrieval
                 ),
                 $this->row_id_token
             )->withAsync(),
-            self::ACTION_ID_EXPORT_AS_CSV => $af->multi(
-                $this->lng->txt('csv_export'),
+            self::ACTION_ID_EXPORT => $af->multi(
+                $this->lng->txt('export'),
                 $this->url_builder->withParameter(
                     $this->action_parameter_token,
                     self::ACTION_EXPORT_AS_CSV
@@ -522,19 +522,6 @@ class LogTable implements Table\DataRetrieval
             )
         );
         exit;
-    }
-
-    private function buildUserDateTimeFormat(): DateFormat
-    {
-        $user_format = $this->current_user->getDateFormat();
-        if ($this->current_user->getTimeFormat() == \ilCalendarSettings::TIME_FORMAT_24) {
-            return $this->data_factory->dateFormat()->amend(
-                $this->data_factory->dateFormat()->withTime24($user_format)
-            )->colon()->seconds()->get();
-        }
-        return $this->data_factory->dateFormat()->amend(
-            $user_format
-        )->space()->hours12()->colon()->minutes()->colon()->seconds()->meridiem()->get();
     }
 
     private function extractIdsFromUserQuery(array $response): array

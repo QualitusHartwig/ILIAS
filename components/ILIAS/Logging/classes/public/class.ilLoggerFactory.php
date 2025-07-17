@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -18,6 +16,7 @@ declare(strict_types=1);
  *
  *********************************************************************/
 
+declare(strict_types=1);
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -37,7 +36,7 @@ use Monolog\Processor\PsrLogMessageProcessor;
  */
 class ilLoggerFactory
 {
-    protected const DEFAULT_FORMAT = "[%suid%] [%datetime%] %channel%.%level_name%: %message% %context% %extra%\n";
+    protected const DEFAULT_FORMAT = "[%extra.suid%] [%datetime%] %channel%.%level_name%: %message% %context% %extra%\n";
 
     protected const ROOT_LOGGER = 'root';
     protected const COMPONENT_ROOT = 'log_root';
@@ -243,7 +242,7 @@ class ilLoggerFactory
 
         // suid log
         $logger->pushProcessor(function ($record) {
-            $record['suid'] = substr(session_id(), 0, 5);
+            $record['extra']['suid'] = substr(session_id(), 0, 5);
             return $record;
         });
 

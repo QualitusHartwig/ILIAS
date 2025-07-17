@@ -73,8 +73,8 @@ class ilMediaCreationGUI
         Closure $after_upload,
         Closure $after_url_saving,
         Closure $after_pool_insert,
-        Closure $finish_single_upload = null,
-        Closure $on_mob_update = null
+        ?Closure $finish_single_upload = null,
+        ?Closure $on_mob_update = null
     ) {
         global $DIC;
 
@@ -405,6 +405,13 @@ class ilMediaCreationGUI
         $mob->setDescription("");
         $mob->create();
 
+        $media_item = $mob->addMediaItemFromUpload(
+            "Standard",
+            $result,
+            $this->request->getUploadHash()
+        );
+
+        /*
         $mob->createDirectory();
         $media_item = new ilMediaItem();
         $mob->addMediaItem($media_item);
@@ -430,12 +437,9 @@ class ilMediaCreationGUI
         $media_item->setFormat($format);
         $media_item->setLocation($location);
         $media_item->setLocationType("LocalFile");
-        $media_item->setUploadHash($this->request->getUploadHash());
+        $media_item->setUploadHash($this->request->getUploadHash());*/
         $mob->update();
         $item_ids[] = $mob->getId();
-
-        $mob = new ilObjMediaObject($mob->getId());
-        $mob->generatePreviewPic(320, 240);
 
         // duration
         $med_item = $mob->getMediaItem("Standard");

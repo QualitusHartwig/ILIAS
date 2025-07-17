@@ -59,22 +59,24 @@ export default class Modal {
     if (this.#triggeredSignalsStorage[signalData.id] === true) {
       return;
     }
-
     this.#triggeredSignalsStorage[signalData.id] = true;
 
     if (options.ajaxRenderUrl) {
       this.#jquery(component).load(options.ajaxRenderUrl, () => {
         const dialog = component.querySelector('dialog');
-        if(!dialog) {
+        if (!dialog) {
           throw new Error('url did not return a dialog');
         }
         dialog.showModal();
+        il.UI.lightbox.maybeInitCarousel(component);
         this.#triggeredSignalsStorage[signalData.id] = false;
       });
     } else {
       component.showModal();
+      il.UI.lightbox.maybeInitCarousel(component);
       this.#triggeredSignalsStorage[signalData.id] = false;
     }
     this.#initializedModalboxes[signalData.id] = component.id;
+
   }
 }

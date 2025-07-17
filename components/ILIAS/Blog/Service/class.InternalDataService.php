@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -18,7 +16,12 @@ declare(strict_types=1);
  *
  *********************************************************************/
 
+declare(strict_types=1);
+
 namespace ILIAS\Blog;
+
+use ilDateTime;
+use ILIAS\Blog\Posting\Posting;
 
 /**
  * @author Alexander Killing <killing@leifos.de>
@@ -32,9 +35,65 @@ class InternalDataService
         //$this->..._factory = new ...\DataFactory();
     }
 
-    /*
-    public function ...() : ...\...
-    {
-        return $this->..._factory->...();
-    }*/
+    public function settings(
+        int $id,
+        bool $profile_picture,
+        string $bg_color,
+        string $font_color,
+        bool $rss_active,
+        bool $approval,
+        bool $abs_shorten,
+        int $abs_shorten_len,
+        bool $abs_image,
+        int $abs_img_width,
+        int $abs_img_height,
+        bool $keywords,
+        bool $authors,
+        int $nav_mode,
+        int $nav_list_mon_with_post,
+        int $nav_list_mon,
+        int $ov_post,
+        array $nav_order = []
+    ): Settings\Settings {
+        return new Settings\Settings(
+            $id,
+            $profile_picture,
+            $bg_color,
+            $font_color,
+            $rss_active,
+            $approval,
+            $abs_shorten,
+            $abs_shorten_len,
+            $abs_image,
+            $abs_img_width,
+            $abs_img_height,
+            $keywords,
+            $authors,
+            $nav_mode,
+            $nav_list_mon_with_post,
+            $nav_list_mon,
+            $ov_post,
+            $nav_order
+        );
+    }
+
+    public function posting(
+        int $id,
+        int $blog_id,
+        string $title,
+        ilDateTime $created,
+        int $author,
+        bool $approved,
+        ?ilDateTime $last_withdrawn
+    ): Posting {
+        return new Posting(
+            $id,
+            $blog_id,
+            $title,
+            $created,
+            $author,
+            $approved,
+            $last_withdrawn
+        );
+    }
 }

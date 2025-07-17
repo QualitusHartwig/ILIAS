@@ -33,7 +33,7 @@ class TestSetupAgent extends NullAgent
 {
     use HasNoNamedObjective;
 
-    public function getUpdateObjective(Config $config = null): Objective
+    public function getUpdateObjective(?Config $config = null): Objective
     {
         return new ObjectiveCollection(
             'Database is updated for ILIAS\Test',
@@ -50,7 +50,11 @@ class TestSetupAgent extends NullAgent
                 'object',
                 7200,
                 ['tst']
-            )
+            ),
+            new \ilAccessRBACOperationDeletedObjective('tst', 56),
+            new \ilDatabaseUpdateStepsExecutedObjective(
+                new ilTestNoHintsDBUpdateSteps()
+            ),
         );
     }
 
@@ -66,7 +70,11 @@ class TestSetupAgent extends NullAgent
             new \ilDatabaseUpdateStepsMetricsCollectedObjective(
                 $storage,
                 new Test10DBUpdateSteps()
-            )
+            ),
+            new \ilDatabaseUpdateStepsMetricsCollectedObjective(
+                $storage,
+                new ilTestNoHintsDBUpdateSteps()
+            ),
         );
     }
 
@@ -80,7 +88,7 @@ class TestSetupAgent extends NullAgent
         throw new \LogicException("Agent has no config.");
     }
 
-    public function getInstallObjective(Config $config = null): Objective
+    public function getInstallObjective(?Config $config = null): Objective
     {
         return new NullObjective();
     }
@@ -92,6 +100,8 @@ class TestSetupAgent extends NullAgent
 
     public function getMigrations(): array
     {
-        return [];
+        return [
+            new CloneIntroductionAndClosingRemarksMigration()
+        ];
     }
 }

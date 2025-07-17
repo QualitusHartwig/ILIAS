@@ -273,7 +273,7 @@ class ilLPStatus
     public function determineStatus(
         int $a_obj_id,
         int $a_usr_id,
-        object $a_obj = null
+        ?object $a_obj = null
     ): int {
         return 0;
     }
@@ -900,8 +900,9 @@ class ilLPStatus
         }
 
         // missing objects in DB (default mode)
+        $existing_obj_ids = array_keys($existing);
         if (sizeof($existing) != sizeof($a_obj_ids)) {
-            foreach (array_diff($a_obj_ids, $existing) as $obj_id) {
+            foreach (array_diff($a_obj_ids, $existing_obj_ids) as $obj_id) {
                 $olp = ilObjectLP::getInstance($obj_id);
                 $mode = $olp->getCurrentMode();
                 if ($mode == ilLPObjSettings::LP_MODE_DEACTIVATED) {

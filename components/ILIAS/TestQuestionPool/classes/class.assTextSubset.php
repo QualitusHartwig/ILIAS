@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 use ILIAS\TestQuestionPool\Questions\QuestionLMExportable;
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
 
 /**
@@ -77,17 +76,17 @@ class assTextSubset extends assQuestion implements ilObjQuestionScoringAdjustabl
         if ($result->numRows() == 1) {
             $data = $this->db->fetchAssoc($result);
             $this->setId($question_id);
-            $this->setObjId($data["obj_fi"]);
+            $this->setObjId($data['obj_fi']);
             $this->setNrOfTries($data['nr_of_tries']);
-            $this->setTitle((string) $data["title"]);
-            $this->setComment((string) $data["description"]);
-            $this->setOriginalId($data["original_id"]);
-            $this->setAuthor($data["author"]);
-            $this->setPoints($data["points"]);
-            $this->setOwner($data["owner"]);
-            $this->setQuestion(ilRTE::_replaceMediaObjectImageSrc((string) $data["question_text"], 1));
-            $this->setCorrectAnswers((int) $data["correctanswers"]);
-            $this->setTextRating($data["textgap_rating"]);
+            $this->setTitle((string) $data['title']);
+            $this->setComment((string) $data['description']);
+            $this->setOriginalId($data['original_id']);
+            $this->setAuthor($data['author']);
+            $this->setPoints($data['points']);
+            $this->setOwner($data['owner']);
+            $this->setQuestion(ilRTE::_replaceMediaObjectImageSrc((string) $data['question_text'], 1));
+            $this->setCorrectAnswers((int) $data['correctanswers']);
+            $this->setTextRating($data['textgap_rating'] ?? assClozeGap::TEXTGAP_RATING_CASEINSENSITIVE);
 
             try {
                 $this->setLifecycle(ilAssQuestionLifecycle::getInstance($data['lifecycle']));
@@ -248,7 +247,7 @@ class assTextSubset extends assQuestion implements ilObjQuestionScoringAdjustabl
     * @access private
     * @see $answers
     */
-    public function &getAvailableAnswers(): array
+    public function getAvailableAnswers(): array
     {
         $available_answers = [];
         foreach ($this->answers as $answer) {
@@ -355,23 +354,11 @@ class assTextSubset extends assQuestion implements ilObjQuestionScoringAdjustabl
         return $this->calculateReachedPointsForSolution($enteredTexts);
     }
 
-    /**
-    * Sets the number of correct answers needed to solve the question
-    *
-    * @param integer $a_correct_anwers The number of correct answers
-    * @access public
-    */
     public function setCorrectAnswers(int $a_correct_answers): void
     {
         $this->correctanswers = $a_correct_answers;
     }
 
-    /**
-    * Returns the number of correct answers needed to solve the question
-    *
-    * @return integer The number of correct answers
-    * @access public
-    */
     public function getCorrectAnswers(): int
     {
         return $this->correctanswers;
@@ -386,9 +373,9 @@ class assTextSubset extends assQuestion implements ilObjQuestionScoringAdjustabl
             $pass = ilObjTest::_getPass($active_id);
         }
 
+        $solution_submit = $this->getSolutionSubmit();
         $this->getProcessLocker()->executeUserSolutionUpdateLockOperation(
-            function () use ($active_id, $pass, $authorized) {
-                $solution_submit = $this->getSolutionSubmit();
+            function () use ($active_id, $pass, $authorized, $solution_submit) {
                 $this->removeCurrentSolution($active_id, $pass, $authorized);
 
                 foreach ($solution_submit as $value) {
@@ -529,24 +516,6 @@ class assTextSubset extends assQuestion implements ilObjQuestionScoringAdjustabl
         return parent::getRTETextWithMediaObjects();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $solutions = $this->getSolutionValues($active_id, $pass);
-
-        $i = 1;
-        foreach ($solutions as $solution) {
-            $worksheet->setCell($startrow + $i, $col + 2, $solution["value1"]);
-            $i++;
-        }
-
-        return $startrow + $i + 1;
-    }
-
     public function getAnswers(): array
     {
         return $this->answers;
@@ -560,7 +529,7 @@ class assTextSubset extends assQuestion implements ilObjQuestionScoringAdjustabl
         $result = [];
         $result['id'] = $this->getId();
         $result['type'] = (string) $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['nr_of_tries'] = $this->getNrOfTries();
         $result['matching_method'] = $this->getTextRating();
@@ -723,7 +692,7 @@ class assTextSubset extends assQuestion implements ilObjQuestionScoringAdjustabl
     {
         return [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT_MATCHING_METHOD => $additional_info->getTagForLangVar(
                 $this->getMatchingMethodLangVar($this->getTextRating())
@@ -744,7 +713,7 @@ class assTextSubset extends assQuestion implements ilObjQuestionScoringAdjustabl
 
     private function getMatchingMethodLangVar(string $matching_method): string
     {
-        switch($matching_method) {
+        switch ($matching_method) {
             case assClozeGap::TEXTGAP_RATING_CASEINSENSITIVE:
                 return 'cloze_textgap_case_insensitive';
             case assClozeGap::TEXTGAP_RATING_CASESENSITIVE:
@@ -764,13 +733,26 @@ class assTextSubset extends assQuestion implements ilObjQuestionScoringAdjustabl
         }
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
-    ): string {
+    ): array {
         return array_map(
             static fn(array $v): string => $v['value1'],
             $solution_values
         );
+    }
+
+    public function solutionValuesToText(array $solution_values): array
+    {
+        return array_map(
+            static fn(array $v): string => $v['value1'],
+            $solution_values
+        );
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): array
+    {
+        return $this->getAvailableAnswers();
     }
 }

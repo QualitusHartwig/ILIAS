@@ -66,7 +66,7 @@ class ilForumTopicTableGUI extends ilTable2GUI
         $this->setExternalSegmentation(true);
 
         parent::__construct($a_parent_obj, $a_parent_cmd);
-        $this->mainTemplate->addCss('./components/ILIAS/Forum/css/forum_table.css');
+        $this->mainTemplate->addCss('./assets/css/forum_table.css');
         $this->is_post_draft_allowed = ilForumPostDraft::isSavePostDraftAllowed();
     }
 
@@ -330,9 +330,7 @@ class ilForumTopicTableGUI extends ilTable2GUI
         }
 
         $this->setMaxCount($data['cnt']);
-        $this->setData(array_map(static function (ilForumTopic $thread): array {
-            return ['thread' => $thread];
-        }, $data['items']));
+        $this->setData(array_map(static fn(ilForumTopic $thread): array => ['thread' => $thread], $data['items']));
 
         $thread_ids = [];
         $user_ids = [];

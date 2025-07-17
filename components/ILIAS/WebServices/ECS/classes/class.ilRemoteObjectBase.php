@@ -13,7 +13,8 @@
  * us at:
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
- */
+ *
+ *********************************************************************/
 
 declare(strict_types=1);
 
@@ -121,7 +122,7 @@ abstract class ilRemoteObjectBase extends ilObject2
      */
     public function getOrganization(): string
     {
-        return $this->organization;
+        return $this->organization ?? '';
     }
 
     /**
@@ -443,8 +444,11 @@ abstract class ilRemoteObjectBase extends ilObject2
                 if (!$adv_md_def) {
                     continue;
                 }
-
-                $raw_value = $a_json->{$target};
+                if (property_exists($a_json, $target)){
+                    $raw_value = $a_json->{$target};
+                } else {
+                    $raw_value = '';
+                }
 
                 if ($type === ilECSUtils::TYPE_TIMEPLACE) {
                     if (!is_object($timePlace)) {
@@ -455,8 +459,7 @@ abstract class ilRemoteObjectBase extends ilObject2
                     }
                     $raw_value = $timePlace;
                 }
-
-                if ($adv_md_def->importFromECS((string) $type, (string) $raw_value, $id)) {
+                if (is_string($raw_value) && $adv_md_def->importFromECS((string) $type, (string) $raw_value, $id)) {
                     $do_save = true;
                 }
             }

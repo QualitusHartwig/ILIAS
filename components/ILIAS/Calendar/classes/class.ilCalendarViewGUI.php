@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -18,6 +16,7 @@ declare(strict_types=1);
  *
  *********************************************************************/
 
+declare(strict_types=1);
 
 use ILIAS\UI\Factory;
 use ILIAS\UI\Renderer;
@@ -267,7 +266,7 @@ class ilCalendarViewGUI
                 $modal_title = $this->getModalTitleByPlugins($modal_title);
                 $modal = $this->ui_factory->modal()->roundtrip(
                     $modal_title,
-                    $this->ui_factory->legacy($content)
+                    $this->ui_factory->legacy()->content($content)
                 )->withCancelButtonLabel($this->lng->txt("close"));
                 echo $this->ui_renderer->renderAsync($modal);
             }
@@ -306,7 +305,21 @@ class ilCalendarViewGUI
         } else {
             $title = ($a_title_forced == "") ? $a_calendar_entry->getPresentationTitle() : $a_title_forced;
         }
-        $comps = [$this->ui_factory->button()->shy($title, "#")->withOnClick($modal->getShowSignal()), $modal];
+
+        // aria label including start time
+        $start_time = '';
+        switch ($this->user_settings->getTimeFormat()) {
+            case ilCalendarSettings::TIME_FORMAT_24:
+                $start_time = $a_calendar_entry->getStart()->get(IL_CAL_FKT_DATE, 'H:i', $this->timezone);
+                break;
+
+            case ilCalendarSettings::TIME_FORMAT_12:
+                $start_time = $a_calendar_entry->getStart()->get(IL_CAL_FKT_DATE, 'h:ia', $this->timezone);
+                break;
+        }
+        $aria_label = $start_time . ' - ' . $title;
+
+        $comps = [$this->ui_factory->button()->shy($title, "#")->withAriaLabel($aria_label)->withOnClick($modal->getShowSignal()), $modal];
         return $this->ui_renderer->render($comps);
     }
 

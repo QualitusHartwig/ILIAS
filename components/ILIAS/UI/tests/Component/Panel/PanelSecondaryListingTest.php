@@ -38,22 +38,22 @@ class PanelSecondaryListingTest extends ILIAS_UI_TestBase
                 return new I\Component\Panel\Secondary\Factory();
             }
 
-            public function dropdown(): C\Dropdown\Factory
+            public function dropdown(): I\Component\Dropdown\Factory
             {
                 return new I\Component\Dropdown\Factory();
             }
 
-            public function viewControl(): C\ViewControl\Factory
+            public function viewControl(): I\Component\ViewControl\Factory
             {
                 return new I\Component\ViewControl\Factory(new SignalGenerator());
             }
 
-            public function button(): C\Button\Factory
+            public function button(): I\Component\Button\Factory
             {
                 return new I\Component\Button\Factory();
             }
 
-            public function symbol(): C\Symbol\Factory
+            public function symbol(): I\Component\Symbol\Factory
             {
                 return new I\Component\Symbol\Factory(
                     new I\Component\Symbol\Icon\Factory(),
@@ -178,7 +178,7 @@ EOT;
             'a' => 'A',
             'b' => 'B'
         );
-        $sortation = $this->getUIFactory()->viewControl()->sortation($sort_options);
+        $sortation = $this->getUIFactory()->viewControl()->sortation($sort_options, 'a');
         $sec = $this->getUIFactory()->panelSecondary()->listing("Title", array())
             ->withViewControls([$sortation]);
 
@@ -188,17 +188,16 @@ EOT;
 <div class="panel panel-secondary panel-flex">
     <div class="panel-heading ilHeader">
         <div class="panel-title"><h2>Title</h2></div>
-        <div class="panel-viewcontrols l-bar__space-keeper">
-            <div class="il-viewcontrol-sortation l-bar__element" id="id_1">
-                <div class="dropdown" id="id_4">
-                    <button class="btn btn-default dropdown-toggle" type="button" aria-label="actions" aria-haspopup="true" aria-expanded="false" aria-controls="id_4_menu">
-                        <span class="caret"></span>
-                    </button>
-                    <ul id="id_4_menu" class="dropdown-menu">
-                        <li><button class="btn btn-link" data-action="?sortation=a" id="id_2">A</button></li>
-                        <li><button class="btn btn-link" data-action="?sortation=b" id="id_3">B</button></li>
-                    </ul>
-                </div>
+        <div class="panel-viewcontrols  l-bar__space-keeper">
+            <div class="dropdown il-viewcontrol  il-viewcontrol-sortation l-bar__element" id="id_1">
+                <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-label="sortation" aria-haspopup="true" aria-expanded="false" aria-controls="id_1_ctrl">
+                    <span class="label">vc_sort A</span>
+                    <span class="glyphicon-sort"></span>
+                </button>
+                <ul id="id_1_ctrl" class="dropdown-menu">
+                    <li class="selected"><button class="btn btn-link" data-action="?sortation=a" id="id_2">A</button></li>
+                    <li><button class="btn btn-link" data-action="?sortation=b" id="id_3">B</button></li>
+                </ul>
             </div>
         </div>
         <div class="panel-controls"></div>
@@ -232,27 +231,22 @@ EOT;
         <div class="panel-title"><h2>Title</h2></div>
         <div class="panel-viewcontrols l-bar__space-keeper">
             <div class="il-viewcontrol-pagination l-bar__element">
-                <span class="btn btn-ctrl browse previous">
-                    <a tabindex="0" class="glyph" href="http://ilias.de?page=0" aria-label="back">
-                        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-                    </a>
-                </span>
+                <button class="btn btn-default" data-action="http://ilias.de?page=0" id="id_6">
+                    <span class="glyph" aria-label="back" role="img"><span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span></span>
+                </button>
                 <button class="btn btn-link" data-action="http://ilias.de?page=0" id="id_1">1</button>
                 <button class="btn btn-link engaged" aria-pressed="true" data-action="http://ilias.de?page=1" id="id_2">2</button>
                 <button class="btn btn-link" data-action="http://ilias.de?page=2" id="id_3">3</button>
                 <button class="btn btn-link" data-action="http://ilias.de?page=3" id="id_4">4</button>
                 <button class="btn btn-link" data-action="http://ilias.de?page=4" id="id_5">5</button>
-                <span class="btn btn-ctrl browse next">
-                    <a tabindex="0" class="glyph" href="http://ilias.de?page=2" aria-label="next">
-                        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-                    </a>
-                </span>
+                <button class="btn btn-default" data-action="http://ilias.de?page=2" id="id_7">
+                    <span class="glyph" aria-label="next" role="img"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></span>
+                </button>
             </div>
         </div>
         <div class="panel-controls"></div>
     </div>
-    <div class="panel-body">
-    </div>
+    <div class="panel-body"></div>
 </div>
 EOT;
         $this->assertEquals(
@@ -314,8 +308,8 @@ EOT;
 
 EOT;
         $this->assertHTMLEquals(
-            $this->cleanHTML($expected_html),
-            $this->cleanHTML($html)
+            $this->brutallyTrimHTML($expected_html),
+            $this->brutallyTrimHTML($html)
         );
     }
 

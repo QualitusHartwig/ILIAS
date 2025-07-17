@@ -40,7 +40,8 @@ class StaticURLHandler extends BaseHandler implements Handler
 
         $ctrl = $DIC->ctrl();
         $access = $DIC->access();
-        $uri = "";
+        $uri = null;
+        $blog_domain = $DIC->blog()->internal()->domain();
 
         $id = $request->getReferenceId()?->toInt() ?? 0;
         $additional_params = $request->getAdditionalParameters() ?? [];
@@ -113,6 +114,13 @@ class StaticURLHandler extends BaseHandler implements Handler
                     \ilRepositoryGUI::class,
                     \ilObjBlogGUI::class
                 ], "infoScreen");
+            }
+        }
+        if (is_null($uri)) {
+            if ($blog_domain->user()->isAnonymous() || $blog_domain->user()->getId() == 0) {
+                return $response_factory->loginFirst();
+            } else {
+                return $response_factory->cannot();
             }
         }
         return $response_factory->can($uri);

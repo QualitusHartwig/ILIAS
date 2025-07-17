@@ -58,11 +58,16 @@ class ilDclTableViewGUI
         $this->ui_factory = $DIC->ui()->factory();
         $this->renderer = $DIC->ui()->renderer();
 
+        $DIC->help()->setScreenId('dcl_views');
+
         if ($table_id == 0) {
             $table_id = $this->http->wrapper()->query()->retrieve('table_id', $this->refinery->kindlyTo()->int());
         }
 
         $this->table = ilDclCache::getTableCache($table_id);
+        $this->table->getCollectionObject()->setRefId(
+            $this->http->wrapper()->query()->retrieve('ref_id', $this->refinery->kindlyTo()->int())
+        );
 
         $this->ctrl->saveParameterByClass('ilDclTableEditGUI', 'table_id');
         $locator->addItem($this->table->getTitle(), $this->ctrl->getLinkTargetByClass('ilDclTableEditGUI', 'edit'));
@@ -137,9 +142,9 @@ class ilDclTableViewGUI
 
         $this->tpl->setContent(
             $this->renderer->render(
-                $this->ui_factory->panel()->standard(
+                $this->ui_factory->panel()->listing()->standard(
                     sprintf($this->lng->txt('dcl_tableviews_of_X'), $this->table->getTitle()),
-                    $this->getItems()
+                    [$this->ui_factory->item()->group('', $this->getItems())]
                 )
             )
         );
@@ -186,55 +191,6 @@ class ilDclTableViewGUI
             $this->ctrl->getLinkTargetByClass(ilDclTableViewEditGUI::class, 'confirmDelete')
         );
         return $actions;
-    }
-
-    /**
-     * Confirm deletion of multiple fields
-     */
-    public function confirmDeleteTableviews(): void
-    {
-        //at least one view must exist
-        $has_dcl_tableview_ids = $this->http->wrapper()->post()->has('dcl_tableview_ids');
-        if (!$has_dcl_tableview_ids) {
-            $this->tpl->setOnScreenMessage('failure', $this->lng->txt('dcl_delete_views_no_selection'), true);
-            $this->ctrl->redirect($this, 'show');
-        }
-
-        $tableviews = $this->http->wrapper()->post()->retrieve(
-            'dcl_tableview_ids',
-            $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->int())
-        );
-        $this->checkViewsLeft(count($tableviews));
-
-        $this->tabs->clearSubTabs();
-        $conf = new ilConfirmationGUI();
-        $conf->setFormAction($this->ctrl->getFormAction($this));
-        $conf->setHeaderText($this->lng->txt('dcl_tableviews_confirm_delete'));
-
-        foreach ($tableviews as $tableview_id) {
-            $conf->addItem('dcl_tableview_ids[]', (string) $tableview_id, ilDclTableView::find($tableview_id)->getTitle());
-        }
-        $conf->setConfirm($this->lng->txt('delete'), 'deleteTableviews');
-        $conf->setCancel($this->lng->txt('cancel'), 'show');
-        $this->tpl->setContent($conf->getHTML());
-    }
-
-    protected function deleteTableviews(): void
-    {
-        $has_dcl_tableview_ids = $this->http->wrapper()->post()->has('dcl_tableview_ids');
-        if ($has_dcl_tableview_ids) {
-            $tableviews = $this->http->wrapper()->post()->retrieve(
-                'dcl_tableview_ids',
-                $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->int())
-            );
-            foreach ($tableviews as $tableview_id) {
-                ilDclTableView::find($tableview_id)->delete();
-            }
-        }
-
-        $this->table->sortTableViews();
-        $this->tpl->setOnScreenMessage('success', $this->lng->txt('dcl_msg_tableviews_deleted'), true);
-        $this->ctrl->redirect($this, 'show');
     }
 
     /**

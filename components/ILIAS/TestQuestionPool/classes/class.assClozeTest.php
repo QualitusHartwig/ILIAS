@@ -21,9 +21,7 @@ declare(strict_types=1);
 use ILIAS\TestQuestionPool\Questions\QuestionLMExportable;
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
 use ILIAS\TestQuestionPool\Questions\QuestionPartiallySaveable;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
-
 use ILIAS\Refinery\Random\Group as RandomGroup;
 
 /**
@@ -53,7 +51,7 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
      * @var array
      */
     protected $gap_combinations = [];
-    protected bool $gap_combinations_exists = false;
+    protected bool $gap_combinations_exist = false;
     private string $start_tag = '[gap]';
     private string $end_tag = '[/gap]';
 
@@ -89,7 +87,6 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
         string $question = ""
     ) {
         global $DIC;
-
         parent::__construct($title, $comment, $author, $owner, $question);
         $this->setQuestion($question); // @TODO: Should this be $question?? See setter for why this is not trivial.
         $this->randomGroup = $DIC->refinery()->random();
@@ -238,8 +235,7 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
                 }
             }
         }
-        $assClozeGapCombinationObj = new assClozeGapCombination();
-        $check_for_gap_combinations = $assClozeGapCombinationObj->loadFromDb($question_id);
+        $check_for_gap_combinations = (new assClozeGapCombination($this->db))->loadFromDb($question_id);
         if (count($check_for_gap_combinations) != 0) {
             $this->setGapCombinationsExists(true);
             $this->setGapCombinations($check_for_gap_combinations);
@@ -745,10 +741,10 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
     */
     public function getMaximumPoints(): float
     {
-        $assClozeGapCombinationObj = new assClozeGapCombination();
+        $assClozeGapCombinationObj = new assClozeGapCombination($this->db);
         $points = 0;
         $gaps_used_in_combination = [];
-        if ($assClozeGapCombinationObj->combinationExistsForQid($this->getId())) {
+        if ($this->gap_combinations_exist) {
             $points = $assClozeGapCombinationObj->getMaxPointsForCombination($this->getId());
             $gaps_used_in_combination = $assClozeGapCombinationObj->getGapsWhichAreUsedInCombination($this->getId());
         }
@@ -785,11 +781,18 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
         return $points;
     }
 
-    public function copyGapCombination($orgID, $newID): void
-    {
-        $assClozeGapCombinationObj = new assClozeGapCombination();
-        $array = $assClozeGapCombinationObj->loadFromDb($orgID);
-        $assClozeGapCombinationObj->importGapCombinationToDb($newID, $array);
+    public function cloneQuestionTypeSpecificProperties(
+        \assQuestion $target
+    ): \assQuestion {
+        if ($this->gap_combinations_exist) {
+            $gap_combination = new assClozeGapCombination($this->db);
+            $gap_combination->clearGapCombinationsFromDb($target->getId());
+            $gap_combination->importGapCombinationToDb(
+                $target->getId(),
+                $this->gap_combinations,
+            );
+        }
+        return $target;
     }
 
     /**
@@ -1019,24 +1022,6 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
         return false;
     }
 
-    public function validateSolutionSubmit(): bool
-    {
-        foreach ($this->getSolutionSubmitValidation() as $gapIndex => $value) {
-            $gap = $this->getGap($gapIndex);
-
-            if ($gap->getType() != assClozeGap::TYPE_NUMERIC) {
-                continue;
-            }
-
-            if (strlen($value) && !$this->isValidNumericSubmitValue($value)) {
-                $this->tpl->setOnScreenMessage('failure', $this->lng->txt("err_no_numeric_value"), true);
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     public function fetchSolutionSubmit(): array
     {
         $solution_submit = [];
@@ -1053,7 +1038,7 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
                 continue;
             }
 
-            if ($gap->getType() === assClozeGap::TYPE_SELECT && $value === -1) {
+            if ($gap->getType() === assClozeGap::TYPE_SELECT && $value === '-1') {
                 continue;
             }
 
@@ -1070,33 +1055,9 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
         return $solution_submit;
     }
 
-    public function getSolutionSubmitValidation(): array
-    {
-        $submit = $_POST;
-        $solutionSubmit = [];
-
-        foreach ($submit as $key => $value) {
-            if (preg_match("/^gap_(\d+)/", $key, $matches)) {
-                if ($value !== null && $value !== '') {
-                    $gap = $this->getGap($matches[1]);
-                    if (is_object($gap)) {
-                        if (!(($gap->getType() == assClozeGap::TYPE_SELECT) && ($value == -1))) {
-                            if ($gap->getType() == assClozeGap::TYPE_NUMERIC) {
-                                $value = str_replace(",", ".", $value);
-                            }
-                            $solutionSubmit[trim($matches[1])] = $value;
-                        }
-                    }
-                }
-            }
-        }
-
-        return $solutionSubmit;
-    }
-
     protected function getSolutionSubmit(): array
     {
-        return $this->fetchSolutionSubmit($_POST);
+        return $this->fetchSolutionSubmit();
     }
 
     public function saveWorkingData(
@@ -1112,7 +1073,7 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
             function () use ($active_id, $pass, $authorized) {
                 $this->removeCurrentSolution($active_id, $pass, $authorized);
 
-                foreach ($this->getSolutionSubmit() as $key => $value) {
+                foreach ($this->fetchSolutionSubmit() as $key => $value) {
                     if ($value === null || $value === '') {
                         continue;
                     }
@@ -1273,7 +1234,7 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
     }
     public function getGapCombinationsExists(): bool
     {
-        return $this->gap_combinations_exists;
+        return $this->gap_combinations_exist;
     }
 
     public function getGapCombinations(): array
@@ -1283,51 +1244,12 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
 
     public function setGapCombinationsExists($value): void
     {
-        $this->gap_combinations_exists = $value;
+        $this->gap_combinations_exist = $value;
     }
 
     public function setGapCombinations($value): void
     {
         $this->gap_combinations = $value;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $solution = $this->getSolutionValues($active_id, $pass);
-        $i = 1;
-        foreach ($this->getGaps() as $gap_index => $gap) {
-            $worksheet->setCell($startrow + $i, $col, $this->lng->txt("gap") . " $i");
-            $worksheet->setBold($worksheet->getColumnCoord($col) . ($startrow + $i));
-            $checked = false;
-            foreach ($solution as $solutionvalue) {
-                if ($gap_index == $solutionvalue["value1"]) {
-                    $string_escaping_org_value = $worksheet->getStringEscaping();
-                    try {
-                        $worksheet->setStringEscaping(false);
-
-                        switch ($gap->getType()) {
-                            case assClozeGap::TYPE_SELECT:
-                                $worksheet->setCell($startrow + $i, $col + 2, $gap->getItem($solutionvalue["value2"])->getAnswertext());
-                                break;
-                            case assClozeGap::TYPE_NUMERIC:
-                            case assClozeGap::TYPE_TEXT:
-                                $worksheet->setCell($startrow + $i, $col + 2, $solutionvalue["value2"]);
-                                break;
-                        }
-                    } finally {
-                        $worksheet->setStringEscaping($string_escaping_org_value);
-                    }
-                }
-            }
-            $i++;
-        }
-
-        return $startrow + $i + 1;
     }
 
     /**
@@ -1349,7 +1271,7 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
         $result = [
             'id' => $this->getId(),
             'type' => (string) $this->getQuestionType(),
-            'title' => $this->getTitle(),
+            'title' => $this->getTitleForHTMLOutput(),
             'question' => $this->formatSAQuestion($this->getQuestion()),
             'clozetext' => $this->formatSAQuestion($this->getClozeText()),
             'nr_of_tries' => $this->getNrOfTries(),
@@ -1478,7 +1400,7 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
     {
         $points = 0;
 
-        $assClozeGapCombinationObj = new assClozeGapCombination();
+        $assClozeGapCombinationObj = new assClozeGapCombination($this->db);
         $gap_used_in_combination = [];
         if ($assClozeGapCombinationObj->combinationExistsForQid($this->getId())) {
             $combinations_for_question = $assClozeGapCombinationObj->getCleanCombinationArray($this->getId());
@@ -1508,7 +1430,7 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
                                     break;
                                 case assClozeGap::TYPE_SELECT:
                                     $answer = $this->gaps[$gap_key]->getItem($gap_answers[$gap_key]);
-                                    $answertext = $answer->getAnswertext();
+                                    $answertext = $answer?->getAnswertext();
                                     if ($answertext != $combination_gap_answer['answer']) {
                                         $combination_fulfilled = false;
                                     }
@@ -1550,9 +1472,9 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
     {
         $points = 0.0;
 
-        $assClozeGapCombinationObj = new assClozeGapCombination();
+        $assClozeGapCombinationObj = new assClozeGapCombination($this->db);
         $combinations[1] = [];
-        if ($assClozeGapCombinationObj->combinationExistsForQid($this->getId())) {
+        if ($this->gap_combinations_exist) {
             $combinations = $this->calculateCombinationResult($user_result);
             $points = $combinations[0];
         }
@@ -1654,7 +1576,6 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
         }
 
         $reached_points = $this->calculateReachedPointsForSolution($user_solution);
-        $reached_points = $this->deductHintPointsFromReachedPoints($preview_session, $reached_points);
 
         return $this->ensureNonNegativePoints($reached_points);
     }
@@ -1704,7 +1625,7 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
     {
         $result = [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_CLOZE_CLOZETEXT => $this->formatSAQuestion($this->getClozeText()),
             AdditionalInformationGenerator::KEY_QUESTION_SHUFFLE_ANSWER_OPTIONS => $additional_info
@@ -1744,7 +1665,7 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
         return $result;
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
     ): array {
@@ -1764,5 +1685,41 @@ class assClozeTest extends assQuestion implements ilObjQuestionScoringAdjustable
             }
         }
         return $parsed_solution;
+    }
+
+    public function solutionValuesToText(array $solution_values): array
+    {
+        $parsed_solution = [];
+        foreach ($this->getGaps() as $gap_index => $gap) {
+            foreach ($solution_values as $solutionvalue) {
+                if ($gap_index !== (int) $solutionvalue['value1']) {
+                    continue;
+                }
+
+                if ($gap->getType() === assClozeGap::TYPE_SELECT) {
+                    $parsed_solution[] = $this->lng->txt('gap') . ' ' . $gap_index + 1 . ': '
+                        . $gap->getItem($solutionvalue['value2'])->getAnswertext();
+                    continue;
+                }
+
+                $parsed_solution[] = $this->lng->txt('gap') . ' ' . $gap_index + 1 . ': '
+                    . $solutionvalue['value2'];
+            }
+        }
+        return $parsed_solution;
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): array
+    {
+        $answers = [];
+        foreach ($this->getGaps() as $gap_index => $gap) {
+            $correct_answers = array_map(
+                fn(int $v): string => $gap->getItem($v)->getAnswertext(),
+                $gap->getBestSolutionIndexes()
+            );
+            $answers[] = $this->lng->txt('gap') . ' ' . $gap_index + 1 . ': '
+                . implode(',', $correct_answers);
+        }
+        return $answers;
     }
 }

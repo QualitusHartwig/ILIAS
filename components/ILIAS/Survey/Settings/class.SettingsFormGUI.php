@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=1);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=1);
 
 namespace ILIAS\Survey\Settings;
 
@@ -205,18 +205,14 @@ class SettingsFormGUI
         $desc->setRows(4);
         $desc->setValue($survey->getLongDescription());
         $form->addItem($desc);
-        //}
 
-        // pool usage
-        $pool_usage = new \ilRadioGroupInputGUI($lng->txt("survey_question_pool_usage"), "use_pool");
-        $opt = new \ilRadioOption($lng->txt("survey_question_pool_usage_active"), "1");
-        $opt->setInfo($lng->txt("survey_question_pool_usage_active_info"));
-        $pool_usage->addOption($opt);
-        $opt = new \ilRadioOption($lng->txt("survey_question_pool_usage_inactive"), "0");
-        $opt->setInfo($lng->txt("survey_question_pool_usage_inactive_info"));
-        $pool_usage->addOption($opt);
-        $pool_usage->setValue((string) (int) $survey->getPoolUsage());
-        $form->addItem($pool_usage);
+        $ne = new \ilNonEditableValueGUI($lng->txt("type"));
+        $ne->setValue(
+            $this->domain_service
+                ->modeProvider($survey->getMode())
+                ->getTitle()
+        );
+        $form->addItem($ne);
 
         if ($feature_config->usesAppraisees()) {
             $self_rate = new \ilCheckboxInputGUI($lng->txt("survey_360_self_raters"), "self_rate");
@@ -265,7 +261,14 @@ class SettingsFormGUI
         $online->setChecked(!$survey->getOfflineStatus());
         $form->addItem($online);
 
-        $dur = new \ilDateDurationInputGUI($lng->txt('rep_time_based_availability'), "access_period");
+        $time_based_aval = new \ilCheckboxInputGUI($lng->txt('rep_time_based_availability'), 'time_based_avail');
+        $time_based_aval->setChecked(
+            (int) $survey->getActivationStartDate() > 0 ||
+            (int) $survey->getActivationEndDate() > 0
+        );
+        $form->addItem($time_based_aval);
+
+        $dur = new \ilDateDurationInputGUI($lng->txt('rep_time_period'), "access_period");
         $dur->setShowTime(true);
         $date = $survey->getActivationStartDate();
         $dur->setStart($date
@@ -275,12 +278,12 @@ class SettingsFormGUI
         $dur->setEnd($date
             ? new \ilDateTime($date, IL_CAL_UNIX)
             : null);
-        $form->addItem($dur);
+        $time_based_aval->addSubItem($dur);
 
         $visible = new \ilCheckboxInputGUI($lng->txt('rep_activation_limited_visibility'), 'access_visiblity');
         $visible->setInfo($lng->txt('svy_activation_limited_visibility_info'));
         $visible->setChecked($survey->getActivationVisibility());
-        $dur->addSubItem($visible);
+        $time_based_aval->addSubItem($visible);
 
         return $form;
     }
@@ -356,7 +359,7 @@ class SettingsFormGUI
         $startingtime = new \ilDateTimeInputGUI($lng->txt("start_date"), 'start_date');
         $startingtime->setShowTime(true);
         if ($start) {
-            $startingtime->setDate(new \ilDate($start, IL_CAL_TIMESTAMP));
+            $startingtime->setDate(new \ilDateTime($start, IL_CAL_TIMESTAMP));
         }
         $form->addItem($startingtime);
 
@@ -366,7 +369,7 @@ class SettingsFormGUI
         $endingtime = new \ilDateTimeInputGUI($lng->txt("end_date"), 'end_date');
         $endingtime->setShowTime(true);
         if ($end) {
-            $endingtime->setDate(new \ilDate($end, IL_CAL_TIMESTAMP));
+            $endingtime->setDate(new \ilDateTime($end, IL_CAL_TIMESTAMP));
         }
         $form->addItem($endingtime);
 
@@ -427,11 +430,6 @@ class SettingsFormGUI
         $info = new \ilFormSectionHeaderGUI();
         $info->setTitle($lng->txt("svy_settings_section_finishing"));
         $form->addItem($info);
-
-        $view_own = new \ilCheckboxInputGUI($lng->txt("svy_results_view_own"), "view_own");
-        $view_own->setInfo($lng->txt("svy_results_view_own_info"));
-        $view_own->setChecked($survey->hasViewOwnResults());
-        $form->addItem($view_own);
 
         $mail_confirm = new \ilCheckboxInputGUI($lng->txt("svy_results_mail_confirm"), "mail_confirm");
         $mail_confirm->setInfo($lng->txt("svy_results_mail_confirm_info"));
@@ -847,7 +845,6 @@ class SettingsFormGUI
             $survey->setOfflineStatus(!$form->getInput('online'));
         }
 
-        $survey->setViewOwnResults((bool) $form->getInput("view_own"));
         $survey->setMailOwnResults((bool) $form->getInput("mail_own"));
         $survey->setMailConfirmation((bool) $form->getInput("mail_confirm"));
 
@@ -858,7 +855,8 @@ class SettingsFormGUI
 
         // activation
         $period = $form->getItemByPostVar("access_period");
-        if ($period->getStart() && $period->getEnd()) {
+        $tb = $form->getInput("time_based_avail");
+        if ($tb && $period->getStart() && $period->getEnd()) {
             $survey->setActivationLimited(true);
             $survey->setActivationVisibility((bool) $form->getInput("access_visiblity"));
             $survey->setActivationStartDate($period->getStart()->get(IL_CAL_UNIX));
@@ -888,7 +886,6 @@ class SettingsFormGUI
         $survey->setIntroduction($form->getInput("introduction"));
         $survey->setOutro($form->getInput("outro"));
         $survey->setShowQuestionTitles((bool) $form->getInput("show_question_titles"));
-        $survey->setPoolUsage((bool) $form->getInput("use_pool"));
 
         // "separate mail for each participant finished"
         $survey->setMailNotification((bool) $form->getInput('mailnotification'));

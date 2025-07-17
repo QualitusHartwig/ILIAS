@@ -20,7 +20,7 @@ declare(strict_types=1);
 
 namespace ILIAS\Tests\UI\Component\Dropzone\File;
 
-use ILIAS\UI\Component\Legacy\Legacy;
+use ILIAS\UI\Component\Legacy\Content;
 use ILIAS\UI\Implementation\Component\Input\Field\Text;
 
 require_once("./components/ILIAS/UI/tests/Component/Dropzone/File/FileTestBase.php");
@@ -38,12 +38,12 @@ class WrapperTest extends FileTestBase
         $expected_html = $this->brutallyTrimHTML(
             '
 <div id="id_4" class="ui-dropzone ui-dropzone-wrapper">
-    <dialog class="c-modal il-modal-roundtrip" tabindex="-1" role="dialog" id="id_1">
+    <dialog class="c-modal il-modal-roundtrip" tabindex="-1" id="id_1">
         <div class="modal-dialog" role="document" data-replace-marker="component">
             <div class="modal-content">
                 <div class="modal-header"><form><button formmethod="dialog" class="close" aria-label="close"><span aria-hidden="true">&times;</span></button></form><h1 class="modal-title">' . $expected_title . ' </h1></div>
                 <div class="modal-body">
-                    <form id="id_2" role="form" class="c-form c-form--horizontal" enctype="multipart/form-data" action="' . $expected_url . '" method="post" novalidate="novalidate">File Field Input</form>
+                    <form id="id_2" class="c-form c-form--horizontal" enctype="multipart/form-data" action="' . $expected_url . '" method="post">File Field Input</form>
                 </div>
                 <div class="modal-footer"><form><button class="btn btn-default" id="id_3">save</button><button formmethod="dialog" class="btn btn-default" data-dismiss="modal">cancel</button></form></div>
             </div>
@@ -54,7 +54,7 @@ class WrapperTest extends FileTestBase
         '
         );
 
-        $legacy_mock = $this->createMock(Legacy::class);
+        $legacy_mock = $this->createMock(Content::class);
         $legacy_mock->method('getCanonicalName')->willReturn($expected_legacy_html);
 
         $dropzone = $this->factory->wrapper($expected_title, $expected_url, $legacy_mock, $this->input);

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=1);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=1);
 
 use ILIAS\UI\Component\Input\Container\Form;
 use ILIAS\Style\Content;
@@ -388,7 +388,7 @@ class ilStyleCharacteristicGUI
 
         $form->setTitle($lng->txt("sty_add_characteristic"));
         $form->addCommandButton("saveCharacteristic", $lng->txt("save"));
-        $form->addCommandButton("edit", $lng->txt("cancel"));
+        $form->addCommandButton("listCharacteristics", $lng->txt("cancel"));
         $form->setFormAction($ilCtrl->getFormAction($this));
 
         return $form;
@@ -1042,6 +1042,20 @@ class ilStyleCharacteristicGUI
         $lng = $this->domain_service->lng();
 
         $chars = $this->request->getCharacteristics();
+
+        // check, if type can be copied (is expanable)
+        foreach ($chars as $c) {
+            $type_arr = explode(".", $c);
+            if (!ilObjStyleSheet::_isExpandable($type_arr[0] ?? "")) {
+                $this->main_tpl->setOnScreenMessage(
+                    'failure',
+                    $lng->txt("sty_cannot_be_copied") . ": " . $lng->txt("sty_type_" . $type_arr[0] ?? ""),
+                    true
+                );
+                $ilCtrl->redirect($this, "listCharacteristics");
+            }
+        }
+
         if (count($chars) == 0) {
             $this->main_tpl->setOnScreenMessage('failure', $lng->txt("no_checkbox"), true);
         } else {

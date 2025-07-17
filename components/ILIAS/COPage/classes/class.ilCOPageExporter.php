@@ -23,7 +23,7 @@
 class ilCOPageExporter extends ilXmlExporter
 {
     private ilCOPageDataSet $ds;
-    protected ilExportConfig $config;
+    protected ilCOPageExportConfig $config;
 
     /**
      * List of dependencies for page component plugins with an own exporter
@@ -52,9 +52,11 @@ class ilCOPageExporter extends ilXmlExporter
         $component_repository = $DIC["component.repository"];
 
         $this->ds = new ilCOPageDataSet();
-        $this->ds->setExportDirectories($this->dir_relative, $this->dir_absolute);
+        $this->ds->initByExporter($this);
         $this->ds->setDSPrefix("ds");
-        $this->config = $this->getExport()->getConfig("components/ILIAS/COPage");
+        /** @var ilCOPageExportConfig $config */
+        $config = $this->getExport()->getExportConfigs()->getElementByComponent('components/ILIAS/COPage');
+        $this->config = $config;
         if ($this->config->getMasterLanguageOnly()) {
             $this->ds->setMasterLanguageOnly(true);
         }

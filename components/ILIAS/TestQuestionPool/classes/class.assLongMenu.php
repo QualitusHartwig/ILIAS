@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 use ILIAS\TestQuestionPool\Questions\QuestionLMExportable;
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
 
 class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable, QuestionLMExportable, QuestionAutosaveable
@@ -63,7 +62,7 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
     }
 
 
-    public function setCorrectAnswers($correct_answers): void
+    public function setCorrectAnswers(array $correct_answers): void
     {
         $this->correct_answers = $correct_answers;
     }
@@ -98,7 +97,7 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
         return $this->long_menu_text;
     }
 
-    public function setAnswers($answers): void
+    public function setAnswers(array $answers): void
     {
         $this->answers = $answers;
     }
@@ -134,14 +133,14 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
         return $this->specificFeedbackSetting;
     }
 
-    public function setMinAutoComplete($minAutoComplete): void
+    public function setMinAutoComplete(int $min_auto_complete): void
     {
-        $this->minAutoComplete = $minAutoComplete;
+        $this->minAutoComplete = $min_auto_complete;
     }
 
     public function getMinAutoComplete(): int
     {
-        return $this->minAutoComplete ? $this->minAutoComplete : self::MIN_LENGTH_AUTOCOMPLETE;
+        return $this->minAutoComplete;
     }
 
     public function isComplete(): bool
@@ -368,19 +367,18 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
         if ($result->numRows() == 1) {
             $data = $this->db->fetchAssoc($result);
             $this->setId($question_id);
-            $this->setObjId($data["obj_fi"]);
+            $this->setObjId($data['obj_fi']);
             $this->setNrOfTries($data['nr_of_tries']);
-            $this->setTitle((string) $data["title"]);
-            $this->setComment((string) $data["description"]);
-            $this->setOriginalId($data["original_id"]);
-            $this->setAuthor($data["author"]);
-            $this->setPoints($data["points"]);
-            $this->setIdenticalScoring((bool) $data["identical_scoring"]);
-            $this->setOwner($data["owner"]);
+            $this->setTitle((string) $data['title']);
+            $this->setComment((string) $data['description']);
+            $this->setOriginalId($data['original_id']);
+            $this->setAuthor($data['author']);
+            $this->setPoints($data['points']);
+            $this->setIdenticalScoring((bool) $data['identical_scoring']);
+            $this->setOwner($data['owner']);
             $this->setQuestion(ilRTE::_replaceMediaObjectImageSrc((string) $data['question_text'], 1));
             $this->setLongMenuTextValue(ilRTE::_replaceMediaObjectImageSrc((string) $data['long_menu_text'], 1));
-            $this->loadCorrectAnswerData($question_id);
-            $this->setMinAutoComplete($data["min_auto_complete"]);
+            $this->setMinAutoComplete($data['min_auto_complete'] ?? self::MIN_LENGTH_AUTOCOMPLETE);
             if (isset($data['feedback_setting'])) {
                 $this->setSpecificFeedbackSetting((int) $data['feedback_setting']);
             }
@@ -598,28 +596,17 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
 
     protected function getSolutionSubmit(): array
     {
-        $answer = $this->questionpool_request->retrieveArrayOfStringsFromPost('answer');
-
-        if ($answer === null) {
-            return [];
+        $solution_submit = [];
+        foreach ($this->questionpool_request->strArray('answer') as $key => $value) {
+            $solution_submit[$key] = $value;
         }
-
-        foreach ($answer as $key => $value) {
-            $solutionSubmit[$key] = $value;
-        }
-
-        return $solutionSubmit;
+        return $solution_submit;
     }
 
-    protected function savePreviewData(ilAssQuestionPreviewSession $previewSession): void
+    protected function savePreviewData(ilAssQuestionPreviewSession $preview_session): void
     {
-        $answer = $_POST['answer'] ?? null;
-        if (is_array($answer)) {
-            $answer = array_map(function ($value) {
-                return trim($value);
-            }, $answer);
-        }
-        $previewSession->setParticipantsSolution($answer);
+        $answer = $this->questionpool_request->strArray('answer');
+        $preview_session->setParticipantsSolution(array_map(static fn($value) => trim($value), $answer));
     }
 
     /**
@@ -644,41 +631,6 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
     public function getRTETextWithMediaObjects(): string
     {
         return parent::getRTETextWithMediaObjects() . $this->getLongMenuTextValue();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $solution = $this->getSolutionValues($active_id, $pass);
-
-        $i = 1;
-        foreach ($this->getCorrectAnswers() as $gap_index => $gap) {
-            $worksheet->setCell($startrow + $i, $col, $this->lng->txt('assLongMenu') . " $i");
-            $worksheet->setBold($worksheet->getColumnCoord($col) . ($startrow + $i));
-            foreach ($solution as $solutionvalue) {
-                if ($gap_index == $solutionvalue["value1"]) {
-                    switch ($gap[2]) {
-                        case self::ANSWER_TYPE_SELECT_VAL:
-                            $value = $solutionvalue["value2"];
-                            if ($value == -1) {
-                                $value = '';
-                            }
-                            $worksheet->setCell($startrow + $i, $col + 2, $value);
-                            break;
-                        case self::ANSWER_TYPE_TEXT_VAL:
-                            $worksheet->setCell($startrow + $i, $col + 2, $solutionvalue["value2"]);
-                            break;
-                    }
-                }
-            }
-            $i++;
-        }
-
-        return $startrow + $i + 1;
     }
 
     /**
@@ -750,7 +702,7 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
         $result = [];
         $result['id'] = $this->getId();
         $result['type'] = (string) $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $replaced_quesiton_text = $this->getLongMenuTextValue();
         $result['lmtext'] = $this->formatSAQuestion($replaced_quesiton_text);
@@ -782,7 +734,7 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
     {
         return [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_LONGMENU_TEXT => $this->formatSAQuestion($this->getLongMenuTextValue()),
             AdditionalInformationGenerator::KEY_QUESTION_SHUFFLE_ANSWER_OPTIONS => $additional_info
@@ -801,7 +753,7 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
         $i = 1;
         return array_reduce(
             $this->getAnswers(),
-            static function (string $c, array $v) use ($additional_info, $i): string {
+            static function (string $c, array $v) use ($additional_info, &$i): string {
                 return $c . $additional_info->getTagForLangVar('gap')
                     . ' ' . $i++ . ': ' . implode(',', $v) . '; ';
             },
@@ -819,7 +771,7 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
         $i = 1;
         return array_reduce(
             $this->getCorrectAnswers(),
-            static function (string $c, array $v) use ($additional_info, $answer_types, $i): string {
+            static function (string $c, array $v) use ($additional_info, $answer_types, &$i): string {
                 return $c . $additional_info->getTagForLangVar('gap')
                     . ' ' . $i++ . ': ' . implode(',', $v[0]) . ', '
                     . $additional_info->getTagForLangVar('points') . ': ' . $v[1] . ', '
@@ -829,14 +781,14 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
         );
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
     ): array {
         $parsed_solution = [];
         foreach ($this->getCorrectAnswers() as $gap_index => $gap) {
             foreach ($solution_values as $solution) {
-                if ($gap_index != $solution['value1']) {
+                if ($gap_index !== (int) $solution['value1']) {
                     continue;
                 }
                 $value = $solution['value2'];
@@ -849,5 +801,36 @@ class assLongMenu extends assQuestion implements ilObjQuestionScoringAdjustable,
             }
         }
         return $parsed_solution;
+    }
+
+    public function solutionValuesToText(array $solution_values): array
+    {
+        $parsed_solution = [];
+
+        foreach ($this->getCorrectAnswers() as $gap_index => $gap) {
+            foreach ($solution_values as $solution) {
+                if ($gap_index !== (int) $solution['value1']) {
+                    continue;
+                }
+                $value = $solution['value2'];
+                if ($gap[2] === self::ANSWER_TYPE_SELECT_VAL
+                    && $value === '-1') {
+                    $value = '';
+                }
+                $parsed_solution[] = $this->lng->txt('gap') . ' ' . $gap_index + 1 . ': ' . $value;
+                break;
+            }
+        }
+        return $parsed_solution;
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): array
+    {
+        $correct_answers = [];
+        foreach ($this->getCorrectAnswers() as $gap_index => $gap) {
+            $correct_answers[] = $this->lng->txt('gap')
+                    . ' ' . $gap_index . ': ' . implode(',', $gap[0]);
+        }
+        return $correct_answers;
     }
 }

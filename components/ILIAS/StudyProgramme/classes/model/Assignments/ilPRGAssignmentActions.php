@@ -84,6 +84,10 @@ trait ilPRGAssignmentActions
                 ->withStatus(ilPRGProgress::STATUS_COMPLETED)
                 ->withCompletion($completing_crs_id, $this->getNow());
 
+            if (!$progress->getValidityOfQualification()) {
+                $settings = $settings_repo->get($progress->getNodeId())->getValidityOfQualificationSettings();
+                $progress = $this->updateProgressValidityFromSettings($settings, $progress);
+            }
             $this->notifyProgressSuccess($progress);
         }
 
@@ -183,7 +187,7 @@ trait ilPRGAssignmentActions
     protected function applyProgressDeadline(
         ilStudyProgrammeSettingsRepository $settings_repo,
         ilPRGProgress $progress,
-        int $acting_usr_id = null,
+        ?int $acting_usr_id = null,
         bool $recalculate = true
     ): ilPRGProgress {
         $today = $this->getNow();
@@ -504,9 +508,8 @@ trait ilPRGAssignmentActions
                     $pgs = $pgs->succeed($now, $triggering_obj_id)
                         ->withCurrentAmountOfPoints($pgs->getAmountOfPoints());
                     $this->notifyScoreChange($pgs);
-
-                    $settings = $settings_repo->get($pgs->getNodeId());
-                    $pgs = $this->updateProgressValidityFromSettings($settings->getValidityOfQualificationSettings(), $pgs);
+                    $settings = $settings_repo->get($pgs->getNodeId())->getValidityOfQualificationSettings();
+                    $pgs = $this->updateProgressValidityFromSettings($settings, $pgs);
                 }
 
                 $this->notifyProgressSuccess($pgs);

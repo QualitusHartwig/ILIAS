@@ -18,9 +18,6 @@
 
 declare(strict_types=1);
 
-/**
- * @author Stefan Meyer <smeyer.ilias@gmx.de>
- */
 class ilAuthFrontendCredentialsOpenIdConnect extends ilAuthFrontendCredentials
 {
     private const SESSION_TARGET = 'oidc_target';
@@ -34,6 +31,7 @@ class ilAuthFrontendCredentialsOpenIdConnect extends ilAuthFrontendCredentials
         global $DIC;
 
         parent::__construct();
+
         $this->settings = ilOpenIdConnectSettings::getInstance();
         $httpquery = $DIC->http()->wrapper()->query();
         if ($httpquery->has(self::QUERY_PARAM_TARGET)) {

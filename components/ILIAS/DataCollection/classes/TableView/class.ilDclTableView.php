@@ -55,6 +55,13 @@ class ilDclTableView extends ActiveRecord
      */
     protected array $roles = [];
     /**
+     * @var bool
+     * @db_has_field        true
+     * @db_fieldtype        integer
+     * @db_length           1
+     */
+    protected bool $role_limitation = false;
+    /**
      * @var string
      * @db_has_field        true
      * @db_fieldtype        text
@@ -150,6 +157,16 @@ class ilDclTableView extends ActiveRecord
     public function setRoles(array $roles): void
     {
         $this->roles = $roles;
+    }
+
+    public function getRoleLimitation(): bool
+    {
+        return $this->role_limitation;
+    }
+
+    public function setRoleLimitation(bool $role_limitation): void
+    {
+        $this->role_limitation = $role_limitation;
     }
 
     /**
@@ -252,12 +269,22 @@ class ilDclTableView extends ActiveRecord
      */
     public function getFieldSettings(): array
     {
-        return ilDclTableViewFieldSetting::where(
+        $settings = ilDclTableViewFieldSetting::where(
             [
                 'tableview_id' => $this->getId(),
                 'il_dcl_tfield_set.table_id' => $this->getTableId(),
             ]
         )->innerjoin('il_dcl_tfield_set', 'field', 'field', [])->orderBy('il_dcl_tfield_set.field_order')->get();
+
+        $result = [];
+        foreach ($settings as $setting) {
+            $datatype = $setting->getFieldObject()->getDatatypeId();
+            if ($datatype === null || in_array($datatype, array_keys(ilDclDatatype::getAllDatatype()))) {
+                $result[] = $setting;
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -338,6 +365,7 @@ class ilDclTableView extends ActiveRecord
         $this->setOrder($orig->getOrder());
         $this->setDescription($orig->getDescription());
         $this->setRoles($orig->getRoles());
+        $this->setRoleLimitation($orig->getRoleLimitation());
         $this->create(false); //create default setting, adjust them later
 
         //clone default values
@@ -367,6 +395,7 @@ class ilDclTableView extends ActiveRecord
                 $new_default_value->create();
             }
         }
+        $this->createFieldSetting('comments');
 
         //clone pageobject
         if (ilDclDetailedViewDefinition::exists($orig->getId())) {
@@ -393,10 +422,9 @@ class ilDclTableView extends ActiveRecord
 
     /**
      * @param      $table_id
-     * @param bool $create_default_settings
      * @return ilDclTableView|ActiveRecord
      */
-    public static function createOrGetStandardView(int $table_id, bool $create_default_settings = true): ActiveRecord
+    public static function createOrGetStandardView(int $table_id): ActiveRecord
     {
         if ($standardview = self::where(['table_id' => $table_id])->orderBy('tableview_order')->first()) {
             return $standardview;
@@ -435,7 +463,7 @@ class ilDclTableView extends ActiveRecord
         $lng = $DIC['lng'];
         $view->setTitle($lng->txt('dcl_title_standardview'));
         $view->setTableviewOrder(10);
-        $view->create($create_default_settings);
+        $view->create();
 
         return $view;
     }

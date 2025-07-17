@@ -1,6 +1,5 @@
 <?php
 
-declare(strict_types=1);
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +16,7 @@ declare(strict_types=1);
  *
  *********************************************************************/
 
+declare(strict_types=1);
 /**
 * SCORM Organizations
 *
@@ -68,7 +68,7 @@ class ilSCORMOrganizations extends ilSCORMObject
             array($this->getId())
         );
         $obj_rec = $ilDB->fetchAssoc($obj_set);
-        $this->setDefaultOrganization($obj_rec["default_organization"]);
+        $this->setDefaultOrganization($obj_rec["default_organization"] ?? '');
     }
 
     public function create(): void

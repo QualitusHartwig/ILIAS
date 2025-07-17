@@ -27,7 +27,6 @@ use ilArrayUtil;
 use ilUserUtil;
 use ilMailingListsGUI;
 use ilLanguage;
-use ilCtrl;
 use ilMailingList;
 
 class MailingListsMembersTable implements UI\Component\Table\DataRetrieval
@@ -39,7 +38,7 @@ class MailingListsMembersTable implements UI\Component\Table\DataRetrieval
 
     public function __construct(
         private readonly ilMailingList $mailing_list,
-        private readonly ilCtrl $ctrl,
+        private readonly \ilCtrlInterface $ctrl,
         private readonly ilLanguage $lng,
         private readonly \ILIAS\UI\Factory $ui_factory,
         \ILIAS\HTTP\GlobalHttpState $http
@@ -56,14 +55,15 @@ class MailingListsMembersTable implements UI\Component\Table\DataRetrieval
         return $this->ui_factory
             ->table()
             ->data(
-                sprintf(
+                $this,
+                \sprintf(
                     $this->lng->txt('mail_members_of_mailing_list'),
                     $this->mailing_list->getTitle()
                 ),
                 $columns,
-                $this
             )
             ->withId(self::class . '_' . $this->mailing_list->getId())
+            ->withOrder(new \ILIAS\Data\Order('login', \ILIAS\Data\Order::ASC))
             ->withActions($actions)
             ->withRequest($this->request);
     }
@@ -158,7 +158,7 @@ class MailingListsMembersTable implements UI\Component\Table\DataRetrieval
     ): ?int {
         $this->initRecords();
 
-        return count($this->records);
+        return \count($this->records);
     }
 
     /**
@@ -190,6 +190,6 @@ class MailingListsMembersTable implements UI\Component\Table\DataRetrieval
      */
     private function limitRecords(array $records, Data\Range $range): array
     {
-        return array_slice($records, $range->getStart(), $range->getLength());
+        return \array_slice($records, $range->getStart(), $range->getLength());
     }
 }

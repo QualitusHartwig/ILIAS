@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=0);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=0);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=0);
 
 /**
  * Class ilObjUserTrackingGUI
@@ -129,12 +129,15 @@ class ilLearningProgressGUI extends ilLearningProgressBaseGUI
 
     public function __setCmdClass(string $a_class): void
     {
-        if (strcasecmp(ilLearningProgressGUI::class, $this->ctrl->getCmdClass()) === 0) {
-            // @todo: removed deprecated ilCtrl methods, this needs inspection by a maintainer.
-            // $this->ctrl->setCmdClass($a_class);
+        /**
+         * TODO: maybe this can be replaced by nextClass === ''?
+         */
+        if (
+            strtolower($this->ctrl->getCmdClass()) !== strtolower($a_class) &&
+            strtolower($this->ctrl->getNextClass()) !== strtolower($a_class)
+        ) {
+            $this->ctrl->redirectByClass($a_class);
         }
-        // note, this was removed prior to the deprecated ilCtrl methods already.
-        //$this->ctrl->setCmdClass($a_class);
     }
 
     public function __getNextClass(): string

@@ -19,6 +19,7 @@
 declare(strict_types=1);
 
 use ILIAS\Filesystem\Filesystem;
+use ILIAS\ILIASObject\Properties\AdditionalProperties\Icon\Factory as CustomIconFactory;
 
 class ilObjStudyProgramme extends ilContainer
 {
@@ -64,7 +65,7 @@ class ilObjStudyProgramme extends ilContainer
     protected Filesystem $webdir;
     protected ilObjUser $ilUser;
     protected ?ilObjectFactoryWrapper $object_factory = null;
-    protected ilObjectCustomIconFactory $custom_icon_factory;
+    protected CustomIconFactory $custom_icon_factory;
     protected ilLogger $logger;
 
     /**
@@ -429,7 +430,7 @@ class ilObjStudyProgramme extends ilContainer
     {
         $global_settings = new ilSetting('certificate');
         $global_active = (bool) $global_settings->get('active', '0');
-        if(!$global_active) {
+        if (!$global_active) {
             return false;
         }
         $certificate_template_repository = new ilCertificateTemplateDatabaseRepository($this->db);
@@ -506,13 +507,6 @@ class ilObjStudyProgramme extends ilContainer
         if ($include_references && $this->reference_children === null) {
             $this->reference_children = [];
             $ref_child_ref_ids = $this->tree->getChildsByType($this->getRefId(), "prgr");
-            foreach ($this->children as $prg) {
-                $ref_child_ref_ids =
-                    array_merge(
-                        $this->tree->getChildsByType($prg->getRefId(), "prgr"),
-                        $ref_child_ref_ids
-                    );
-            }
             foreach (
                 array_unique(
                     array_map(
@@ -753,38 +747,41 @@ class ilObjStudyProgramme extends ilContainer
 
     /**
      * Get courses in this program that the given user already completed.
-     *
-     * @return int[]
      */
-    public function getCompletedCourses(int $usr_id): array
+    public function getCompletedCourses(ilPRGAssignment $assignment): array
     {
-        $node_data = $this->tree->getNodeData($this->getRefId());
-        $crsrs = $this->tree->getSubTree($node_data, true, ["crsr"]);
-
-        $completed_crss = array();
-        foreach ($crsrs as $ref) {
-            $crs_id = (int) ilContainerReference::_lookupTargetId((int) $ref["obj_id"]);
-            $crs_ref_id = (int) ilContainerReference::_lookupTargetRefId((int) $ref["obj_id"]);
-
-            if (ilObject::_exists((int) $ref['ref_id'], true) &&
-                is_null(ilObject::_lookupDeletedDate((int) $ref['ref_id'])) &&
-                ilObject::_exists($crs_id, false) &&
-                is_null(ilObject::_lookupDeletedDate($crs_ref_id)) &&
-                ilLPStatus::_hasUserCompleted($crs_id, $usr_id)
+        $completed_crss = [];
+        $f = function ($prg) use (&$completed_crss, $assignment) {
+            if ($prg->isActive() &&
+                $assignment->getProgressForNode($prg->getId())->isRelevant()
             ) {
-                $containing_prg = self::getInstanceByRefId((int) $ref["parent"]);
-                if ($containing_prg->isActive()) {
-                    $completed_crss[] = [
-                        "crs_id" => $crs_id
-                        , "prg_ref_id" => (int) $ref["parent"]
-                        , "prg_obj_id" => $containing_prg->getId()
-                        , "crsr_ref_id" => (int) $ref["child"]
-                        , "crsr_id" => (int) $ref["obj_id"]
-                        , "title" => ilContainerReference::_lookupTitle((int) $ref["obj_id"])
-                    ];
+                foreach ($prg->getLPChildren() as $child) {
+                    $crs_id = (int) ilContainerReference::_lookupTargetId((int) $child->getId());
+                    $crs_ref_id = (int) ilContainerReference::_lookupTargetRefId((int) $child->getId());
+                    $crsr_ref_id = (int) $child->getRefId();
+
+                    if (ilObject::_exists($crsr_ref_id, true) &&
+                        is_null(ilObject::_lookupDeletedDate($crsr_ref_id)) &&
+                        ilObject::_exists($crs_id, false) &&
+                        is_null(ilObject::_lookupDeletedDate($crs_ref_id)) &&
+                        ilLPStatus::_hasUserCompleted($crs_id, $assignment->getUserId())
+                    ) {
+                        $completed_crss[] = [
+                            'crs_id' => $crs_id,
+                            'prg_ref_id' => $prg->getRefId(),
+                            'prg_obj_id' => $prg->getId(),
+                            'crsr_ref_id' => $crsr_ref_id,
+                            'crsr_id' => $child->getId(),
+                            'crs_ref_id' => $crs_ref_id,
+                            'title' => ilContainerReference::_lookupTitle((int) $child->getId()),
+                        ];
+                    }
                 }
+                return true;
             }
-        }
+            return false;
+        };
+        $this->applyToSubTreeNodes($f, true);
         return $completed_crss;
     }
 
@@ -954,7 +951,7 @@ class ilObjStudyProgramme extends ilContainer
      *
      * @throws ilException
      */
-    public function assignUser(int $usr_id, int $acting_usr_id = null, $raise_event = true): ilPRGAssignment
+    public function assignUser(int $usr_id, ?int $acting_usr_id = null, $raise_event = true): ilPRGAssignment
     {
         $this->members_cache = null;
 
@@ -1148,6 +1145,14 @@ class ilObjStudyProgramme extends ilContainer
     public function hasAssignmentsOfSingleProgramForUser(int $usr_id): bool
     {
         return count($this->getAssignmentsOfSingleProgramForUser($usr_id)) > 0;
+    }
+
+    public function getCertificateRelevantAssignmentIds(int ...$usr_ids): array
+    {
+        return $this->assignment_repository->getCertificateRelevantAssignmentIds(
+            $this->getId(),
+            ...$usr_ids
+        );
     }
 
 
@@ -1430,9 +1435,9 @@ class ilObjStudyProgramme extends ilContainer
      * @return int[]
      * @throws InvalidArgumentException if $src_type is not in AutoMembershipSource-types
      */
-    protected function getMembersOfMembershipSource(ilStudyProgrammeAutoMembershipSource $ams): array
+    protected function getMembersOfMembershipSource(ilStudyProgrammeAutoMembershipSource $ams, ?int $exclude_id): array
     {
-        $source_reader = $this->membersourcereader_factory->getReaderFor($ams);
+        $source_reader = $this->membersourcereader_factory->getReaderFor($ams, $exclude_id);
         return $source_reader->getMemberIds();
     }
 
@@ -1483,7 +1488,11 @@ class ilObjStudyProgramme extends ilContainer
                     continue;
                 }
 
-                if (!is_null($next_membership_source) && $next_membership_source->isEnabled()) {
+                if (
+                    $next_membership_source !== null
+                    && $next_membership_source?->isEnabled()
+                    && $next_membership_source->getSourceId() !== $src_id
+                ) {
                     $new_src_type = $next_membership_source->getSourceType();
                     $assigned_by = ilStudyProgrammeAutoMembershipSource::SOURCE_MAPPING[$new_src_type];
                     $assignment = $assignment->withLastChange($assigned_by, $now);
@@ -1502,7 +1511,7 @@ class ilObjStudyProgramme extends ilContainer
     ): ?ilStudyProgrammeAutoMembershipSource {
         foreach ($this->getAutomaticMembershipSources() as $ams) {
             if ($ams->isEnabled()) {
-                $source_members = $this->getMembersOfMembershipSource($ams);
+                $source_members = $this->getMembersOfMembershipSource($ams, $exclude_id);
                 if (in_array($usr_id, $source_members)) {
                     return $ams;
                 }
@@ -1552,7 +1561,7 @@ class ilObjStudyProgramme extends ilContainer
     /**
      * @throws ilException
      */
-    protected static function setProgressesCompletedIfParentIsProgrammeInLPCompletedMode(
+    public static function setProgressesCompletedIfParentIsProgrammeInLPCompletedMode(
         int $ref_id,
         int $obj_id,
         int $user_id
@@ -1571,7 +1580,7 @@ class ilObjStudyProgramme extends ilContainer
         $prg->succeed($user_id, $obj_id);
     }
 
-    public function succeed(int $usr_id, int $triggering_obj_id, ilPRGAssignment $ass = null): void
+    public function succeed(int $usr_id, int $triggering_obj_id, ?ilPRGAssignment $ass = null): void
     {
         $progress_node_id = $this->getId();
         if (is_null($ass)) {
@@ -1677,7 +1686,7 @@ class ilObjStudyProgramme extends ilContainer
         return new DateTimeImmutable();
     }
 
-    protected function refreshLPStatus(int $usr_id, int $node_obj_id = null): void
+    protected function refreshLPStatus(int $usr_id, ?int $node_obj_id = null): void
     {
         if (is_null($node_obj_id)) {
             $node_obj_id = $this->getId();
@@ -1820,7 +1829,7 @@ class ilObjStudyProgramme extends ilContainer
     public function updatePlanFromRepository(
         int $assignment_id,
         int $acting_usr_id,
-        ilPRGMessageCollection $err_collection = null
+        ?ilPRGMessageCollection $err_collection = null
     ): void {
         $assignment = $this->assignment_repository->get($assignment_id)
             ->updatePlanFromRepository(
@@ -1836,16 +1845,17 @@ class ilObjStudyProgramme extends ilContainer
     public function acknowledgeCourses(
         int $assignment_id,
         array $nodes,
-        ilPRGMessageCollection $err_collection = null
+        ?ilPRGMessageCollection $err_collection = null
     ): void {
         $acting_usr_id = $this->getLoggedInUserId();
         $assignment = $this->assignment_repository->get($assignment_id);
-        foreach($nodes as $nodeinfo) {
-            [$node_obj_id, $courseref_obj_id] = $nodeinfo;
+        foreach ($nodes as $nodeinfo) {
+            [$node_obj_id, $course_obj_id] = $nodeinfo;
+
             $assignment = $assignment->succeed(
                 $this->settings_repository,
                 $node_obj_id,
-                $courseref_obj_id
+                $course_obj_id
             );
 
             $msg = sprintf(
@@ -1862,6 +1872,9 @@ class ilObjStudyProgramme extends ilContainer
 
     public function canBeCompleted(ilPRGProgress $progress): bool
     {
+        if ($this->getStatus() === ilStudyProgrammeSettings::STATUS_DRAFT) {
+            return false;
+        }
         if ($this->getLPMode() == ilStudyProgrammeSettings::MODE_LP_COMPLETED) {
             return true;
         }

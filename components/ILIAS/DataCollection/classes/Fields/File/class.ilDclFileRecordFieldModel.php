@@ -31,9 +31,9 @@ class ilDclFileRecordFieldModel extends ilDclBaseRecordFieldModel
     private const FILE_NAME = "name";
     private const FILE_TYPE = "type";
 
-    private \ILIAS\ResourceStorage\Services $irss;
-    private ilDataCollectionStakeholder $stakeholder;
-    private \ILIAS\FileUpload\FileUpload $upload;
+    protected \ILIAS\ResourceStorage\Services $irss;
+    protected ilDataCollectionStakeholder $stakeholder;
+    protected \ILIAS\FileUpload\FileUpload $upload;
 
     public function __construct(ilDclBaseRecordModel $record, ilDclBaseFieldModel $field)
     {
@@ -44,17 +44,8 @@ class ilDclFileRecordFieldModel extends ilDclBaseRecordFieldModel
         $this->upload = $DIC->upload();
     }
 
-    public function getRecordRepresentation(): ?ilDclBaseRecordRepresentation
-    {
-        return new ilDclFileRecordRepresentation($this);
-    }
-
     public function parseValue($value)
     {
-        if ($value === -1) { // marked for deletion.
-            return null;
-        }
-
         $file = $value;
 
         // Some general Request Information
@@ -99,13 +90,13 @@ class ilDclFileRecordFieldModel extends ilDclBaseRecordFieldModel
             $file_title = $file[self::FILE_NAME] ?? basename($move_file);
 
             // Storing the File to the IRSS
-            $existing_value = $this->getValueForRepresentation();
+            $existing_value = $this->getValue();
             if (
                 is_string($existing_value)
                 && ($rid = $this->irss->manage()->find($existing_value)) !== null
             ) {
                 // Append to existing RID
-                $this->irss->manage()->appendNewRevisionFromStream(
+                $this->irss->manage()->replaceWithStream(
                     $rid,
                     $file_stream,
                     $this->stakeholder,
@@ -130,41 +121,27 @@ class ilDclFileRecordFieldModel extends ilDclBaseRecordFieldModel
         return $this->getValue();
     }
 
+    public function setValueFromForm(ilPropertyFormGUI $form): void
+    {
+        if ($this->value !== null && $form->getItemByPostVar("field_" . $this->getField()->getId())->getDeletionFlag()) {
+            $this->removeData();
+            $this->setValue(null, true);
+            $this->doUpdate();
+        }
+        parent::setValueFromForm($form);
+    }
+
     public function delete(): void
     {
-        if (($rid = $this->valueToRID($this->value)) !== null) {
-            $this->irss->manage()->remove(
-                $rid,
-                $this->stakeholder
-            );
+        if ($this->value !== null) {
+            $this->removeData();
         }
-
         parent::delete();
     }
 
-    public function setValue($value, bool $omit_parsing = false): void
+    protected function removeData(): void
     {
-        $this->loadValue();
-
-        if (!$omit_parsing) {
-            $temporary = $this->parseValue($value);
-            $current = $this->value;
-            if ($temporary !== false) {
-                $this->value = $temporary;
-                if (
-                    $current
-                    && $current !== $temporary
-                    && ($rid = $this->valueToRID($value)) !== null
-                ) {
-                    $this->irss->manage()->remove(
-                        $rid,
-                        $this->stakeholder
-                    );
-                }
-            }
-        } else {
-            $this->value = $value;
-        }
+        $this->irss->manage()->remove($this->irss->manage()->find($this->value), $this->stakeholder);
     }
 
     public function parseExportValue($value)

@@ -65,7 +65,7 @@ class ilAssOrderingElementList implements Iterator
      * @param ilAssOrderingElement[] $elements
      */
     public function __construct(
-        int $question_id = null,
+        ?int $question_id = null,
         array $elements = []
     ) {
         $this->objectInstanceId = ++self::$objectInstanceCounter;
@@ -201,7 +201,7 @@ class ilAssOrderingElementList implements Iterator
     }
 
     /**
-     * @return ilAssOrderingElement[]
+     * @return array<ilAssOrderingElement>
      */
     public function getElements(): array
     {

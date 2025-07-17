@@ -46,9 +46,9 @@ export default class Dropdown {
       throw new Error('Dropdown: Expected exactly one button in dropdown element.', this.#element);
     }
 
-    this.#list = this.#element.querySelector(':scope > ul');
+    this.#list = this.#element.querySelector('.dropdown-menu');
     if (this.#list === null) {
-      throw new Error('Dropdown: Expected exactly one ul in dropdown element.', this.#element);
+      throw new Error('Dropdown: Expected exactly a dropdown element.', this.#element);
     }
 
     this.#button.addEventListener('click', this.#showOnClick);
@@ -88,11 +88,12 @@ export default class Dropdown {
     } else {
       this.#list.classList.remove('dropdown-menu__left');
       this.#list.classList.add('dropdown-menu__right');
-      
     }
   };
 
   show() {
+    il.UI.dropdown.opened?.hide();
+    il.UI.dropdown.opened = this;
     this.#list.style.display = 'block';
     this.#align();
     this.#button.setAttribute('aria-expanded', 'true');

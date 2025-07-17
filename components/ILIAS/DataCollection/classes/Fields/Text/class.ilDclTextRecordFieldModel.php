@@ -126,20 +126,6 @@ class ilDclTextRecordFieldModel extends ilDclBaseRecordFieldModel
     }
 
     /**
-     * @param int|string|array $value
-     */
-    public function parseValue($value)
-    {
-        if ($this->getField()->getProperty(ilDclBaseFieldModel::PROP_TEXTAREA)
-            && !$this->getField()->getProperty(ilDclBaseFieldModel::PROP_URL)
-        ) {
-            return $value;
-        }
-
-        return $value;
-    }
-
-    /**
      * Returns sortable value for the specific field-types
      * @param int|string $value
      */
@@ -154,5 +140,19 @@ class ilDclTextRecordFieldModel extends ilDclBaseRecordFieldModel
         } else {
             return $value;
         }
+    }
+
+    public function deserializeData($value)
+    {
+        $value = (string) $value;
+        if ($this->getField()->getProperty(ilDclBaseFieldModel::PROP_URL)) {
+            $deserialize = json_decode($value, true);
+            return [
+                'title' => $deserialize['title'] ?? '',
+                'link' => $deserialize['link'] ?? '',
+            ];
+        }
+
+        return $value;
     }
 }

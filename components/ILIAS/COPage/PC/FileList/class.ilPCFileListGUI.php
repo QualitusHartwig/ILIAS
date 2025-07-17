@@ -75,7 +75,7 @@ class ilPCFileListGUI extends ilPageContentGUI
     /**
      * insert new file list form
      */
-    public function insert(ilPropertyFormGUI $a_form = null): void
+    public function insert(?ilPropertyFormGUI $a_form = null): void
     {
         $ilTabs = $this->tabs;
         $sub_command = $this->sub_command;
@@ -374,7 +374,7 @@ class ilPCFileListGUI extends ilPageContentGUI
                     $s_lang = $ilUser->getLanguage();
                 }
                 $si->setValue($s_lang);
-                $form->addCommandButton("create_flst", $lng->txt("save"));
+                $form->addCommandButton("create", $lng->txt("save"));
                 $form->addCommandButton("cancelCreate", $lng->txt("cancel"));
                 $form->setTitle($lng->txt("cont_insert_file_list"));
                 break;

@@ -280,9 +280,9 @@ class ilGlossaryDataSet extends ilDataSet
                 $newObj->setDescription($a_rec["Description"]);
                 $newObj->setVirtualMode($a_rec["Virtual"]);
                 $newObj->setPresentationMode($a_rec["PresMode"]);
-                $newObj->setSnippetLength($a_rec["SnippetLength"]);
-                $newObj->setActiveGlossaryMenu($a_rec["GloMenuActive"]);
-                $newObj->setShowTaxonomy($a_rec["ShowTax"]);
+                $newObj->setSnippetLength((int) ($a_rec["SnippetLength"] ?? 0));
+                $newObj->setActiveGlossaryMenu((bool) ($a_rec["GloMenuActive"] ?? false));
+                $newObj->setShowTaxonomy((bool) ($a_rec["ShowTax"] ?? false));
                 $newObj->setActiveFlashcards((bool) ($a_rec["FlashActive"] ?? false));
                 $newObj->setFlashcardsMode($a_rec["FlashMode"] ?? "");
                 if ($this->getCurrentInstallationId() > 0) {
@@ -293,7 +293,7 @@ class ilGlossaryDataSet extends ilDataSet
                 $this->current_obj = $newObj;
                 $this->old_glo_id = $a_rec["Id"];
                 $a_mapping->addMapping("components/ILIAS/Glossary", "glo", $a_rec["Id"], $newObj->getId());
-                $a_mapping->addMapping("components/ILIAS/Object", "obj", $a_rec["Id"], $newObj->getId());
+                $a_mapping->addMapping("components/ILIAS/ILIASObject", "obj", $a_rec["Id"], $newObj->getId());
                 $a_mapping->addMapping(
                     "components/ILIAS/MetaData",
                     "md",

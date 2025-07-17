@@ -853,7 +853,8 @@ s     */
         bool $a_append_bib = false,
         string $a_append_str = "",
         bool $a_omit_pageobject_tag = false,
-        int $style_id = 0
+        int $style_id = 0,
+        bool $offline = false
     ): string {
         if ($a_incl_head) {
             //echo "\n<br>#".$this->encoding."#";
@@ -864,7 +865,7 @@ s     */
                 $mobs = "";
                 $bibs = "";
                 if ($a_append_mobs) {
-                    $mobs = $this->getMultimediaXML();
+                    $mobs = $this->getMultimediaXML($offline);
                 }
                 if ($a_append_bib) {
                     // deprecated
@@ -1077,10 +1078,11 @@ s     */
      * get a xml string that contains all media object elements, that
      * are referenced by any media alias in the page
      */
-    public function getMultimediaXML(): string
-    {
+    public function getMultimediaXML(
+        bool $offline = false
+    ): string {
         $mob_manager = $this->pc_service->mediaObject();
-        return $mob_manager->getMultimediaXML($this->getDomDoc());
+        return $mob_manager->getMultimediaXML($this->getDomDoc(), $offline);
     }
 
     /**
@@ -1172,7 +1174,7 @@ s     */
      * Resolves all internal link targets of the page, if targets are available
      * (after import)
      */
-    public function resolveIntLinks(array $a_link_map = null): bool
+    public function resolveIntLinks(?array $a_link_map = null): bool
     {
         return $this->link->resolveIntLinks($this->getDomDoc(), $a_link_map);
     }
@@ -3013,7 +3015,7 @@ s     */
         $config = $this->getPageConfig();
         foreach ($this->pc_definition->getPCDefinitions() as $def) {
             $model_provider = $this->pc_definition->getPCModelProviderByName($def["name"]);
-            if ($config->getEnablePCType($def["name"])) {
+            if ($config->getEnablePCType($def["name"]) || $def["name"] === "PlaceHolder") {
                 if (!is_null($model_provider)) {
                     foreach ($model_provider->getModels(
                         $this->dom_util,

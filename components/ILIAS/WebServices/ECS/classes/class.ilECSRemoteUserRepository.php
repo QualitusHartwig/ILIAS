@@ -13,7 +13,8 @@
  * us at:
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
- */
+ *
+ *********************************************************************/
 
 declare(strict_types=1);
 
@@ -150,7 +151,7 @@ class ilECSRemoteUserRepository
             'WHERE remote_usr_id = ' . $this->db->quote($remoteUserId, 'text');
         $res = $this->db->query($query);
         if ($row = $res->fetchRow(ilDBConstants::FETCHMODE_OBJECT)) {
-            return $this->getECSRemoteUserById($row->eru_id);
+            return $this->getECSRemoteUserById((int) $row->eru_id);
         }
         return null;
     }

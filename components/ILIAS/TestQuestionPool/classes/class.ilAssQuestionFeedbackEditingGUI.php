@@ -19,18 +19,17 @@
 declare(strict_types=1);
 
 use ILIAS\TestQuestionPool\RequestDataCollector;
+use ILIAS\Style\Content\Service as ContentStyle;
 
 /**
  * @author		Björn Heyser <bheyser@databay.de>
  *
  * @ilCtrl_Calls ilAssQuestionFeedbackEditingGUI: ilAssGenFeedbackPageGUI, ilAssSpecFeedbackPageGUI
  * @ilCtrl_Calls ilAssQuestionFeedbackEditingGUI: ilPropertyFormGUI
+ * @ilCtrl_isCalledBy ilAssQuestionFeedbackEditingGUI: ilRepositoryGUI
  */
 class ilAssQuestionFeedbackEditingGUI
 {
-    /**
-     * command constants
-     */
     public const CMD_SHOW = 'showFeedbackForm';
     public const CMD_SAVE = 'saveFeedbackForm';
     public const CMD_SHOW_SYNC = 'confirmSync';
@@ -48,17 +47,13 @@ class ilAssQuestionFeedbackEditingGUI
         protected readonly ilLanguage $lng,
         protected readonly ilHelpGUI $help,
         private readonly RequestDataCollector $request,
+        private readonly ContentStyle $content_style,
         private readonly bool $in_pool_context = false
     ) {
         $this->question_obj = $question_gui->getObject();
         $this->feedback_obj = $question_gui->getObject()->feedbackOBJ;
     }
 
-    /**
-     * Execute Command
-     *
-     * @access public
-     */
     public function executeCommand(): void
     {
         $this->help->setScreenIdComponent('qpl');
@@ -85,25 +80,13 @@ class ilAssQuestionFeedbackEditingGUI
         }
     }
 
-    /**
-     * Set content style
-     */
     protected function setContentStyle(): void
     {
-        $this->tpl->addCss(ilObjStyleSheet::getContentStylePath(0));
+        $this->content_style->gui()->addCss($this->tpl, $this->request->getRefId());
     }
 
-    /**
-     * command for rendering the feedback editing form to the content area
-     *
-     * @access private
-     */
     private function showFeedbackFormCmd(string $additional_content = ''): void
     {
-        $this->tpl->setCurrentBlock("ContentStyle");
-        $this->tpl->setVariable("LOCATION_CONTENT_STYLESHEET", ilObjStyleSheet::getContentStylePath(0));
-        $this->tpl->parseCurrentBlock();
-
         $form = $this->buildForm();
 
         $this->feedback_obj->initGenericFormProperties($form);
@@ -114,15 +97,6 @@ class ilAssQuestionFeedbackEditingGUI
         $this->tpl->setContent($form->getHTML() . $additional_content);
     }
 
-    /**
-     * command for processing the submitted feedback editing form.
-     * first it validates the submitted values.
-     * - in case of successfull validation it saves the properties and redirects to either form presentation again,
-     *   or to the syncWithOriginal form for question
-     * - in case of failed validation it renders the form with post values and error info to the content area again
-     *
-     * @access private
-     */
     private function saveFeedbackFormCmd(): void
     {
         $form = $this->buildForm();
@@ -157,12 +131,6 @@ class ilAssQuestionFeedbackEditingGUI
         );
     }
 
-    /**
-     * builds the feedback editing form object
-     *
-     * @access private
-     * @return \ilPropertyFormGUI
-     */
     private function buildForm(): ilPropertyFormGUI
     {
         $form = new ilPropertyFormGUI();

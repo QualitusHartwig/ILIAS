@@ -38,6 +38,8 @@ use ILIAS\MetaData\Copyright\Services\Services as CopyrightServices;
 use ILIAS\MetaData\XML\Writer\SimpleDC\SimpleDCInterface;
 use ILIAS\MetaData\XML\Writer\SimpleDC\SimpleDC;
 use ILIAS\MetaData\XML\Copyright\Links\LinkGenerator;
+use ILIAS\Export\ExportHandler\Factory as ExportService;
+use ILIAS\Data\Factory as DataFactory;
 
 class Services
 {
@@ -81,7 +83,6 @@ class Services
             new CopyrightHandler(
                 $this->copyright_services->repository(),
                 $this->copyright_services->identifiersHandler(),
-                $this->copyright_services->renderer(),
                 \ilMDSettings::_getInstance()
             ),
             $this->path_services->pathFactory(),
@@ -104,7 +105,6 @@ class Services
         $copyright_handler = new CopyrightHandler(
             $this->copyright_services->repository(),
             $this->copyright_services->identifiersHandler(),
-            $this->copyright_services->renderer(),
             \ilMDSettings::_getInstance()
         );
         return $this->standard_reader = new StandardReader(
@@ -127,16 +127,28 @@ class Services
         if (isset($this->simple_dc_writer)) {
             return $this->simple_dc_writer;
         }
+
+        /*
+         * This should be replaced by a proper export API
+         * when it is available.
+         */
+        $export_service = new ExportService();
+        $data_factory = new DataFactory();
+
         return $this->simple_dc_writer = new SimpleDC(
             $this->path_services->pathFactory(),
             $this->path_services->navigatorFactory(),
+            $data_factory,
             new CopyrightHandler(
                 $this->copyright_services->repository(),
                 $this->copyright_services->identifiersHandler(),
-                $this->copyright_services->renderer(),
                 \ilMDSettings::_getInstance()
             ),
-            new LinkGenerator($this->dic['static_url'])
+            new LinkGenerator(
+                $this->dic['static_url'],
+                $export_service,
+                $data_factory
+            )
         );
     }
 }

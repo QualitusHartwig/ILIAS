@@ -244,7 +244,7 @@ class ilMultilingualismGUI
 
         // master language
         if (!$a_add) {
-            $si = new ilSelectInputGUI($lng->txt("obj_master_lang"), "master_lang");
+            $si = new ilSelectInputGUI($lng->txt("obj_base_lang"), "master_lang");
             $si->setOptions($options);
             $si->setValue($ilUser->getLanguage());
             $form->addItem($si);
@@ -301,7 +301,7 @@ class ilMultilingualismGUI
     /**
      * Add language
      */
-    public function addLanguages(ilPropertyFormGUI $form = null): void
+    public function addLanguages(?ilPropertyFormGUI $form = null): void
     {
         $tpl = $this->tpl;
 

@@ -153,11 +153,10 @@ class ilObjIndividualAssessmentGUI extends ilObjectGUI
                 if (!$cmd) {
                     $cmd = 'view';
                     if ($this->object->accessHandler()->mayViewAnyUser() || $this->object->accessHandler()->mayEditMembers()) {
-                        $this->ctrl->setCmdClass('ilIndividualassessmentmembersgui');
-                        $cmd = 'members';
+                        $this->ctrl->redirectByClass(ilIndividualAssessmentMembersGUI::class, 'view');
                     }
                 }
-                if($cmd === 'edit' && $this->object->accessHandler()->simulateMember()) {
+                if ($cmd === 'edit' && $this->object->accessHandler()->simulateMember()) {
                     $cmd = 'view';
                 }
 
@@ -171,11 +170,8 @@ class ilObjIndividualAssessmentGUI extends ilObjectGUI
     public function viewObject(): void
     {
         $this->tabs_gui->activateTab(self::TAB_INFO);
-        $this->ctrl->setCmd('showSummary');
-        $this->ctrl->setCmdClass('ilinfoscreengui');
-        $info = $this->buildInfoScreen();
-        $this->ctrl->forwardCommand($info);
         $this->recordIndividualAssessmentRead();
+        $this->ctrl->redirectByClass(ilInfoScreenGUI::class, 'showSummary');
     }
 
     public function membersObject(): void
@@ -237,7 +233,7 @@ class ilObjIndividualAssessmentGUI extends ilObjectGUI
         ) {
             $identifier = $member->getGrading()->getFile();
             $resource_id = $this->irss->manage()->find($identifier);
-            if($resource_id) {
+            if ($resource_id) {
                 $this->irss->consume()->download($resource_id)->run();
             }
         }
@@ -323,7 +319,6 @@ class ilObjIndividualAssessmentGUI extends ilObjectGUI
 
         if (($this->object->accessHandler()->mayViewAllUsers()
             || $this->object->accessHandler()->mayEditLearningProgressSettings()
-            || $this->object->accessHandler()->mayReadLearningProgress()
             || ($this->object->loadMembers()->userAllreadyMember($this->usr)
             && $this->object->isActiveLP()))
             && ilObjUserTracking::_enabledLearningProgress()) {
@@ -399,13 +394,19 @@ class ilObjIndividualAssessmentGUI extends ilObjectGUI
     public static function _goto(string $a_target, string $a_add = ''): void
     {
         global $DIC;
-        $a_target = (int) $a_target;
-        if ($DIC['ilAccess']->checkAccess('write', '', $a_target)) {
-            ilObjectGUI::_gotoRepositoryNode($a_target, 'edit');
+        $access = $DIC['ilAccess'];
+        $target = (int) $a_target;
+        if ($access->checkAccess('write', '', $target)) {
+            ilObjectGUI::_gotoRepositoryNode($target, 'edit');
         }
-        if ($DIC['ilAccess']->checkAccess('read', '', $a_target)) {
-            ilObjectGUI::_gotoRepositoryNode($a_target);
+        if ($access->checkAccess('read', '', $target) ||
+            $access->checkAccess('visible', '', $target)
+        ) {
+            ilObjectGUI::_gotoRepositoryNode($target);
         }
+        $err = $DIC["ilErr"];
+        $lng = $DIC->language();
+        $err->raiseError($lng->txt("msg_no_perm_read"), $err->FATAL);
     }
 
     protected function getEntryForStatus(int $status): string

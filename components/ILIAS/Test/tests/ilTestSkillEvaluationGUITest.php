@@ -67,27 +67,4 @@ class ilTestSkillEvaluationGUITest extends ilTestBaseTestCase
         $this->testObj->setTestSession($mock);
         $this->assertEquals($mock, $this->testObj->getTestSession());
     }
-
-    public function testNoSkillProfileOptionEnabled(): void
-    {
-        $this->testObj->setNoSkillProfileOptionEnabled(false);
-        $this->assertFalse($this->testObj->isNoSkillProfileOptionEnabled());
-
-        $this->testObj->setNoSkillProfileOptionEnabled(true);
-        $this->assertTrue($this->testObj->isNoSkillProfileOptionEnabled());
-    }
-
-    public function testAvailableSkillProfiles(): void
-    {
-        $expected = ["test", "test2"];
-        $this->testObj->setAvailableSkillProfiles($expected);
-        $this->assertEquals($expected, $this->testObj->getAvailableSkillProfiles());
-    }
-
-    public function testAvailableSkills(): void
-    {
-        $expected = ["test", "test2"];
-        $this->testObj->setAvailableSkills($expected);
-        $this->assertEquals($expected, $this->testObj->getAvailableSkills());
-    }
 }

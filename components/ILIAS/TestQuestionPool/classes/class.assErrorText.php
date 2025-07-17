@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 use ILIAS\TestQuestionPool\Questions\QuestionLMExportable;
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
 
 /**
@@ -268,7 +267,6 @@ class assErrorText extends assQuestion implements ilObjQuestionScoringAdjustable
     public function calculateReachedPointsFromPreviewSession(ilAssQuestionPreviewSession $preview_session)
     {
         $reached_points = $this->getPointsForSelectedPositions($preview_session->getParticipantsSolution() ?? []);
-        $reached_points = $this->deductHintPointsFromReachedPoints($preview_session, $reached_points);
         return $this->ensureNonNegativePoints($reached_points);
     }
 
@@ -302,11 +300,10 @@ class assErrorText extends assQuestion implements ilObjQuestionScoringAdjustable
 
     private function getAnswersFromRequest(): array
     {
-        if (mb_strlen($_POST["qst_" . $this->getId()])) {
-            return explode(',', $_POST["qst_{$this->getId()}"]);
-        }
-
-        return [];
+        return explode(
+            ',',
+            $this->questionpool_request->string('qst_' . $this->getId())
+        );
     }
 
     public function getQuestionType(): string
@@ -322,29 +319,6 @@ class assErrorText extends assQuestion implements ilObjQuestionScoringAdjustable
     public function getAnswerTableName(): string
     {
         return 'qpl_a_errortext';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $i = 0;
-        $selections = [];
-        $solutions = $this->getSolutionValues($active_id, $pass);
-        if (is_array($solutions)) {
-            foreach ($solutions as $solution) {
-                $selections[] = $solution['value1'];
-            }
-        }
-        $errortext = $this->createErrorTextExport($selections);
-        $i++;
-        $worksheet->setCell($startrow + $i, $col + 2, $errortext);
-        $i++;
-
-        return $startrow + $i + 1;
     }
 
     public function setErrorsFromParsedErrorText(): void
@@ -586,13 +560,13 @@ class assErrorText extends assQuestion implements ilObjQuestionScoringAdjustable
         return implode("\n", $output_array);
     }
 
-    public function getBestSelection($withPositivePointsOnly = true): array
+    public function getBestSelection(bool $with_positive_points_only = true): array
     {
         $positions_array = $this->generateArrayByPositionFromErrorData();
         $selections = [];
         foreach ($positions_array as $position => $position_data) {
             if ($position === ''
-                || $withPositivePointsOnly && $position_data['points'] < 1) {
+                || $with_positive_points_only && $position_data['points'] <= 0) {
                 continue;
             }
 
@@ -694,7 +668,7 @@ class assErrorText extends assQuestion implements ilObjQuestionScoringAdjustable
 
     public function setErrorText(?string $text): void
     {
-        $this->errortext = $this->getHtmlQuestionContentPurifier()->purify($text ?? '');
+        $this->errortext = $text ?? '';
     }
 
     public function getParsedErrorText(): array
@@ -755,7 +729,7 @@ class assErrorText extends assQuestion implements ilObjQuestionScoringAdjustable
         $result = [];
         $result['id'] = $this->getId();
         $result['type'] = (string) $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['text'] = ilRTE::_replaceMediaObjectImageSrc($this->getErrorText(), 0);
         $result['nr_of_tries'] = $this->getNrOfTries();
@@ -964,7 +938,7 @@ class assErrorText extends assQuestion implements ilObjQuestionScoringAdjustable
     {
         $result = [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_ERRORTEXT_ERRORTEXT => ilRTE::_replaceMediaObjectImageSrc($this->getErrorText(), 0),
             AdditionalInformationGenerator::KEY_QUESTION_SHUFFLE_ANSWER_OPTIONS => $additional_info
@@ -992,15 +966,30 @@ class assErrorText extends assQuestion implements ilObjQuestionScoringAdjustable
         return $result;
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
-    ): array {
+    ): string {
         return $this->createErrorTextExport(
             array_map(
-                static fn(string $v): string => $v['value1'],
+                static fn(array $v): string => $v['value1'],
                 $solution_values
             )
         );
+    }
+
+    public function solutionValuesToText(array $solution_values): string
+    {
+        return $this->createErrorTextExport(
+            array_map(
+                static fn(array $v): string => $v['value1'],
+                $solution_values
+            )
+        );
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): string
+    {
+        return $this->createErrorTextExport($this->getBestSelection());
     }
 }

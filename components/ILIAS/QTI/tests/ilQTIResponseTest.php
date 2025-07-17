@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -16,8 +14,9 @@ declare(strict_types=1);
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
  *
- ********************************************************************
- */
+ *********************************************************************/
+
+declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -35,9 +34,7 @@ class ilQTIResponseTest extends TestCase
         $this->assertEquals('Some input.', $instance->getIdent());
     }
 
-    /**
-     * @dataProvider rtimings
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('rtimings')]
     public function testSetGetRtiming(string $input, ?string $expected): void
     {
         $instance = new ilQTIResponse();
@@ -45,9 +42,7 @@ class ilQTIResponseTest extends TestCase
         $this->assertEquals($expected, $instance->getRtiming());
     }
 
-    /**
-     * @dataProvider numtypes
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('numtypes')]
     public function testSetGetNumtype(string $input, ?string $expected): void
     {
         $instance = new ilQTIResponse();

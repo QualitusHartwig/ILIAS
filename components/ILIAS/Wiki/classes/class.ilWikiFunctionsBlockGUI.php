@@ -102,19 +102,6 @@ class ilWikiFunctionsBlockGUI extends ilBlockGUI
     {
         return $this->pageob;
     }
-
-    public function fillDataSection(): void
-    {
-        $this->setDataSection($this->getLegacyContent());
-    }
-
-    //
-    // New rendering
-    //
-
-    protected bool $new_rendering = true;
-
-
     protected function getLegacyContent(): string
     {
         $ilCtrl = $this->ctrl;
@@ -324,7 +311,8 @@ class ilWikiFunctionsBlockGUI extends ilBlockGUI
                 );
                 $actions[] = array(
                     "txt" => $lng->txt("wiki_html_export"),
-                    "modal" => $comments_modal
+                    "modal" => $comments_modal,
+                    "id" => "il_wiki_user_export2",
                 );
             }
         }

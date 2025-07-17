@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -18,6 +16,8 @@ declare(strict_types=1);
  *
  *********************************************************************/
 
+declare(strict_types=1);
+
 namespace ILIAS\BookingManager;
 
 use ILIAS\DI\Container;
@@ -29,7 +29,7 @@ use ILIAS\Repository\GlobalDICGUIServices;
 class InternalGUIService
 {
     use GlobalDICGUIServices;
-
+    protected static array $instances = [];
     protected InternalDataService $data_service;
     protected InternalDomainService $domain_service;
 
@@ -82,4 +82,14 @@ class InternalGUIService
             $this->domain_service->refinery()
         );
     }
+
+    public function settings(): Settings\GUIService
+    {
+        return self::$instances["settings"] ??= new Settings\GUIService(
+            $this->data_service,
+            $this->domain_service,
+            $this
+        );
+    }
+
 }

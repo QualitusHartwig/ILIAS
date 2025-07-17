@@ -113,7 +113,7 @@ class InterruptiveTest extends ModalBase
     protected function getExpectedHTML(bool $with_items = false): string
     {
         $expected_start = <<<EOT
-<dialog class="c-modal c-modal--interruptive" tabindex="-1" role="dialog" id="id_1">
+<dialog class="c-modal c-modal--interruptive" tabindex="-1" id="id_1">
 	<div class="modal-dialog" role="document">
 		<form action="myAction.php" method="POST">
 			<div class="modal-content">
@@ -178,6 +178,8 @@ EOT;
 
 class InterruptiveItemMock implements C\Modal\InterruptiveItem\InterruptiveItem
 {
+    use I\Component\ComponentHelper;
+
     protected string $canonical_name;
 
     public function __construct(string $canonical_name = '')

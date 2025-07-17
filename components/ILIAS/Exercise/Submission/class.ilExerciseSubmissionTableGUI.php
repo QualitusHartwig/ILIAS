@@ -72,8 +72,6 @@ abstract class ilExerciseSubmissionTableGUI extends ilTable2GUI
 
         parent::__construct($a_parent_obj, $a_parent_cmd);
 
-        $this->setShowTemplates(true);
-
         $this->setFormAction($ilCtrl->getFormAction($a_parent_obj));
         $this->setRowTemplate("tpl.exc_members_row.html", "components/ILIAS/Exercise");
 
@@ -417,7 +415,9 @@ abstract class ilExerciseSubmissionTableGUI extends ilTable2GUI
                     if (!$has_no_team_yet) {
                         $this->tpl->setVariable(
                             "VAL_" . strtoupper($col),
-                            ilLegacyFormElementsUtil::prepareFormOutput(trim((string) $a_row[$col]))
+                            ilLegacyFormElementsUtil::prepareFormOutput(
+                                trim((string) ($a_row[$col] ?? ""))
+                            )
                         );
                     }
                     break;
@@ -426,7 +426,7 @@ abstract class ilExerciseSubmissionTableGUI extends ilTable2GUI
                     // see #22076
                     $this->tpl->setVariable(
                         "VAL_" . strtoupper($col),
-                        ilLegacyFormElementsUtil::prepareFormOutput(trim((string) $a_row[$col]))
+                        ilLegacyFormElementsUtil::prepareFormOutput(trim((string) ($a_row[$col] ?? "")))
                     );
                     break;
 
@@ -436,7 +436,7 @@ abstract class ilExerciseSubmissionTableGUI extends ilTable2GUI
                     $this->tpl->setVariable("LCOMMENT_ID", $comment_id . "_snip");
 
                     // see #22076
-                    $this->tpl->setVariable("VAL_" . strtoupper($col), (trim((string) $a_row[$col]) !== "")
+                    $this->tpl->setVariable("VAL_" . strtoupper($col), (trim((string) ($a_row[$col] ?? "")) !== "")
                         ? nl2br(trim((string) $a_row[$col]))
                         : "&nbsp;");
                     break;
@@ -457,7 +457,7 @@ abstract class ilExerciseSubmissionTableGUI extends ilTable2GUI
                     }
                     $this->tpl->setVariable(
                         "VAL_" . strtoupper($col),
-                        $a_row[$col]
+                        ($a_row[$col] ?? false)
                             ? ilDatePresentation::formatDate(
                                 new ilDateTime($a_row[$col], IL_CAL_DATETIME),
                                 false,
@@ -609,7 +609,7 @@ abstract class ilExerciseSubmissionTableGUI extends ilTable2GUI
             );
         }
 
-        $actions = $this->ui_factory->dropdown()->standard($items)->withLabel($this->lng->txt("actions"));
+        $actions = $this->ui_factory->dropdown()->standard($items);
 
         $this->tpl->setVariable("ACTIONS", $this->ui_renderer->render($actions));
     }

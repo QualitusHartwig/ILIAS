@@ -82,42 +82,32 @@ class SimpleNodeTest extends ILIAS_UI_TestBase
         return $node;
     }
 
-    /**
-     * @depends testConstructionWithIconAndDifferentLabels
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstructionWithIconAndDifferentLabels')]
     public function testGetDifferentLabels(C\Tree\Node\Simple $node): void
     {
         $this->assertNotEquals($this->icon->getLabel(), $node->getLabel());
     }
 
-    /**
-     * @depends testConstructionWithIcon
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstructionWithIcon')]
     public function testGetLabel(C\Tree\Node\Simple $node): void
     {
         $this->assertEquals("label", $node->getLabel());
     }
 
-    /**
-     * @depends testConstructionWithIcon
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstructionWithIcon')]
     public function testGetIcon(C\Tree\Node\Simple $node): C\Tree\Node\Simple
     {
         $this->assertEquals($this->icon, $node->getIcon());
         return $node;
     }
 
-    /**
-     * @depends testConstruction
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstruction')]
     public function testDefaultAsyncLoading(C\Tree\Node\Simple $node): void
     {
         $this->assertFalse($node->getAsyncLoading());
     }
 
-    /**
-     * @depends testConstruction
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstruction')]
     public function testWithAsyncURL(C\Tree\Node\Simple $node): C\Tree\Node\Simple
     {
         $url = 'something.de';
@@ -127,16 +117,14 @@ class SimpleNodeTest extends ILIAS_UI_TestBase
         return $node;
     }
 
-    /**
-     * @depends testConstruction
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstruction')]
     public function testRendering(C\Tree\Node\Simple $node): void
     {
         $r = $this->getDefaultRenderer();
         $html = $r->render($node);
 
         $expected = <<<EOT
-			<li id="" class="c-tree__node c-tree__node--simple" role="treeitem">
+			<li class="c-tree__node c-tree__node--simple" role="treeitem">
 				<span class="c-tree__node__line">
 					<span class="c-tree__node__label">simple</span>
 				</span>
@@ -149,17 +137,14 @@ EOT;
         );
     }
 
-    /**
-     * @depends testWithAsyncURL
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testWithAsyncURL')]
     public function testRenderingWithAsync(C\Tree\Node\Simple $node): void
     {
         $r = $this->getDefaultRenderer();
         $html = $r->render($node);
 
         $expected = <<<EOT
-			<li id=""
-				 class="c-tree__node c-tree__node--simple expandable"
+			<li class="c-tree__node c-tree__node--simple expandable"
 				 role="treeitem" aria-expanded="false"
 				 data-async_url="something.de" data-async_loaded="false">
 				<span class="c-tree__node__line">
@@ -175,16 +160,14 @@ EOT;
         );
     }
 
-    /**
-     * @depends testConstructionWithIcon
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstructionWithIcon')]
     public function testRenderingWithIcon(C\Tree\Node\Simple $node): void
     {
         $r = $this->getDefaultRenderer();
         $html = $r->render($node);
 
         $expected = <<<EOT
-			<li id="" class="c-tree__node c-tree__node--simple" role="treeitem">
+			<li class="c-tree__node c-tree__node--simple" role="treeitem">
 				<span class="c-tree__node__line">
 					<span class="c-tree__node__label">
 						<img class="icon small" src="./assets/images/standard/icon_default.svg" alt=""/>
@@ -203,16 +186,15 @@ EOT;
      * This test is successfull if the icon label differs from the node label.
      * As a result the alt attribute will get the icon's label as content.
      * Else the alt attribute will be empty (see testRenderingWithIcon).
-     *
-     * @depends testConstructionWithIconAndDifferentLabels
      */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstructionWithIconAndDifferentLabels')]
     public function testRenderingWithIconAndAltAttribute(C\Tree\Node\Simple $node): void
     {
         $r = $this->getDefaultRenderer();
         $html = $r->render($node);
 
         $expected = <<<EOT
-			<li id="" class="c-tree__node c-tree__node--simple" role="treeitem">
+			<li class="c-tree__node c-tree__node--simple" role="treeitem">
 				<span class="c-tree__node__line">
 					<span class="c-tree__node__label">
 						<img class="icon small" src="./assets/images/standard/icon_default.svg" alt="Different Icon Label"/>

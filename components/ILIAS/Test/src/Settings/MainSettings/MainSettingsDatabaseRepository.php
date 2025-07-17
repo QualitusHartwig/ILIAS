@@ -27,8 +27,8 @@ class MainSettingsDatabaseRepository implements MainSettingsRepository
     public const TABLE_NAME = 'tst_tests';
     public const STORAGE_DATE_FORMAT = 'YmdHis';
 
-    private static array $instances_by_obj_fi = [];
-    private static array $instances_by_test_fi = [];
+    private array $instances_by_obj_fi = [];
+    private array $instances_by_test_fi = [];
 
     protected \ilDBInterface $db;
 
@@ -39,24 +39,24 @@ class MainSettingsDatabaseRepository implements MainSettingsRepository
 
     public function getForObjFi(int $obj_fi): MainSettings
     {
-        if (!isset(self::$instances_by_obj_fi[$obj_fi])) {
+        if (!isset($this->instances_by_obj_fi[$obj_fi])) {
             $where_part = 'WHERE obj_fi = ' . $this->db->quote($obj_fi, 'integer');
-            self::$instances_by_obj_fi[$obj_fi] = $this->doSelect($where_part);
-            $test_id = self::$instances_by_obj_fi[$obj_fi]->getTestId();
-            self::$instances_by_test_fi[$test_id] = self::$instances_by_obj_fi[$obj_fi];
+            $this->instances_by_obj_fi[$obj_fi] = $this->doSelect($where_part);
+            $test_id = $this->instances_by_obj_fi[$obj_fi]->getTestId();
+            $this->instances_by_test_fi[$test_id] = $this->instances_by_obj_fi[$obj_fi];
         }
-        return self::$instances_by_obj_fi[$obj_fi];
+        return $this->instances_by_obj_fi[$obj_fi];
     }
 
     public function getFor(int $test_id): MainSettings
     {
         if (!isset(self::$instances_by_test_fi[$test_id])) {
             $where_part = 'WHERE test_id = ' . $this->db->quote($test_id, 'integer');
-            self::$instances_by_test_fi[$test_id] = $this->doSelect($where_part);
-            $obj_id = self::$instances_by_test_fi[$test_id]->getObjId();
-            self::$instances_by_obj_fi[$obj_id] = self::$instances_by_test_fi[$test_id];
+            $this->instances_by_test_fi[$test_id] = $this->doSelect($where_part);
+            $obj_id = $this->instances_by_test_fi[$test_id]->getObjId();
+            $this->instances_by_obj_fi[$obj_id] = $this->instances_by_test_fi[$test_id];
         }
-        return self::$instances_by_test_fi[$test_id];
+        return $this->instances_by_test_fi[$test_id];
     }
 
     protected function doSelect(string $where_part): MainSettings
@@ -92,7 +92,6 @@ class MainSettingsDatabaseRepository implements MainSettingsRepository
             . 'autosave,' . PHP_EOL
             . 'autosave_ival,' . PHP_EOL
             . 'shuffle_questions,' . PHP_EOL
-            . 'offer_question_hints,' . PHP_EOL
             . 'answer_feedback_points,' . PHP_EOL
             . 'answer_feedback,' . PHP_EOL
             . 'specific_feedback,' . PHP_EOL
@@ -100,7 +99,6 @@ class MainSettingsDatabaseRepository implements MainSettingsRepository
             . 'force_inst_fb,' . PHP_EOL
             . 'inst_fb_answer_fixation,' . PHP_EOL
             . 'follow_qst_answer_fixation,' . PHP_EOL
-            . 'obligations_enabled,' . PHP_EOL
             . 'use_previous_answers,' . PHP_EOL
             . 'suspend_test_allowed,' . PHP_EOL
             . 'sequence_settings,' . PHP_EOL
@@ -177,15 +175,13 @@ class MainSettingsDatabaseRepository implements MainSettingsRepository
                 (bool) $row['autosave'],
                 $row['autosave_ival'],
                 (bool) $row['shuffle_questions'],
-                (bool) $row['offer_question_hints'],
                 (bool) $row['answer_feedback_points'],
                 (bool) $row['answer_feedback'],
                 (bool) $row['specific_feedback'],
                 (bool) $row['instant_verification'],
                 (bool) $row['force_inst_fb'],
                 (bool) $row['inst_fb_answer_fixation'],
-                (bool) $row['follow_qst_answer_fixation'],
-                (bool) $row['obligations_enabled']
+                (bool) $row['follow_qst_answer_fixation']
             ),
             new SettingsParticipantFunctionality(
                 $test_id,
@@ -235,7 +231,7 @@ class MainSettingsDatabaseRepository implements MainSettingsRepository
             $values,
             ['test_id' => ['integer', $settings->getTestId()]]
         );
-        unset(self::$instances_by_test_fi[$settings->getTestId()]);
-        unset(self::$instances_by_obj_fi[$settings->getObjId()]);
+        unset($this->instances_by_test_fi[$settings->getTestId()]);
+        unset($this->instances_by_obj_fi[$settings->getObjId()]);
     }
 }

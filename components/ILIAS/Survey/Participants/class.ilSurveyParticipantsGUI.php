@@ -16,6 +16,7 @@
  *
  *********************************************************************/
 
+use ILIAS\Survey\CSVReader;
 use ILIAS\Survey\Participants;
 
 /**
@@ -194,7 +195,7 @@ class ilSurveyParticipantsGUI
     }
 
     protected function filterSurveyParticipantsByAccess(
-        array $a_finished_ids = null
+        ?array $a_finished_ids = null
     ): array {
         $all_participants = $this->object->getSurveyParticipants($a_finished_ids, false, true);
         $participant_ids = [];
@@ -694,7 +695,12 @@ class ilSurveyParticipantsGUI
     {
         $this->handleWriteAccess();
         $this->setParticipantSubTabs("codes");
+        $form_import_file = $this->getAccessCodeImportForm();
+        $this->tpl->setContent($form_import_file->getHTML());
+    }
 
+    public function getAccessCodeImportForm(): ilPropertyFormGUI
+    {
         $form_import_file = new ilPropertyFormGUI();
         $form_import_file->setFormAction($this->ctrl->getFormAction($this));
         $form_import_file->setTableWidth("100%");
@@ -716,7 +722,7 @@ class ilSurveyParticipantsGUI
         $form_import_file->addCommandButton("importAccessCodesAction", $this->lng->txt("import"));
         $form_import_file->addCommandButton("codes", $this->lng->txt("cancel"));
 
-        $this->tpl->setContent($form_import_file->getHTML());
+        return $form_import_file;
     }
 
     /**
@@ -724,13 +730,15 @@ class ilSurveyParticipantsGUI
      */
     protected function importAccessCodesActionObject(): void
     {
-        if (trim($_FILES['codes']['tmp_name'])) {
+        $form = $this->getAccessCodeImportForm();
+
+        if ($form->checkInput()) {
             $existing = array();
             foreach ($this->object->getSurveyCodesTableData() as $item) {
                 $existing[$item["code"]] = $item["id"];
             }
 
-            $reader = new ilCSVReader();
+            $reader = new CSVReader();
             $reader->open($_FILES['codes']['tmp_name']);
             foreach ($reader->getCsvAsArray() as $row) {
                 // numeric check of used column due to #26176
@@ -771,9 +779,13 @@ class ilSurveyParticipantsGUI
             }
 
             $this->tpl->setOnScreenMessage('success', $this->lng->txt('codes_created'), true);
+            $this->ctrl->redirect($this, 'codes');
+        } else {
+            $form->setValuesByPost();
+            $this->handleWriteAccess();
+            $this->setParticipantSubTabs("codes");
+            $this->tpl->setContent($form->getHTML());
         }
-
-        $this->ctrl->redirect($this, 'codes');
     }
 
     /**
@@ -990,8 +1002,17 @@ class ilSurveyParticipantsGUI
 
     public function importExternalRecipientsFromFileObject(): void
     {
+        $this->handleWriteAccess();
+        $form = $this->getImportExternalMailRecipientsFromFileForm();
+
+        if (!$form->checkInput()) {
+            $this->setParticipantSubTabs("codes");
+            $this->tpl->setContent($form->getHTML());
+            return;
+        }
+
         if (trim($_FILES['externalmails']['tmp_name'])) {
-            $reader = new ilCSVReader();
+            $reader = new CSVReader();
             $reader->open($_FILES['externalmails']['tmp_name']);
             $data = $reader->getCsvAsArray();
             $fields = array_shift($data);
@@ -1050,10 +1071,15 @@ class ilSurveyParticipantsGUI
 
     public function importExternalMailRecipientsFromFileFormObject(): void
     {
-        $ilAccess = $this->access;
-
         $this->handleWriteAccess();
-        $this->setParticipantSubTabs("mail_survey_codes");
+        $this->setParticipantSubTabs("codes");
+        $form = $this->getImportExternalMailRecipientsFromFileForm();
+        $this->tpl->setContent($form->getHTML());
+    }
+
+    public function getImportExternalMailRecipientsFromFileForm(): ilPropertyFormGUI
+    {
+        $ilAccess = $this->access;
 
         $form_import_file = new ilPropertyFormGUI();
         $form_import_file->setFormAction($this->ctrl->getFormAction($this));
@@ -1074,8 +1100,7 @@ class ilSurveyParticipantsGUI
         if ($ilAccess->checkAccess("write", "", $this->edit_request->getRefId())) {
             $form_import_file->addCommandButton("codes", $this->lng->txt("cancel"));
         }
-
-        $this->tpl->setContent($form_import_file->getHTML());
+        return $form_import_file;
     }
 
     public function importExternalMailRecipientsFromTextFormObject(): void
@@ -1325,7 +1350,7 @@ class ilSurveyParticipantsGUI
     }
 
     public function addExternalRaterFormObject(
-        ilPropertyFormGUI $a_form = null
+        ?ilPropertyFormGUI $a_form = null
     ): void {
         $ilTabs = $this->tabs;
         $ilAccess = $this->access;
@@ -1505,7 +1530,7 @@ class ilSurveyParticipantsGUI
             $this->object->addAppraisee($ilUser->getId());
         }
 
-        $this->ctrl->redirect($this->parent_gui, "infoScreen");
+        $this->ctrl->redirect($this->parent_gui, "run");
     }
 
     public function initMailRatersForm(
@@ -1625,7 +1650,7 @@ class ilSurveyParticipantsGUI
     }
 
     public function mailRatersObjectOld(
-        ilPropertyFormGUI $a_form = null
+        ?ilPropertyFormGUI $a_form = null
     ): void {
         $ilTabs = $this->tabs;
         $rater_ids = $this->edit_request->getRaterIds();
@@ -1732,11 +1757,11 @@ class ilSurveyParticipantsGUI
         $ilTabs->clearTargets();
         $ilTabs->setBackTarget(
             $this->lng->txt("menuback"),
-            $this->ctrl->getLinkTarget($this->parent_gui, "infoScreen")
+            $this->ctrl->getLinkTarget($this->parent_gui, "run")
         );
 
         if (!$this->object->isAppraisee($ilUser->getId())) {
-            $this->ctrl->redirect($this->parent_gui, "infoScreen");
+            $this->ctrl->redirect($this->parent_gui, "run");
         }
 
         $cgui = new ilConfirmationGUI();
@@ -1751,7 +1776,7 @@ class ilSurveyParticipantsGUI
 
     public function confirmAppraiseeCloseCancelObject(): void
     {
-        $this->ctrl->redirect($this->parent_gui, "infoScreen");
+        $this->ctrl->redirect($this->parent_gui, "run");
     }
 
     public function appraiseeCloseObject(): void
@@ -1759,12 +1784,12 @@ class ilSurveyParticipantsGUI
         $ilUser = $this->user;
 
         if (!$this->object->isAppraisee($ilUser->getId())) {
-            $this->ctrl->redirect($this->parent_gui, "infoScreen");
+            $this->ctrl->redirect($this->parent_gui, "run");
         }
 
         $this->object->closeAppraisee($ilUser->getId());
         $this->tpl->setOnScreenMessage('success', $this->lng->txt("survey_360_appraisee_close_action_success"), true);
-        $this->ctrl->redirect($this->parent_gui, "infoScreen");
+        $this->ctrl->redirect($this->parent_gui, "run");
     }
 
     public function confirmAdminAppraiseesCloseObject(): void

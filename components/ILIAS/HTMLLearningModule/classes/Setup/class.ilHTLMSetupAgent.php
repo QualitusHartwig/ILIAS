@@ -22,7 +22,7 @@ use ILIAS\Setup;
 use ILIAS\Refinery;
 use ILIAS\Setup\Objective;
 
-class ilHTLMSetupAgent implements Setup\Agent
+final class ilHTLMSetupAgent implements Setup\Agent
 {
     use Setup\Agent\HasNoNamedObjective;
 
@@ -36,12 +36,12 @@ class ilHTLMSetupAgent implements Setup\Agent
         throw new LogicException("Agent has no config.");
     }
 
-    public function getInstallObjective(Setup\Config $config = null): Setup\Objective
+    public function getInstallObjective(?Setup\Config $config = null): Setup\Objective
     {
         return new Setup\Objective\NullObjective();
     }
 
-    public function getUpdateObjective(Setup\Config $config = null): Setup\Objective
+    public function getUpdateObjective(?Setup\Config $config = null): Setup\Objective
     {
         return new Setup\ObjectiveCollection(
             'HTML Learning Module',

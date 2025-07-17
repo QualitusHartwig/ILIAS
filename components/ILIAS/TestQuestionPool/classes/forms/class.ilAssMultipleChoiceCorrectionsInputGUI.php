@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -14,8 +15,6 @@
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
-
-use ILIAS\Refinery\ConstraintViolationException;
 
 /**
  * Class ilAssSingleChoiceCorrectionsInputGUI
@@ -34,65 +33,28 @@ class ilAssMultipleChoiceCorrectionsInputGUI extends ilMultipleChoiceWizardInput
 
     public function setValue($a_value): void
     {
-        if (is_array($a_value)) {
-            if (is_array($a_value['points']) && is_array($a_value['points_unchecked'])) {
-                foreach ($this->values as $index => $value) {
-                    $this->values[$index]->setPoints($a_value['points'][$index]);
-                    $this->values[$index]->setPointsUnchecked($a_value['points_unchecked'][$index]);
-                }
-            }
+        $points = $this->forms_helper->transformPoints($a_value, 'points');
+        $points_unchecked = $this->forms_helper->transformPoints($a_value, 'points_unchecked');
+
+        foreach ($this->values as $index => $value) {
+            $this->values[$index]->setPoints($points[$index] ?? 0.0);
+            $this->values[$index]->setPointsUnchecked($points_unchecked[$index] ?? 0.0);
         }
     }
 
     public function checkInput(): bool
     {
-        $foundvalues = $this->post_wrapper->retrieve(
-            $this->getPostVar(),
-            $this->refinery->byTrying(
-                [
-                    $this->refinery->container()->mapValues(
-                        $this->refinery->identity()
-                    ),
-                    $this->refinery->always([])
-                ]
-            )
-        );
+        $data = $this->raw($this->getPostVar());
 
-        if ($foundvalues === []) {
-            $this->setAlert($this->lng->txt("msg_input_is_required"));
+        $result = $this->forms_helper->checkPointsInputEnoughPositive($data, $this->getRequired(), 'points');
+        if (!is_array($result)) {
+            $this->setAlert($this->lng->txt($result));
             return false;
         }
 
-        if (!is_array($foundvalues['points'])) {
-            $this->setAlert($this->lng->txt("enter_enough_positive_points"));
-            return false;
-        }
-
-        $max = 0;
-        foreach ($foundvalues['points'] as $points) {
-            try {
-                $points = $this->refinery->kindlyTo()->float()->transform($points);
-            } catch (ConstraintViolationException $e) {
-                $this->setAlert($this->lng->txt("form_msg_numeric_value_required"));
-                return false;
-            }
-            if ($points > $max) {
-                $max = $points;
-            }
-        }
-        foreach ($foundvalues['points_unchecked'] as $points) {
-            try {
-                $points = $this->refinery->kindlyTo()->float()->transform($points);
-            } catch (ConstraintViolationException $e) {
-                $this->setAlert($this->lng->txt("form_msg_numeric_value_required"));
-                return false;
-            }
-            if ($points > $max) {
-                $max = $points;
-            }
-        }
-        if ($max == 0) {
-            $this->setAlert($this->lng->txt("enter_enough_positive_points"));
+        $result = $this->forms_helper->checkPointsInput($data, $this->getRequired(), 'points_unchecked');
+        if (!is_array($result)) {
+            $this->setAlert($this->lng->txt($result));
             return false;
         }
 

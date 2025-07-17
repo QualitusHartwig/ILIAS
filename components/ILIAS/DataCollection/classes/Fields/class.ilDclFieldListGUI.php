@@ -16,7 +16,6 @@
  *
  *********************************************************************/
 
-
 declare(strict_types=1);
 
 class ilDclFieldListGUI
@@ -54,6 +53,8 @@ class ilDclFieldListGUI
         $this->toolbar = $DIC->toolbar();
         $this->ui_factory = $DIC->ui()->factory();
         $this->renderer = $DIC->ui()->renderer();
+
+        $DIC->help()->setScreenId('dcl_fields');
 
         $this->ctrl->saveParameterByClass(ilDclTableEditGUI::class, 'table_id');
         $locator->addItem(

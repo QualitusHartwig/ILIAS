@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -407,7 +408,7 @@ class ilMembershipGUI
 
         // show member table
         $table = $this->initParticipantTableGUI();
-        $table->setTitle($this->lng->txt($this->getParentObject()->getType() . '_mem_tbl_header'));
+        $table->setTitle($this->getParticipantTableTitle());
         $table->setFormAction($this->ctrl->getFormAction($this));
         $table->parse();
 
@@ -416,6 +417,11 @@ class ilMembershipGUI
         $table->setResetCommand('participantsResetFilter');
 
         $this->tpl->setVariable('MEMBERS', $table->getHTML());
+    }
+
+    protected function getParticipantTableTitle(): string
+    {
+        return $this->lng->txt($this->getParentObject()->getType() . '_mem_tbl_header');
     }
 
     public function getAttendanceListUserData(int $user_id, array $filters = []): array
@@ -1390,7 +1396,7 @@ class ilMembershipGUI
         if ($added_users) {
             $this->tpl->setOnScreenMessage('success', $this->lng->txt("crs_users_added"), true);
         } else {
-            $this->tpl->setOnScreenMessage('failure', $this->lng->txt("crs_users_already_assigned"), true);
+            $this->tpl->setOnScreenMessage('info', $this->lng->txt("crs_users_already_assigned"), true);
         }
         $this->ctrl->redirect($this, 'participants');
     }
@@ -1582,6 +1588,10 @@ class ilMembershipGUI
         $waiting_list = $this->initWaitingList();
 
         if ($this instanceof ilSessionMembershipGUI) {
+            /*
+             * TODO this exact logic is also in ilSessionParticipantsTableGUI and ilSessionMembershipGUI,
+             *  should be centralized.
+             */
             $member_id = $DIC->repositoryTree()->checkForParentType(
                 $this->getParentObject()->getRefId(),
                 'grp'

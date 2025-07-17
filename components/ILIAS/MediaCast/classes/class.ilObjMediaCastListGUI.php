@@ -16,11 +16,6 @@
  *
  *********************************************************************/
 
-/**
- * ListGUI class for media cast objects.
- *
- * @author Alexander Killing <killing@leifos.de>
- */
 class ilObjMediaCastListGUI extends ilObjectListGUI
 {
     protected int $child_id;
@@ -38,37 +33,26 @@ class ilObjMediaCastListGUI extends ilObjectListGUI
 
         // general commands array
         $this->commands = ilObjMediaCastAccess::_getCommands();
-    }
-
-    public function getCommandFrame(string $cmd): string
-    {
-        switch ($cmd) {
-            default:
-                $frame = ilFrameTargetInfo::_getFrame("MainContent");
-                break;
-        }
-
-        return $frame;
-    }
-
-
-    public function getProperties(): array
-    {
-        $lng = $this->lng;
-        $props = array();
-
-        if (!ilObjMediaCastAccess::_lookupOnline($this->obj_id)) {
-            $props[] = array("alert" => true, "property" => $lng->txt("status"),
-                "value" => $lng->txt("offline"));
-        }
-
-        return $props;
+        $this->enableLearningProgress(true);
     }
 
     public function getCommandLink(string $cmd): string
     {
-        $this->ctrl->setParameterByClass(ilMediaCastHandlerGUI::class, "ref_id", $this->ref_id);
-        $cmd_link = $this->ctrl->getLinkTargetByClass([ilMediaCastHandlerGUI::class, ilObjMediaCastGUI::class], $cmd);
+        switch ($cmd) {
+
+            case "learningProgress":
+                $this->ctrl->setParameterByClass(ilObjMediaCastGUI::class, "ref_id", $this->ref_id);
+                $cmd_link = $this->ctrl->getLinkTargetByClass(
+                    [ilMediaCastHandlerGUI::class, ilObjMediaCastGUI::class, ilLearningProgressGUI::class   ],
+                    ""
+                );
+                break;
+
+            default:
+                $this->ctrl->setParameterByClass(ilObjMediaCastGUI::class, "ref_id", $this->ref_id);
+                $cmd_link = $this->ctrl->getLinkTargetByClass([ilMediaCastHandlerGUI::class, ilObjMediaCastGUI::class], $cmd);
+                break;
+        }
         return $cmd_link;
     }
 

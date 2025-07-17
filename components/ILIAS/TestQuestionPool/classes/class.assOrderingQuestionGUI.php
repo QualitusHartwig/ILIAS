@@ -73,7 +73,7 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
         $this->object->setContentType($this->object::OQ_CT_PICTURES);
         $this->object->saveToDb();
 
-        $values = $this->request->getParsedBody();
+        $values = $this->request_data_collector->getParsedBody();
         $values['thumb_geometry'] = $this->object->getThumbSize();
         $this->buildEditFormAfterTypeChange($values);
     }
@@ -88,7 +88,7 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
         $this->object->setContentType($this->object::OQ_CT_TERMS);
         $this->object->saveToDb();
 
-        $this->buildEditFormAfterTypeChange($this->request->getParsedBody());
+        $this->buildEditFormAfterTypeChange($this->request_data_collector->getParsedBody());
     }
 
     private function buildEditFormAfterTypeChange(array $values): void
@@ -110,7 +110,7 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
         $form = $this->buildNestingForm();
         $form->setValuesByPost();
         if ($form->checkInput()) {
-            $post = $this->request->raw(self::F_NESTED_ORDER);
+            $post = $this->request_data_collector->raw(self::F_NESTED_ORDER);
             $list = $this->object->getOrderingElementList();
 
             $ordered = [];
@@ -180,16 +180,16 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
 
     public function writeQuestionSpecificPostData(ilPropertyFormGUI $form): void
     {
-        $thumb_size = $this->request->int('thumb_geometry');
+        $thumb_size = $this->request_data_collector->int('thumb_geometry');
         if ($thumb_size !== 0
             && $thumb_size !== $this->object->getThumbSize()) {
             $this->object->setThumbSize($thumb_size);
             $this->updateImageFiles();
         }
 
-        $this->object->setPoints($this->request->float('points'));
+        $this->object->setPoints($this->request_data_collector->float('points'));
 
-        $use_nested = $this->request->int(self::F_USE_NESTED) === 1;
+        $use_nested = $this->request_data_collector->int(self::F_USE_NESTED) === 1;
         $this->object->setNestingType($use_nested);
     }
 
@@ -199,7 +199,7 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
         $list = $form->getItemByPostVar(assOrderingQuestion::ORDERING_ELEMENT_FORM_FIELD_POSTVAR)
             ->getElementList($this->object->getId());
 
-        $use_nested = $this->request->int(self::F_USE_NESTED) === 1;
+        $use_nested = $this->request_data_collector->int(self::F_USE_NESTED) === 1;
 
         if ($use_nested) {
             $existing_list = $this->object->getOrderingElementList();
@@ -275,6 +275,7 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
             $thumb_size->setRequired(true);
             $thumb_size->setMaxLength(6);
             $thumb_size->setMinValue($this->object->getMinimumThumbSize());
+            $thumb_size->setMaxValue($this->object->getMaximumThumbSize());
             $thumb_size->setSize(6);
             $thumb_size->setInfo($this->lng->txt('thumb_size_info'));
             $form->addItem($thumb_size);
@@ -427,12 +428,47 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
         bool $show_question_text = true,
         bool $show_inline_feedback = true
     ): string {
-        $solutionOrderingList = $this->object->getOrderingElementListForSolutionOutput(
+        $solution_ordering_list = $this->object->getOrderingElementListForSolutionOutput(
             $show_correct_solution,
             $active_id,
             $pass
         );
 
+        $show_inline_feedback = false;
+        return $this->renderSolutionOutput(
+            $solution_ordering_list,
+            $active_id,
+            $pass,
+            $graphical_output,
+            $result_output,
+            $show_question_only,
+            $show_feedback,
+            $show_correct_solution,
+            $show_manual_scoring,
+            $show_question_text,
+            false,
+            $show_inline_feedback,
+        );
+    }
+
+    public function renderSolutionOutput(
+        mixed $user_solutions,
+        int $active_id,
+        ?int $pass,
+        bool $graphical_output = false,
+        bool $result_output = false,
+        bool $show_question_only = true,
+        bool $show_feedback = false,
+        bool $show_correct_solution = false,
+        bool $show_manual_scoring = false,
+        bool $show_question_text = true,
+        bool $show_autosave_title = false,
+        bool $show_inline_feedback = false,
+    ): ?string {
+        $solution_ordering_list = ($user_solutions instanceof ilAssOrderingElementList) ?
+            $user_solutions : $this->object->getSolutionOrderingElementList(
+                $this->object->fetchIndexedValuesFromValuePairs($user_solutions)
+            );
         $answers_gui = $this->object->buildNestedOrderingElementInputGui();
 
         if ($show_correct_solution) {
@@ -442,24 +478,25 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
         }
 
         $answers_gui->setInteractionEnabled(false);
-        $answers_gui->setElementList($solutionOrderingList);
+        $answers_gui->setElementList($solution_ordering_list);
+
         if ($graphical_output) {
             $answers_gui->setShowCorrectnessIconsEnabled(true);
         }
         $answers_gui->setCorrectnessTrueElementList(
-            $solutionOrderingList->getParityTrueElementList($this->object->getOrderingElementList())
+            $solution_ordering_list->getParityTrueElementList($this->object->getOrderingElementList())
         );
         $solution_html = $answers_gui->getHTML();
 
-        $template = new ilTemplate("tpl.il_as_qpl_nested_ordering_output_solution.html", true, true, "components/ILIAS/TestQuestionPool");
+        $template = new ilTemplate('tpl.il_as_qpl_nested_ordering_output_solution.html', true, true, 'components/ILIAS/TestQuestionPool');
         $template->setVariable('SOLUTION_OUTPUT', $solution_html);
         if ($show_question_text == true) {
-            $template->setVariable("QUESTIONTEXT", $this->object->getQuestionForHTMLOutput());
+            $template->setVariable('QUESTIONTEXT', $this->object->getQuestionForHTMLOutput());
         }
         $questionoutput = $template->get();
 
-        $solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html", true, true, "components/ILIAS/TestQuestionPool");
-        $solutiontemplate->setVariable("SOLUTION_OUTPUT", $questionoutput);
+        $solutiontemplate = new ilTemplate('tpl.il_as_tst_solution_output.html', true, true, 'components/ILIAS/TestQuestionPool');
+        $solutiontemplate->setVariable('SOLUTION_OUTPUT', $questionoutput);
 
         if ($show_feedback) {
             $feedback = '';
@@ -469,14 +506,14 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
                 $feedback .= strlen($fb) ? $fb : '';
             }
 
-            if (strlen($feedback)) {
+            if ($feedback !== '') {
                 $cssClass = (
                     $this->hasCorrectSolution($active_id, $pass) ?
                     ilAssQuestionFeedback::CSS_CLASS_FEEDBACK_CORRECT : ilAssQuestionFeedback::CSS_CLASS_FEEDBACK_WRONG
                 );
 
-                $solutiontemplate->setVariable("ILC_FB_CSS_CLASS", $cssClass);
-                $solutiontemplate->setVariable("FEEDBACK", ilLegacyFormElementsUtil::prepareTextareaOutput($feedback, true));
+                $solutiontemplate->setVariable('ILC_FB_CSS_CLASS', $cssClass);
+                $solutiontemplate->setVariable('FEEDBACK', ilLegacyFormElementsUtil::prepareTextareaOutput($feedback, true));
             }
         }
 
@@ -497,7 +534,7 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
         if ($this->getPreviewSession() && $this->getPreviewSession()->hasParticipantSolution()) {
             $solutionOrderingElementList = unserialize(
                 $this->getPreviewSession()->getParticipantsSolution(),
-                ["allowed_classes" => true]
+                ['allowed_classes' => true]
             );
         } else {
             $solutionOrderingElementList = $this->object->getShuffledOrderingElementList();
@@ -509,31 +546,18 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
         $answers->setInteractionEnabled($this->isInteractivePresentation());
         $answers->setElementList($solutionOrderingElementList);
 
-        $template = new ilTemplate("tpl.il_as_qpl_ordering_output.html", true, true, "components/ILIAS/TestQuestionPool");
+        $template = new ilTemplate('tpl.il_as_qpl_ordering_output.html', true, true, 'components/ILIAS/TestQuestionPool');
 
         $template->setCurrentBlock('nested_ordering_output');
         $template->setVariable('NESTED_ORDERING', $answers->getHTML());
         $template->parseCurrentBlock();
-        $template->setVariable("QUESTIONTEXT", $this->object->getQuestionForHTMLOutput());
+        $template->setVariable('QUESTIONTEXT', $this->object->getQuestionForHTMLOutput());
 
         if ($show_question_only) {
             return $template->get();
         }
 
         return $this->getILIASPage($template->get());
-    }
-
-    public function getPresentationJavascripts(): array
-    {
-        global $DIC; /* @var ILIAS\DI\Container $DIC */
-
-        $files = [];
-
-        if ($DIC->http()->agent()->isMobile() || $DIC->http()->agent()->isIpad()) {
-            $files[] = './node_modules/@andxor/jquery-ui-touch-punch-fix/jquery.ui.touch-punch.js';
-        }
-
-        return $files;
     }
 
     public function getTestOutput(
@@ -621,101 +645,6 @@ class assOrderingQuestionGUI extends assQuestionGUI implements ilGuiQuestionScor
     public function getAfterParticipationSuppressionQuestionPostVars(): array
     {
         return [];
-    }
-
-    /**
-     * Returns an html string containing a question specific representation of the answers so far
-     * given in the test for use in the right column in the scoring adjustment user interface.
-     * @param array $relevant_answers
-     * @return string
-     */
-    public function getAggregatedAnswersView(array $relevant_answers): string
-    {
-        $aggView = $this->aggregateAnswers(
-            $relevant_answers,
-            $this->object->getOrderingElementList()
-        );
-
-        return  $this->renderAggregateView($aggView)->get();
-    }
-
-    public function aggregateAnswers($relevant_answers_chosen, $answers_defined_on_question): array
-    {
-        $passdata = []; // Regroup answers into units of passes.
-        foreach ($relevant_answers_chosen as $answer_chosen) {
-            $passdata[$answer_chosen['active_fi'] . '-' . $answer_chosen['pass']][$answer_chosen['value2']] = $answer_chosen['value1'];
-        }
-
-        $variants = []; // Determine unique variants.
-        foreach ($passdata as $key => $data) {
-            $hash = md5(implode('-', $data));
-            $value_set = false;
-            foreach ($variants as $vkey => $variant) {
-                if ($variant['hash'] == $hash) {
-                    $variant['count']++;
-                    $value_set = true;
-                }
-            }
-            if (!$value_set) {
-                $variants[$key]['hash'] = $hash;
-                $variants[$key]['count'] = 1;
-            }
-        }
-
-        $aggregate = []; // Render aggregate from variant.
-        foreach ($variants as $key => $variant_entry) {
-            $variant = $passdata[$key];
-
-            foreach ($variant as $variant_key => $variant_line) {
-                $i = 0;
-                $aggregated_info_for_answer['count'] = $variant_entry['count'];
-                foreach ($answers_defined_on_question as $element) {
-                    $i++;
-
-                    if ($this->object->isImageOrderingType()) {
-                        $element->setImageThumbnailPrefix($this->object->getThumbPrefix());
-                        $element->setImagePathWeb($this->object->getImagePathWeb());
-                        $element->setImagePathFs($this->object->getImagePath());
-
-                        $src = $element->getPresentationImageUrl();
-                        $alt = $element->getContent();
-                        $content = "<img src='{$src}' alt='{$alt}' title='{$alt}'/>";
-                    } else {
-                        $content = $element->getContent();
-                    }
-
-                    $aggregated_info_for_answer[$i . ' - ' . $content]
-                        = $passdata[$key][$i];
-                }
-            }
-            $aggregate[] = $aggregated_info_for_answer;
-        }
-        return $aggregate;
-    }
-
-    /**
-     * @param $aggregate
-     *
-     * @return ilTemplate
-     */
-    public function renderAggregateView($aggregate): ilTemplate
-    {
-        $tpl = new ilTemplate('tpl.il_as_aggregated_answers_table.html', true, true, "components/ILIAS/TestQuestionPool");
-
-        foreach ($aggregate as $line_data) {
-            $tpl->setCurrentBlock('aggregaterow');
-            $count = array_shift($line_data);
-            $html = '<ul>';
-            foreach ($line_data as $key => $line) {
-                $html .= '<li>' . ++$line . '&nbsp;-&nbsp;' . $key . '</li>';
-            }
-            $html .= '</ul>';
-            $tpl->setVariable('COUNT', $count);
-            $tpl->setVariable('OPTION', $html);
-
-            $tpl->parseCurrentBlock();
-        }
-        return $tpl;
     }
 
     protected function getAnswerStatisticOrderingElementHtml(ilAssOrderingElement $element): ?string

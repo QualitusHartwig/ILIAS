@@ -159,8 +159,10 @@ class ilPresentationFullGUI
 
     protected function initPanel(int $page_length = 0): UI\Component\Panel\Panel
     {
+        $current_page = 0;
         if (!$page_length) {
             $page_length = $this->determinePageLength();
+            $current_page = $this->request->getCurrentPage();
         }
 
         $terms = $this->glossary->getTermList(
@@ -177,7 +179,7 @@ class ilPresentationFullGUI
 
         $terms_sliced = array_slice(
             $terms,
-            $this->request->getCurrentPage() * $page_length,
+            $current_page * $page_length,
             $page_length
         );
 
@@ -185,7 +187,7 @@ class ilPresentationFullGUI
         foreach ($terms_sliced as $term) {
             $subs[] = $this->ui_fac->panel()->sub(
                 $term["term"],
-                $this->ui_fac->legacy($this->parent_obj->listDefinitions(
+                $this->ui_fac->legacy()->content($this->parent_obj->listDefinitions(
                     $this->request->getRefId(),
                     (int) $term["id"],
                     true,

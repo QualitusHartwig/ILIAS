@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=1);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=1);
 
 namespace ILIAS\Survey\Mode\IndividualFeedback;
 
@@ -178,14 +178,14 @@ class UIModifier extends Mode\AbstractUIModifier
 
             if (count($raters) > 0) {
                 $options = [];
-                $options["-"] = $lng->txt("svy_all_raters");
+                //$options["-"] = $lng->txt("svy_all_raters");
                 foreach ($raters as $rater) {
                     $options[$rater["user_id"]] = $rater["name"];
                 }
 
                 $rat = new \ilSelectInputGUI($lng->txt("svy_rater"), "rater_id");
                 $rat->setOptions($options);
-                $rat->setValue($evaluation_manager->getCurrentRater());
+                $rat->setValue($evaluation_manager->getCurrentRater(true));
                 $toolbar->addInputItem($rat, true);
 
                 $this->gui->button(

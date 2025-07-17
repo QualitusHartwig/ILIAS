@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=1);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=1);
 
 /**
  * Class ilObjTalkTemplateAdministrationGUI GUI class
@@ -120,6 +120,9 @@ final class ilObjTalkTemplateAdministrationGUI extends ilContainerGUI
     protected function showPossibleSubObjects(): void
     {
         $subtypes = $this->getCreatableObjectTypes();
+        if (empty($subtypes)) {
+            return;
+        }
         $gui = new ILIAS\ILIASObject\Creation\AddNewItemGUI(
             [$this->buildGroup(
                 self::class,
@@ -131,7 +134,7 @@ final class ilObjTalkTemplateAdministrationGUI extends ilContainerGUI
         $gui->render();
     }
 
-    public function getCreatableObjectTypes(): array
+    protected function getCreatableObjectTypes(): array
     {
         $subtypes = $this->obj_definition->getCreatableSubObjects(
             $this->object->getType(),
@@ -160,6 +163,17 @@ final class ilObjTalkTemplateAdministrationGUI extends ilContainerGUI
             $this->ilias->raiseError($this->lng->txt("msg_no_perm_read"), $this->ilias->error_obj->WARNING);
         }
 
+        /**
+         * Non-admins don't have any access to templates, because
+         * templates don't have permissions.
+         */
+        if (!in_array(SYSTEM_ROLE_ID, $this->rbacreview->assignedRoles($this->user->getId()), true)) {
+            $this->tpl->setOnScreenMessage(
+                ilGlobalTemplateInterface::MESSAGE_TYPE_INFO,
+                $this->lng->txt("tala_no_content_without_admin_info")
+            );
+        }
+
         parent::renderObject();
     }
 
@@ -180,12 +194,28 @@ final class ilObjTalkTemplateAdministrationGUI extends ilContainerGUI
         );
     }
 
+    /**
+     * Not completely sure why this is necessary, after creation of talk templates
+     * the redirect leads here.
+     */
+    public function returnObject(): void
+    {
+        $this->viewObject();
+    }
+
     protected function getTabs(): void
     {
         $read_access_ref_id = $this->rbacsystem->checkAccess('visible,read', $this->object->getRefId());
         if ($read_access_ref_id) {
             $this->tabs_gui->addTab('view_content', $this->lng->txt("content"), $this->ctrl->getLinkTarget($this, "view"));
-            $this->tabs_gui->addTab("info_short", "Info", $this->ctrl->getLinkTargetByClass(strtolower(ilInfoScreenGUI::class), "showSummary"));
+            $this->tabs_gui->addTab(
+                "info_short",
+                $this->lng->txt('tab_info'),
+                $this->ctrl->getLinkTargetByClass([
+                    strtolower(self::class),
+                    strtolower(ilInfoScreenGUI::class)
+                ], "showSummary")
+            );
         }
         if ($this->tree->getSavedNodeData($this->object->getRefId())) {
             $this->tabs_gui->addTarget('trash', $this->ctrl->getLinkTarget($this, 'trash'), 'trash', get_class($this));

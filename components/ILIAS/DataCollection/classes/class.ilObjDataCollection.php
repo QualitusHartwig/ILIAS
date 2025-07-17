@@ -16,7 +16,6 @@
  *
  *********************************************************************/
 
-
 declare(strict_types=1);
 
 class ilObjDataCollection extends ilObject2
@@ -65,6 +64,8 @@ class ilObjDataCollection extends ilObject2
             $main_table->doCreate();
         }
 
+        $this->createMetaData();
+
         $this->db->insert(
             "il_dcl_data",
             [
@@ -84,12 +85,16 @@ class ilObjDataCollection extends ilObject2
             $table->doDelete(false, true);
         }
 
+        $this->deleteMetaData();
+
         $query = "DELETE FROM il_dcl_data WHERE id = " . $this->db->quote($this->getId(), "integer");
         $this->db->manipulate($query);
     }
 
     protected function doUpdate(): void
     {
+        $this->updateMetaData();
+
         $this->db->update(
             "il_dcl_data",
             [
@@ -186,7 +191,7 @@ class ilObjDataCollection extends ilObject2
                     $message .= $this->prepareMessageText($t);
                 }
                 $message .= "------------------------------------\n";
-                $message .= $ulng->txt('dcl_changed_by') . ": " . $user->getFullname() . " " . ilUserUtil::getNamePresentation($user->getId())
+                $message .= $ulng->txt('dcl_changed_by') . ": " . ilUserUtil::getNamePresentation($user->getId())
                     . "\n\n";
                 $message .= $ulng->txt('dcl_change_notification_link') . ": " . $link . "\n\n";
 
@@ -252,14 +257,16 @@ class ilObjDataCollection extends ilObject2
     protected function doCloneObject(ilObject2 $new_obj, int $a_target_id, ?int $a_copy_id = null): void
     {
         assert($new_obj instanceof ilObjDataCollection);
-        //copy online status if object is not the root copy object
-        $cp_options = ilCopyWizardOptions::_getInstance($a_copy_id);
 
-        if (!$cp_options->isRootNode($this->getRefId())) {
-            $new_obj->setOnline(true);
+        $new_obj->setNotification($this->getNotification());
+        if (!(ilCopyWizardOptions::_getInstance($a_copy_id))->isRootNode($this->getRefId())) {
+            $new_obj->setOnline($this->getOnline());
+            $new_obj->update();
         }
 
         $new_obj->cloneStructure($this->getRefId());
+
+        $this->cloneMetaData($new_obj);
     }
 
     /**

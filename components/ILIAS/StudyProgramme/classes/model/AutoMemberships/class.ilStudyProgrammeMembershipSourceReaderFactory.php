@@ -23,7 +23,7 @@ declare(strict_types=1);
  */
 class ilStudyProgrammeMembershipSourceReaderFactory
 {
-    protected Pimple\Container  $dic;
+    protected Pimple\Container $dic;
 
     public function __construct(Pimple\Container $dic)
     {
@@ -35,7 +35,7 @@ class ilStudyProgrammeMembershipSourceReaderFactory
      *
      * @throws InvalidArgumentException if $src_type is not one of the constant types in ilStudyProgrammeAutoMembershipSource.
      */
-    public function getReaderFor(ilStudyProgrammeAutoMembershipSource $ams, int $exclude_id): ilStudyProgrammeMembershipSourceReader
+    public function getReaderFor(ilStudyProgrammeAutoMembershipSource $ams, ?int $exclude_id): ilStudyProgrammeMembershipSourceReader
     {
         $src_id = $ams->getSourceId();
         switch ($ams->getSourceType()) {
@@ -52,7 +52,7 @@ class ilStudyProgrammeMembershipSourceReaderFactory
             case ilStudyProgrammeAutoMembershipSource::TYPE_ORGU:
                 return new ilStudyProgrammeMembershipSourceReaderOrgu(
                     ilObjOrgUnitTree::_getInstance(),
-                    new ilOrgUnitUserAssignment(),
+                    new ilOrgUnitUserAssignmentDBRepository($this->dic['ilDB'], $this->dic->event()),
                     $src_id,
                     $ams->isSearchRecursive(),
                     $exclude_id

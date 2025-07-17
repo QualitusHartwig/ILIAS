@@ -16,7 +16,6 @@
  *
  *********************************************************************/
 
-
 declare(strict_types=1);
 
 /**
@@ -128,7 +127,7 @@ class ilDclContentExporter
      * @return bool|void
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception|\PhpOffice\PhpSpreadsheet\Exception
      */
-    public function export(string $format = self::EXPORT_EXCEL, string $filepath = null, bool $send = false)
+    public function export(string $format = self::EXPORT_EXCEL, ?string $filepath = null, bool $send = false)
     {
         if (count($this->tables) == 0) {
             return;
@@ -185,24 +184,12 @@ class ilDclContentExporter
             unlink($in_progress_file);
         }
 
-        if (!$data_available) {
-            $this->main_tpl->setOnScreenMessage('info', $this->lng->txt('dcl_no_export_content_available'));
-
+        if (!$data_available || !$fields_available) {
+            $this->main_tpl->setOnScreenMessage('failure', $this->lng->txt('dcl_no_export_data_available'));
             return false;
         }
 
-        if (!$fields_available) {
-            global $ilCtrl;
-            $this->main_tpl->setOnScreenMessage('info', sprintf(
-                $this->lng->txt('dcl_no_export_fields_available'),
-                $ilCtrl->getLinkTargetByClass(
-                    ['ilDclTableListGUI', 'ilDclFieldListGUI'],
-                    'listFields'
-                )
-            ));
-            return false;
-        }
-
+        $this->main_tpl->setOnScreenMessage($this->main_tpl::MESSAGE_TYPE_SUCCESS, $this->lng->txt('exp_file_created'), true);
         if ($send) {
             $adapter->sendToClient($filename);
         } else {
@@ -211,7 +198,7 @@ class ilDclContentExporter
         return true;
     }
 
-    public function exportAsync(string $format = self::EXPORT_EXCEL, string $filepath = null): mixed
+    public function exportAsync(string $format = self::EXPORT_EXCEL, ?string $filepath = null): mixed
     {
         global $DIC;
         $ilLog = $DIC['ilLog'];

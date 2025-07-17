@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=1);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=1);
 
 namespace ILIAS\Survey\Mode;
 
@@ -52,5 +52,20 @@ trait ModeProviderBase
     public function setInternalService(InternalService $service): void
     {
         $this->service = $service;
+    }
+
+    public function getTitle(): string
+    {
+        $lng = $this->service->domain()->lng();
+        switch ($this->getId()) {
+            case 1:
+                return $lng->txt("survey_360_mode");
+            case 2:
+                return $lng->txt("svy_self_ev_mode");
+            case 3:
+                return $lng->txt("svy_ind_feedb_mode");
+            default:
+                return $lng->txt("default");
+        }
     }
 }

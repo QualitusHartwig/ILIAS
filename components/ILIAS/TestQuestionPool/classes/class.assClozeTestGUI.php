@@ -20,7 +20,6 @@ use ILIAS\UI\Factory as UIFactory;
 use ILIAS\UI\Renderer as UIRenderer;
 use ILIAS\Refinery\Random\Group as RandomGroup;
 use ILIAS\Refinery\Random\Seed;
-use ILIAS\HTTP\Wrapper\ArrayBasedRequestWrapper;
 
 /**
  * Cloze test question GUI representation
@@ -43,9 +42,9 @@ class assClozeTestGUI extends assQuestionGUI implements ilGuiQuestionScoringAdju
     jQuery.fn.extend({
         insertGapCodeAtCaret: function() {
             return this.each(function(i) {
-                var code_start = "[gap]"
-                var code_end = "[/gap]"
-                if (typeof tinyMCE != "undefined" && typeof tinyMCE.get('cloze_text') != "undefined") {
+                var code_start = '[gap]';
+                var code_end = '[/gap]';
+                if (typeof tinyMCE !== 'undefined' && typeof tinyMCE.get('cloze_text') !== 'undefined') {
                     var ed =  tinyMCE.get('cloze_text');
                     il.ClozeHelper.internetExplorerTinyMCECursorFix(ed);
                     ed.selection.setContent(code_start + ed.selection.getContent() + code_end);
@@ -85,9 +84,9 @@ JS;
     private $gapIndex;
 
     private RandomGroup $randomGroup;
-    private ArrayBasedRequestWrapper $post;
     private UIFactory $ui_factory;
     private UIRenderer $ui_renderer;
+    private ilDBInterface $db;
 
     /**
     * assClozeTestGUI constructor
@@ -98,9 +97,9 @@ JS;
     {
         parent::__construct();
         global $DIC;
-        $this->ui_factory = $DIC->ui()->factory();
-        $this->ui_renderer = $DIC->ui()->renderer();
-        $this->post = $DIC->http()->wrapper()->post();
+        $this->ui_factory = $DIC['ui.factory'];
+        $this->ui_renderer = $DIC['ui.renderer'];
+        $this->db = $DIC['ilDB'];
 
         $this->object = new assClozeTest();
         if ($id >= 0) {
@@ -130,18 +129,18 @@ JS;
         }
 
         $cloze_text = $this->removeIndizesFromGapText(
-            $this->request->raw('cloze_text')
+            $this->request_data_collector->raw('cloze_text')
         );
 
         $this->object->setQuestion(
-            $this->request->raw('question')
+            $this->request_data_collector->raw('question')
         );
 
         $this->writeQuestionGenericPostData();
         $this->object->setClozeText($cloze_text);
-        $this->object->setTextgapRating($this->request->raw('textgap_rating'));
-        $this->object->setIdenticalScoring((bool) ($this->request->raw('identical_scoring') ?? false));
-        $this->object->setFixedTextLength(($this->request->int('fixedTextLength') ?? 0));
+        $this->object->setTextgapRating($this->request_data_collector->raw('textgap_rating'));
+        $this->object->setIdenticalScoring($this->request_data_collector->bool('identical_scoring') ?? false);
+        $this->object->setFixedTextLength($this->request_data_collector->int('fixedTextLength') ?? 0);
         $this->writeAnswerSpecificPostData(new ilPropertyFormGUI());
         $this->saveTaxonomyAssignments();
         return 0;
@@ -149,148 +148,109 @@ JS;
 
     public function writeAnswerSpecificPostData(ilPropertyFormGUI $form): void
     {
-        if (!$this->post->has('gap')) {
+        $gaps = $this->request_data_collector->strArray('gap');
+        if (empty($gaps)) {
             return;
         }
-
-        $gaps = $this->post->retrieve(
-            "gap",
-            $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->string())
-        );
 
         if ($this->ctrl->getCmd() !== 'createGaps') {
             $this->object->clearGapAnswers();
         }
 
-        foreach ($gaps as $idx => $hidden) {
-            $clozetype = $this->post->retrieve(
-                "clozetype_" . $idx,
-                $this->refinery->kindlyTo()->string()
-            );
+        $answer_trafo = $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->string());
+        $points_trafo = $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->float());
 
-            $this->object->setGapType($idx, $clozetype);
+        foreach (array_keys($gaps) as $idx) {
+            $cloze_type = $this->request_data_collector->int('clozetype_' . $idx);
+            $this->object->setGapType($idx, $cloze_type);
 
-            switch ($clozetype) {
-                case assClozeGap::TYPE_TEXT:
+            $gap_idx = $this->request_data_collector->raw('gap_' . $idx);
 
-                    $this->object->setGapShuffle($idx, 0);
-
-                    if ($this->ctrl->getCmd() != 'createGaps') {
-                        if (is_array($_POST['gap_' . $idx]['answer'])) {
-                            foreach ($_POST['gap_' . $idx]['answer'] as $order => $value) {
-                                $this->object->addGapAnswer($idx, $order, $value);
-                            }
-                        } else {
-                            $this->object->addGapAnswer($idx, 0, '');
+            if ($cloze_type === assClozeGap::TYPE_TEXT || $cloze_type === assClozeGap::TYPE_SELECT) {
+                $answer = $answer_trafo->transform($gap_idx['answer'] ?? []);
+                if ($this->ctrl->getCmd() !== 'createGaps') {
+                    if (!empty($answer)) {
+                        foreach ($answer as $order => $value) {
+                            $this->object->addGapAnswer($idx, $order, $value);
                         }
-                    }
-
-                    if (is_array($_POST['gap_' . $idx]['points'])) {
-                        foreach ($_POST['gap_' . $idx]['points'] as $order => $value) {
-                            $this->object->setGapAnswerPoints($idx, $order, $value);
-                        }
-                    }
-
-                    $k_gapsize = 'gap_' . $idx . '_gapsize';
-                    if ($this->request->isset($k_gapsize)) {
-                        $this->object->setGapSize($idx, $_POST[$k_gapsize]);
-                    }
-                    break;
-
-                case assClozeGap::TYPE_SELECT:
-
-                    $this->object->setGapShuffle($idx, (int) (isset($_POST["shuffle_$idx"]) && $_POST["shuffle_$idx"]));
-
-                    if ($this->ctrl->getCmd() != 'createGaps') {
-                        if (is_array($_POST['gap_' . $idx]['answer'])) {
-                            foreach ($_POST['gap_' . $idx]['answer'] as $order => $value) {
-                                $this->object->addGapAnswer($idx, $order, $value);
-                            }
-                        } else {
-                            $this->object->addGapAnswer($idx, 0, '');
-                        }
-                    }
-
-                    if (is_array($_POST['gap_' . $idx]['points'])) {
-                        foreach ($_POST['gap_' . $idx]['points'] as $order => $value) {
-                            $this->object->setGapAnswerPoints($idx, $order, $value);
-                        }
-                    }
-                    break;
-
-                case assClozeGap::TYPE_NUMERIC:
-
-                    $this->object->setGapShuffle($idx, 0);
-
-                    $gap = $this->object->getGap($idx);
-                    if (!$gap) {
-                        break;
-                    }
-
-                    $this->object->getGap($idx)->clearItems();
-
-                    if ($this->post->has('gap_' . $idx . '_numeric')) {
-                        if ($this->ctrl->getCmd() !== 'createGaps') {
-                            $this->object->addGapAnswer(
-                                $idx,
-                                0,
-                                str_replace(",", ".", $_POST['gap_' . $idx . '_numeric'])
-                            );
-                        }
-
-                        $this->object->setGapAnswerLowerBound(
-                            $idx,
-                            0,
-                            str_replace(",", ".", $_POST['gap_' . $idx . '_numeric_lower'])
-                        );
-
-                        $this->object->setGapAnswerUpperBound(
-                            $idx,
-                            0,
-                            str_replace(",", ".", $_POST['gap_' . $idx . '_numeric_upper'])
-                        );
-
-                        $this->object->setGapAnswerPoints($idx, 0, $_POST['gap_' . $idx . '_numeric_points']);
                     } else {
-                        if ($this->ctrl->getCmd() != 'createGaps') {
-                            $this->object->addGapAnswer($idx, 0, '');
-                        }
-
-                        $this->object->setGapAnswerLowerBound($idx, 0, '');
-
-                        $this->object->setGapAnswerUpperBound($idx, 0, '');
+                        $this->object->addGapAnswer($idx, 0, '');
                     }
+                }
 
-                    if ($this->post->has('gap_' . $idx . '_gapsize')) {
-                        $this->object->setGapSize($idx, $_POST['gap_' . $idx . '_gapsize']);
-                    }
-                    break;
+                $points = $points_trafo->transform($gap_idx['points'] ?? []);
+                foreach ($points as $order => $value) {
+                    $this->object->setGapAnswerPoints($idx, $order, $value);
+                }
             }
-            $assClozeGapCombinationObject = new assClozeGapCombination();
-            $assClozeGapCombinationObject->clearGapCombinationsFromDb($this->object->getId());
-            if (
-                isset($_POST['gap_combination']) &&
-                is_array($_POST['gap_combination']) &&
-                count($_POST['gap_combination']) > 0
-            ) {
-                $assClozeGapCombinationObject->saveGapCombinationToDb(
+
+            if ($cloze_type === assClozeGap::TYPE_TEXT || $cloze_type === assClozeGap::TYPE_NUMERIC) {
+                $this->object->setGapShuffle(0);
+
+                $gap_size = $this->request_data_collector->int('gap_' . $idx . '_gapsize');
+                if ($gap_size !== 0) {
+                    $this->object->setGapSize($idx, $gap_size);
+                }
+            } else {
+                $this->object->setGapShuffle($idx, $this->request_data_collector->int('shuffle_' . $idx));
+            }
+
+            if ($cloze_type === assClozeGap::TYPE_NUMERIC && $this->object->getGap($idx) !== null) {
+                $this->object->getGap($idx)->clearItems();
+
+                $gap_idx_numeric = $this->request_data_collector->float('gap_' . $idx . '_numeric');
+                if ($gap_idx_numeric !== 0.0) {
+                    $this->object->addGapAnswer($idx, 0, (string) $gap_idx_numeric);
+                    $this->object->setGapAnswerLowerBound(
+                        $idx,
+                        0,
+                        (string) $this->request_data_collector->float('gap_' . $idx . '_numeric_lower')
+                    );
+                    $this->object->setGapAnswerUpperBound(
+                        $idx,
+                        0,
+                        (string) $this->request_data_collector->float('gap_' . $idx . '_numeric_upper')
+                    );
+                    $this->object->setGapAnswerPoints(
+                        $idx,
+                        0,
+                        $this->request_data_collector->float('gap_' . $idx . '_numeric_points')
+                    );
+                } else {
+                    if ($this->ctrl->getCmd() !== 'createGaps') {
+                        $this->object->addGapAnswer($idx, 0, '');
+                    }
+
+                    $this->object->setGapAnswerLowerBound($idx, 0, '');
+                    $this->object->setGapAnswerUpperBound($idx, 0, '');
+                }
+            }
+
+            $ass_cloze_gab_combination = new assClozeGapCombination($this->db);
+            $ass_cloze_gab_combination->clearGapCombinationsFromDb($this->object->getId());
+
+            $gap_combination = $this->request_data_collector->rawArray('gap_combination', 4);
+            if ($gap_combination !== []) {
+                $ass_cloze_gab_combination->saveGapCombinationToDb(
                     $this->object->getId(),
-                    $_POST['gap_combination'],
-                    $_POST['gap_combination_values']
+                    $gap_combination,
+                    $this->request_data_collector->rawArray('gap_combination_values')
                 );
+                $this->object->setGapCombinationsExists(true);
             }
         }
-        if ($this->ctrl->getCmd() != 'createGaps') {
+
+        if ($this->ctrl->getCmd() !== 'createGaps') {
             $this->object->updateClozeTextFromGaps();
         }
     }
 
     public function writeQuestionSpecificPostData(ilPropertyFormGUI $form): void
     {
-        $this->object->setClozeText($_POST['cloze_text']);
-        $this->object->setTextgapRating($_POST["textgap_rating"]);
-        $this->object->setIdenticalScoring($_POST["identical_scoring"]);
-        $this->object->setFixedTextLength($_POST["fixedTextLength"]);
+        $this->object->setClozeText($this->request_data_collector->string('cloze_quest'));
+        $this->object->setTextgapRating($this->request_data_collector->string('textgap_rating'));
+        $this->object->setIdenticalScoring($this->request_data_collector->bool('textgap_rating') ?? true);
+        $this->object->setFixedTextLength($this->request_data_collector->int('fixedTextLength'));
     }
 
     /**
@@ -327,7 +287,7 @@ JS;
             $errors = !$form->checkInput();
             $form->setValuesByPost();
 
-            $gap_combinations = $this->request->raw('gap_combination');
+            $gap_combinations = $this->request_data_collector->raw('gap_combination');
             if (is_array($gap_combinations)
                 && $gap_combinations !== []
                 && $this->hasErrorInGapCombinationPoints($gap_combinations)) {
@@ -341,11 +301,7 @@ JS;
         }
 
         if (!$checkonly) {
-            $modal = ilModalGUI::getInstance();
-            $modal->setHeading($this->lng->txt(''));
-            $modal->setId('ilGapModal');
-            $modal->setBody('');
-            $this->renderEditForm($form, $modal->getHTML());
+            $this->renderEditForm($form);
         }
         return $errors;
     }
@@ -378,9 +334,6 @@ JS;
             if ($this->object->getAdditionalContentEditingMode() !== assQuestion::ADDITIONAL_CONTENT_EDITING_MODE_IPE) {
                 $cloze_text->setUseRte(true);
                 $cloze_text->setRteTags(ilObjAdvancedEditing::_getUsedHTMLTags("assessment"));
-                $cloze_text->addPlugin("latex");
-                $cloze_text->addButton("latex");
-                $cloze_text->addButton("pastelatex");
             }
         } else {
             $cloze_text->setRteTags(ilAssSelfAssessmentQuestionFormatter::getSelfAssessmentTags());
@@ -468,7 +421,7 @@ JS;
     public function populateAnswerSpecificFormPart(ilPropertyFormGUI $form): ilPropertyFormGUI
     {
         $json = $this->populateJSON();
-        $assClozeGapCombinationObject = new assClozeGapCombination();
+        $assClozeGapCombinationObject = new assClozeGapCombination($this->db);
         $combination_exists = $assClozeGapCombinationObject->combinationExistsForQid($this->object->getId());
         $combinations = [];
         if ($combination_exists) {
@@ -742,6 +695,7 @@ JS;
     */
     public function createGaps(): void
     {
+        $this->setAdditionalContentEditingModeFromPost();
         $this->writePostData(true);
         $this->object->saveToDb();
         $this->editQuestion();
@@ -749,15 +703,24 @@ JS;
 
     public function removegap(): void
     {
+        $this->setAdditionalContentEditingModeFromPost();
         $this->writePostData(true);
-        $this->object->deleteAnswerText($this->gapIndex, key($_POST['cmd']['removegap_' . $this->gapIndex]));
+        $this->object->deleteAnswerText(
+            $this->gapIndex,
+            $this->request_data_collector->getCmdIndex('removegap_' . $this->gapIndex)
+        );
         $this->editQuestion();
     }
 
     public function addgap(): void
     {
+        $this->setAdditionalContentEditingModeFromPost();
         $this->writePostData(true);
-        $this->object->addGapAnswer($this->gapIndex, key($_POST['cmd']['addgap_' . $this->gapIndex]) + 1, "");
+        $this->object->addGapAnswer(
+            $this->gapIndex,
+            $this->request_data_collector->getCmdIndex('addgap_' . $this->gapIndex) + 1,
+            ''
+        );
         $this->editQuestion();
     }
 
@@ -859,25 +822,53 @@ JS;
         bool $show_question_text = true,
         bool $show_inline_feedback = true
     ): string {
-        // get the solution of the user for the active pass or from the last pass if allowed
         $user_solution = [];
         if (($active_id > 0) && (!$show_correct_solution)) {
-            // get the solutions of a user
             $user_solution = $this->object->getSolutionValues($active_id, $pass);
             if (!is_array($user_solution)) {
                 $user_solution = [];
             }
         }
 
+        return $this->renderSolutionOutput(
+            $user_solution,
+            $active_id,
+            $pass,
+            $graphical_output,
+            $result_output,
+            $show_question_only,
+            $show_feedback,
+            $show_correct_solution,
+            $show_manual_scoring,
+            $show_question_text,
+            false,
+            false
+        );
+    }
+
+    public function renderSolutionOutput(
+        mixed $user_solutions,
+        int $active_id,
+        ?int $pass,
+        bool $graphical_output = false,
+        bool $result_output = false,
+        bool $show_question_only = true,
+        bool $show_feedback = false,
+        bool $show_correct_solution = false,
+        bool $show_manual_scoring = false,
+        bool $show_question_text = true,
+        bool $show_autosave_title = false,
+        bool $show_inline_feedback = false,
+    ): ?string {
         $template = new ilTemplate("tpl.il_as_qpl_cloze_question_output_solution.html", true, true, "components/ILIAS/TestQuestionPool");
         $output = $this->object->getClozeTextForHTMLOutput();
-        $assClozeGapCombinationObject = new assClozeGapCombination();
+        $assClozeGapCombinationObject = new assClozeGapCombination($this->db);
         $check_for_gap_combinations = $assClozeGapCombinationObject->loadFromDb($this->object->getId());
 
         foreach ($this->object->getGaps() as $gap_index => $gap) {
             $gaptemplate = new ilTemplate("tpl.il_as_qpl_cloze_question_output_solution_gap.html", true, true, "components/ILIAS/TestQuestionPool");
             $found = [];
-            foreach ($user_solution as $solutionarray) {
+            foreach ($user_solutions as $solutionarray) {
                 if ($solutionarray["value1"] == $gap_index) {
                     $found = $solutionarray;
                 }
@@ -897,7 +888,7 @@ JS;
                         foreach ($gaps_used_in_combination as $key => $value) {
                             $a = 0;
                             if ($value == $combination_id) {
-                                foreach ($user_solution as $solution_key => $solution_value) {
+                                foreach ($user_solutions as $solution_key => $solution_value) {
                                     if ($solution_value['value1'] == $key) {
                                         $result_row = [];
                                         $result_row['gap_id'] = $solution_value['value1'];
@@ -1015,7 +1006,7 @@ JS;
             }
 
             $feedback = $this->getSpecificFeedbackOutput(
-                $this->object->fetchIndexedValuesFromValuePairs($user_solution)
+                $this->object->fetchIndexedValuesFromValuePairs($user_solutions)
             );
         }
         if ($feedback !== '') {
@@ -1091,7 +1082,7 @@ JS;
         // get the solution of the user for the active pass or from the last pass if allowed
         $user_solution = [];
         if ($user_post_solutions !== false) {
-            $indexedSolution = $this->object->fetchSolutionSubmit($user_post_solutions);
+            $indexedSolution = $this->object->fetchSolutionSubmit();
             $user_solution = $this->object->fetchValuePairsFromIndexedValues($indexedSolution);
         } elseif ($active_id) {
             $user_solution = $this->object->getTestOutputSolutions($active_id, $pass);
@@ -1347,7 +1338,7 @@ JS;
      */
     private function populateSolutiontextToGapTpl($gaptemplate, $gap, $solutiontext): void
     {
-        if ($this->renderPurposeSupportsFormHtml() || $this->isRenderPurposePrintPdf()) {
+        if ($this->isRenderPurposePrintPdf()) {
             $gaptemplate->setCurrentBlock('gap_span');
             $gaptemplate->setVariable('SPAN_SOLUTION', $solutiontext);
         } elseif ($gap->getType() == assClozeGap::TYPE_SELECT) {
@@ -1678,10 +1669,7 @@ JS;
             }
         }
 
-        $combinationPoints = $combinationPoints;
-        $combinationValues = $combinationValues;
-
-        $assClozeGapCombinationObject = new assClozeGapCombination();
+        $assClozeGapCombinationObject = new assClozeGapCombination($this->db);
         $assClozeGapCombinationObject->clearGapCombinationsFromDb($this->object->getId());
 
         $assClozeGapCombinationObject->saveGapCombinationToDb(
@@ -1689,5 +1677,6 @@ JS;
             $combinationPoints,
             $combinationValues
         );
+        $this->object->setGapCombinationsExists(true);
     }
 }

@@ -24,12 +24,14 @@ use ILIAS\Test\Settings\TestSettingsGUI;
 use ILIAS\Test\Scoring\Settings\Settings as SettingsScoring;
 use ILIAS\Test\Logging\TestLogger;
 use ILIAS\Test\Logging\TestAdministrationInteractionTypes;
-
+use ILIAS\Test\Presentation\TabsManager;
 use ILIAS\UI\Factory as UIFactory;
 use ILIAS\UI\Renderer as UIRenderer;
 use ILIAS\Refinery\Factory as Refinery;
 use ILIAS\Data\Factory as DataFactory;
 use ILIAS\UI\Component\Input\Container\Form\Form;
+use ilInfoScreenGUI;
+use ilObjTestGUI;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 /**
@@ -92,10 +94,10 @@ class SettingsScoringGUI extends TestSettingsGUI
     {
         if (!$this->access->checkAccess('write', '', $this->test_gui->getRefId())) {
             $this->tpl->setOnScreenMessage('info', $this->lng->txt('cannot_edit_test'), true);
-            $this->ctrl->redirect($this->test_gui, 'infoScreen');
+            $this->ctrl->redirectByClass([\ilRepositoryGUI::class, \ilObjTestGUI::class, \ilInfoScreenGUI::class]);
         }
 
-        $this->tabs->activateSubTab(\ilTestTabsManager::SETTINGS_SUBTAB_ID_SCORING);
+        $this->tabs->activateSubTab(TabsManager::SETTINGS_SUBTAB_ID_SCORING);
 
         $nextClass = $this->ctrl->getNextClass();
         switch ($nextClass) {
@@ -130,7 +132,7 @@ class SettingsScoringGUI extends TestSettingsGUI
         }
     }
 
-    private function showForm(Form $form = null): void
+    private function showForm(?Form $form = null): void
     {
         if ($form === null) {
             $form = $this->buildForm();
@@ -192,20 +194,11 @@ class SettingsScoringGUI extends TestSettingsGUI
             $this->refinery
         ];
 
+        $environment = [
+            'user_date_format' => $this->active_user->getDateTimeFormat(),
+            'user_time_zone' => $this->active_user->getTimeZone()
+        ];
 
-        $environment = [];
-
-        $data_factory = new DataFactory();
-        $user_format = $this->active_user->getDateFormat();
-        if ($this->active_user->getTimeFormat() == \ilCalendarSettings::TIME_FORMAT_24) {
-            $user_format = $data_factory->dateFormat()->withTime24($user_format);
-        } else {
-            $user_format = $data_factory->dateFormat()->withTime12($user_format);
-        }
-        $environment['user_date_format'] = $user_format;
-        $environment['user_time_zone'] = $this->active_user->getTimeZone();
-
-        $anonymity_flag = (bool) $this->test_object->getAnonymity();
         $disabled_flag = ($this->areScoringSettingsWritable() === false);
 
         $settings = $this->loadScoreSettings();
@@ -239,17 +232,15 @@ class SettingsScoringGUI extends TestSettingsGUI
 
     private function isScoreReportingAvailable(): bool
     {
-        if (!$this->test_object->getScoreReporting()) {
+        $result_summary_settings = $this->test_object->getScoreSettings()
+            ->getResultSummarySettings();
+        if ($result_summary_settings->getScoreReporting()->isReportingEnabled()) {
             return false;
         }
 
-        $now = (new \DateTimeImmutable('NOW'))->format('YmdHis');
-
-        if (
-            $this->test_object->getScoreReporting() == SettingsResultSummary::SCORE_REPORTING_DATE
-            && $this->test_object->getReportingDate() > $now
-        ) {
-            return false;
+        if ($result_summary_settings->getScoreReporting() === ScoreReportingTypes::SCORE_REPORTING_DATE) {
+            return $result_summary_settings->getResultSummarySettings()
+                ->getReportingDate() <= new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
         }
 
         return true;
@@ -271,7 +262,7 @@ class SettingsScoringGUI extends TestSettingsGUI
     protected function getTaxonomyOptions(): array
     {
         $available_taxonomy_ids = \ilObjTaxonomy::getUsageOfObject($this->test_object->getId());
-        $taxononmy_translator = new \ilTestQuestionFilterLabelTranslater($this->db, $this->lng);
+        $taxononmy_translator = new \ilTestQuestionFilterLabelTranslator($this->db, $this->lng);
         $taxononmy_translator->loadLabelsFromTaxonomyIds($available_taxonomy_ids);
 
         $taxonomy_options = [];

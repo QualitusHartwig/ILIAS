@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -162,13 +163,48 @@ class assNumericGUI extends assQuestionGUI implements ilGuiQuestionScoringAdjust
         if (($active_id > 0) && (!$show_correct_solution)) {
             $solutions = $this->object->getSolutionValues($active_id, $pass);
         } else {
-            array_push($solutions, ["value1" => sprintf($this->lng->txt("value_between_x_and_y"), $this->object->getLowerLimit(), $this->object->getUpperLimit())]);
+            array_push($solutions, [
+                'value1' => sprintf(
+                    $this->lng->txt("value_between_x_and_y"),
+                    $this->object->getLowerLimit(),
+                    $this->object->getUpperLimit()
+                )
+            ]);
         }
 
-        // generate the question output
+        return $this->renderSolutionOutput(
+            $solutions,
+            $active_id,
+            $pass,
+            $graphical_output,
+            $result_output,
+            $show_question_only,
+            $show_feedback,
+            $show_correct_solution,
+            $show_manual_scoring,
+            $show_question_text,
+            false,
+            $show_inline_feedback
+        );
+    }
+
+    public function renderSolutionOutput(
+        mixed $user_solutions,
+        int $active_id,
+        ?int $pass,
+        bool $graphical_output = false,
+        bool $result_output = false,
+        bool $show_question_only = true,
+        bool $show_feedback = false,
+        bool $show_correct_solution = false,
+        bool $show_manual_scoring = false,
+        bool $show_question_text = true,
+        bool $show_autosave_title = false,
+        bool $show_inline_feedback = false,
+    ): ?string {
         $template = new ilTemplate("tpl.il_as_qpl_numeric_output_solution.html", true, true, "components/ILIAS/TestQuestionPool");
         $solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html", true, true, "components/ILIAS/TestQuestionPool");
-        if (is_array($solutions)) {
+        if (is_array($user_solutions)) {
             if (($active_id > 0) && (!$show_correct_solution)) {
                 if ($graphical_output) {
                     if ($this->object->getStep() === null) {
@@ -186,10 +222,10 @@ class assNumericGUI extends assQuestionGUI implements ilGuiQuestionScoringAdjust
                     $template->parseCurrentBlock();
                 }
             }
-            foreach ($solutions as $solution) {
-                $template->setVariable("NUMERIC_VALUE", $solution["value1"]);
+            foreach ($user_solutions as $solution) {
+                $template->setVariable("NUMERIC_VALUE", $solution['value1']);
             }
-            if (count($solutions) == 0) {
+            if (count($user_solutions) == 0) {
                 $template->setVariable("NUMERIC_VALUE", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
             }
         }
@@ -261,7 +297,7 @@ class assNumericGUI extends assQuestionGUI implements ilGuiQuestionScoringAdjust
         $template = new ilTemplate("tpl.il_as_qpl_numeric_output.html", true, true, "components/ILIAS/TestQuestionPool");
         if (is_array($solutions)) {
             foreach ($solutions as $solution) {
-                $template->setVariable("NUMERIC_VALUE", " value=\"" . $solution["value1"] . "\"");
+                $template->setVariable("NUMERIC_VALUE", " value=\"" . $solution['value1'] . "\"");
             }
         }
         $template->setVariable("NUMERIC_SIZE", $this->object->getMaxChars());
@@ -284,14 +320,14 @@ class assNumericGUI extends assQuestionGUI implements ilGuiQuestionScoringAdjust
 
     public function writeQuestionSpecificPostData(ilPropertyFormGUI $form): void
     {
-        $this->object->setMaxChars($_POST["maxchars"]);
+        $this->object->setMaxChars($this->request_data_collector->int('maxchars') ?? 6);
     }
 
     public function writeAnswerSpecificPostData(ilPropertyFormGUI $form): void
     {
-        $this->object->setLowerLimit($_POST['lowerlimit']);
-        $this->object->setUpperLimit($_POST['upperlimit']);
-        $this->object->setPoints((float) str_replace(',', '.', $_POST['points']));
+        $this->object->setLowerLimit($this->request_data_collector->float('lowerlimit'));
+        $this->object->setUpperLimit($this->request_data_collector->float('upperlimit'));
+        $this->object->setPoints($this->request_data_collector->float('points'));
     }
 
     public function populateQuestionSpecificFormPart(\ilPropertyFormGUI $form): ilPropertyFormGUI
@@ -378,59 +414,6 @@ class assNumericGUI extends assQuestionGUI implements ilGuiQuestionScoringAdjust
     public function getAfterParticipationSuppressionQuestionPostVars(): array
     {
         return [];
-    }
-
-    /**
-     * Returns an html string containing a question specific representation of the answers so far
-     * given in the test for use in the right column in the scoring adjustment user interface.
-     * @param array $relevant_answers
-     * @return string
-     */
-    public function getAggregatedAnswersView(array $relevant_answers): string
-    {
-        return  $this->renderAggregateView(
-            $this->aggregateAnswers($relevant_answers)
-        )->get();
-    }
-
-    public function aggregateAnswers($relevant_answers_chosen): array
-    {
-        $aggregate = [];
-
-        foreach ($relevant_answers_chosen as $relevant_answer) {
-            if (array_key_exists($relevant_answer['value1'], $aggregate)) {
-                $aggregate[$relevant_answer['value1']]++;
-            } else {
-                $aggregate[$relevant_answer['value1']] = 1;
-            }
-        }
-        return $aggregate;
-    }
-
-    /**
-     * @param $aggregate
-     *
-     * @return ilTemplate
-     */
-    public function renderAggregateView($aggregate): ilTemplate
-    {
-        $tpl = new ilTemplate('tpl.il_as_aggregated_answers_table.html', true, true, "components/ILIAS/TestQuestionPool");
-
-        $tpl->setCurrentBlock('headercell');
-        $tpl->setVariable('HEADER', $this->lng->txt('tst_answer_aggr_answer_header'));
-        $tpl->parseCurrentBlock();
-
-        $tpl->setCurrentBlock('headercell');
-        $tpl->setVariable('HEADER', $this->lng->txt('tst_answer_aggr_frequency_header'));
-        $tpl->parseCurrentBlock();
-
-        foreach ($aggregate as $key => $value) {
-            $tpl->setCurrentBlock('aggregaterow');
-            $tpl->setVariable('OPTION', $key);
-            $tpl->setVariable('COUNT', $value);
-            $tpl->parseCurrentBlock();
-        }
-        return $tpl;
     }
 
     public function getAnswersFrequency($relevantAnswers, $questionIndex): array

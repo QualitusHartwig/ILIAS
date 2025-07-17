@@ -18,24 +18,27 @@
 
 declare(strict_types=1);
 
-/**
- * @author Stefan Meyer <smeyer.ilias@gmx.de>
- */
 class ilOpenIdConnectUserSync
 {
     public const AUTH_MODE = 'oidc';
+    private const UDF_STRING = 'udf_';
+
     private readonly ilLogger $logger;
     private readonly ilXmlWriter $writer;
     private string $ext_account = '';
     private string $int_account = '';
     private int $usr_id = 0;
+    private ilUserDefinedFields $udf;
 
-    public function __construct(private readonly ilOpenIdConnectSettings $settings, private readonly stdClass $user_info)
-    {
+    public function __construct(
+        private readonly ilOpenIdConnectSettings $settings,
+        private readonly stdClass $user_info
+    ) {
         global $DIC;
 
         $this->logger = $DIC->logger()->auth();
         $this->writer = new ilXmlWriter();
+        $this->udf = ilUserDefinedFields::_getInstance();
     }
 
     public function setExternalAccount(string $ext_account): void
@@ -61,9 +64,6 @@ class ilOpenIdConnectUserSync
         return $this->int_account === '';
     }
 
-    /**
-     * @throws ilOpenIdConnectSyncForbiddenException
-     */
     public function updateUser(): bool
     {
         if ($this->needsCreation() && !$this->settings->isSyncAllowed()) {
@@ -81,6 +81,7 @@ class ilOpenIdConnectUserSync
         $importParser->setFolderId(USER_FOLDER_ID);
         $importParser->startParsing();
         $debug = $importParser->getProtocol();
+        $this->logger->debug(json_encode($debug, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
 
         $int_account = ilObjUser::_checkExternalAuthAccount(
             self::AUTH_MODE,
@@ -91,7 +92,7 @@ class ilOpenIdConnectUserSync
         return true;
     }
 
-    protected function transformToXml(): void
+    private function transformToXml(): void
     {
         $this->writer->xmlStartTag('Users');
 
@@ -115,14 +116,23 @@ class ilOpenIdConnectUserSync
         $this->parseRoleAssignments();
 
         if ($this->needsCreation()) {
-            $this->writer->xmlElement('Active', [], "true");
+            $this->writer->xmlElement('Active', [], 'true');
             $this->writer->xmlElement('TimeLimitOwner', [], 7);
             $this->writer->xmlElement('TimeLimitUnlimited', [], 1);
             $this->writer->xmlElement('TimeLimitFrom', [], time());
             $this->writer->xmlElement('TimeLimitUntil', [], time());
         }
 
-        foreach ($this->settings->getProfileMappingFields() as $field => $lng_key) {
+        $profile_fields = $this->settings->getProfileMappingFields();
+
+        $udf_fields = [];
+        foreach ($this->udf->getDefinitions() as $definition) {
+            $field = self::UDF_STRING . $definition['field_id'];
+            $udf_fields[$field] = $field;
+        }
+
+        $profile_and_udf_fields = $profile_fields + $udf_fields;
+        foreach ($profile_and_udf_fields as $field => $lng_key) {
             $connect_name = $this->settings->getProfileMappingFieldValue($field);
             if (!$connect_name) {
                 $this->logger->debug('Ignoring unconfigured field: ' . $field);
@@ -140,6 +150,25 @@ class ilOpenIdConnectUserSync
             }
 
             switch ($field) {
+                case 'gender':
+                    switch (strtolower($value)) {
+                        case 'm':
+                        case 'male':
+                            $this->writer->xmlElement('Gender', [], 'm');
+                            break;
+
+                        case 'f':
+                        case 'female':
+                            $this->writer->xmlElement('Gender', [], 'f');
+                            break;
+
+                        default:
+                            // use the default for anything that is not clearly m or f
+                            $this->writer->xmlElement('Gender', [], 'n');
+                            break;
+                    }
+                    break;
+
                 case 'firstname':
                     $this->writer->xmlElement('Firstname', [], $value);
                     break;
@@ -148,12 +177,95 @@ class ilOpenIdConnectUserSync
                     $this->writer->xmlElement('Lastname', [], $value);
                     break;
 
+                case 'hobby':
+                    $this->writer->xmlElement('Hobby', [], $value);
+                    break;
+
+                case 'title':
+                    $this->writer->xmlElement('Title', [], $value);
+                    break;
+
+                case 'institution':
+                    $this->writer->xmlElement('Institution', [], $value);
+                    break;
+
+                case 'department':
+                    $this->writer->xmlElement('Department', [], $value);
+                    break;
+
+                case 'street':
+                    $this->writer->xmlElement('Street', [], $value);
+                    break;
+
+                case 'city':
+                    $this->writer->xmlElement('City', [], $value);
+                    break;
+
+                case 'zipcode':
+                    $this->writer->xmlElement('PostalCode', [], $value);
+                    break;
+
+                case 'country':
+                    $this->writer->xmlElement('Country', [], $value);
+                    break;
+
+                case 'phone_office':
+                    $this->writer->xmlElement('PhoneOffice', [], $value);
+                    break;
+
+                case 'phone_home':
+                    $this->writer->xmlElement('PhoneHome', [], $value);
+                    break;
+
+                case 'phone_mobile':
+                    $this->writer->xmlElement('PhoneMobile', [], $value);
+                    break;
+
+                case 'fax':
+                    $this->writer->xmlElement('Fax', [], $value);
+                    break;
+
                 case 'email':
                     $this->writer->xmlElement('Email', [], $value);
                     break;
 
-                case 'birthday':
-                    $this->writer->xmlElement('Birthday', [], $value);
+                case 'second_email':
+                    $this->writer->xmlElement('SecondEmail', [], $value);
+                    break;
+
+                case 'matriculation':
+                    $this->writer->xmlElement('Matriculation', [], $value);
+                    break;
+
+                default:
+                    if (!str_starts_with($field, 'udf_')) {
+                        continue 2;
+                    }
+
+                    $id_data = explode('_', $field);
+                    if (!isset($id_data[1])) {
+                        continue 2;
+                    }
+
+                    $definition = $this->udf->getDefinition((int) $id_data[1]);
+                    if (empty($definition)) {
+                        $this->logger->warning(
+                            sprintf(
+                                'Invalid/Orphaned UD field mapping detected: %s',
+                                $field
+                            )
+                        );
+                        break;
+                    }
+
+                    $this->writer->xmlElement(
+                        'UserDefinedField',
+                        [
+                            'Id' => $definition['il_id'],
+                            'Name' => $definition['field_name']
+                        ],
+                        $value
+                    );
                     break;
             }
         }
@@ -164,8 +276,7 @@ class ilOpenIdConnectUserSync
     }
 
     /**
-     * Parse role assignments
-     * @return array<int, int> array of role assignments
+     * @return array<int, int> Map of role assignments, where the key equals the respetive value
      */
     protected function parseRoleAssignments(): array
     {
@@ -186,12 +297,9 @@ class ilOpenIdConnectUserSync
                 continue;
             }
 
-            [$role_attribute, $role_value] = explode('::', $role_info['value']);
+            [$role_attribute, $role_value] = array_map(trim(...), explode('::', $role_info['value']));
 
-            if (
-                !$role_attribute ||
-                !$role_value
-            ) {
+            if (!$role_attribute || !$role_value) {
                 $this->logger->debug('No valid role mapping configuration for: ' . $role_id);
                 continue;
             }
@@ -207,14 +315,29 @@ class ilOpenIdConnectUserSync
             }
 
             if (is_array($this->user_info->{$role_attribute})) {
-                if (!in_array($role_value, $this->user_info->{$role_attribute}, true)) {
+                $roles_claim = array_map(
+                    static function (mixed $value): string {
+                        return match (true) {
+                            is_string($value) => trim($value),
+                            $value instanceof stdClass && property_exists($value, 'id') => trim((string) $value->id),
+                            $value instanceof stdClass && property_exists($value, 'value') => trim((string) $value->value),
+                            default => throw new DomainException(sprintf(
+                                'Unexpected role value type, please check your provider configuration: %s',
+                                print_r($value, true)
+                            )),
+                        };
+                    },
+                    $this->user_info->{$role_attribute}
+                );
+                if (!in_array($role_value, $roles_claim, true)) {
                     $this->logger->debug('User account has no ' . $role_value);
                     continue;
                 }
-            } elseif (strcmp((string) $this->user_info->{$role_attribute}, $role_value) !== 0) {
+            } elseif (strcmp(trim((string) $this->user_info->{$role_attribute}), $role_value) !== 0) {
                 $this->logger->debug('User account has no ' . $role_value);
                 continue;
             }
+
             $this->logger->debug('Matching role mapping for role_id: ' . $role_id);
 
             $found_role = true;
@@ -235,7 +358,6 @@ class ilOpenIdConnectUserSync
         if (!$found_role && $this->needsCreation()) {
             $long_role_id = ('il_' . IL_INST_ID . '_role_' . $this->settings->getRole());
 
-            // add default role
             $this->writer->xmlElement(
                 'Role',
                 [
@@ -250,11 +372,12 @@ class ilOpenIdConnectUserSync
         return $roles_assignable;
     }
 
-    protected function valueFrom(string $connect_name): string
+    private function valueFrom(string $connect_name): string
     {
         if (!$connect_name) {
             return '';
         }
+
         if (!property_exists($this->user_info, $connect_name)) {
             $this->logger->debug('Cannot find property ' . $connect_name . ' in user info ');
             return '';

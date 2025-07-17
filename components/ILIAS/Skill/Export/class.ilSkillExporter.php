@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -16,9 +14,9 @@ declare(strict_types=1);
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
  *
- ********************************************************************
- */
+ *********************************************************************/
 
+declare(strict_types=1);
 
 /**
  * Exporter class for skills
@@ -28,14 +26,16 @@ declare(strict_types=1);
 class ilSkillExporter extends ilXmlExporter
 {
     private ilSkillDataSet $ds;
-    protected ilExportConfig $config;
+    protected ilSkillExportConfig $config;
 
     public function init(): void
     {
         $this->ds = new ilSkillDataSet();
-        $this->ds->setExportDirectories($this->dir_relative, $this->dir_absolute);
+        $this->ds->initByExporter($this);
         $this->ds->setDSPrefix("ds");
-        $this->config = $this->getExport()->getConfig("components/ILIAS/Skill");
+        /** @var ilSkillExportConfig $config */
+        $config = $this->getExport()->getExportConfigs()->getElementByComponent('components/ILIAS/Skill');
+        $this->config = $config;
         $this->ds->setSelectedNodes($this->config->getSelectedNodes());
         $this->ds->setSelectedProfiles($this->config->getSelectedProfiles());
         $this->ds->setMode($this->config->getMode());

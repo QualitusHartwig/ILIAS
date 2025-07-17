@@ -18,8 +18,9 @@
 
 declare(strict_types=1);
 
+use ILIAS\Language\Language;
 use ILIAS\UI\Factory as UIFactory;
-use ILIAS\UI\Component\Legacy\Legacy as LegacyComponent;
+use ILIAS\UI\Component\Legacy\Content as LegacyComponent;
 use ILIAS\UI\Component\Card\Standard as StandardCard;
 use ILIAS\UI\Component\Image\Image as Image;
 use ILIAS\UI\Renderer;
@@ -34,7 +35,7 @@ class ilUsersGalleryGUI
 {
     private ilCtrl $ctrl;
     private ilGlobalTemplateInterface $tpl;
-    private ilLanguage $lng;
+    private Language $lng;
     private ilObjUser $user;
     private ilRbacSystem $rbacsystem;
     private UIFactory $ui_factory;
@@ -69,6 +70,7 @@ class ilUsersGalleryGUI
             $DIC['ilDB'],
             $this->user->getId()
         );
+        $this->user_action_gui->init();
     }
 
     public function executeCommand(): void
@@ -137,12 +139,15 @@ class ilUsersGalleryGUI
                 $this->ui_factory->messageBox()->info(
                     $this->lng->txt('no_gallery_users_available')
                 )
-            )
+            ),
+            JSON_THROW_ON_ERROR
         );
         $onload_js = <<<JS
-    let stateChangedListener = (event, usr_id, is_state, was_state) => {
-        if (is_state === 'ilBuddySystemUnlinkedRelationState') {
-            document.querySelector('.il-deck [data-buddy-id="' + usr_id + '"]').closest('.il-card').parentElement.remove();
+    let stateChangedListener = (event) => {
+      const {buddyId, newState, oldState} = event.detail;
+
+        if (newState === 'ilBuddySystemUnlinkedRelationState') {
+            document.querySelector('.il-deck [data-buddy-id="' + buddyId + '"]').closest('.il-card').parentElement.remove();
             if (document.querySelectorAll('.il-card.thumbnail').length === 0) {
                 document.querySelector('.il-deck').innerHTML = {$message};
             }
@@ -150,7 +155,7 @@ class ilUsersGalleryGUI
         return true;
     };
 
-    $(window).on('il.bs.stateChange.afterStateChangePerformed', stateChangedListener);
+    document.addEventListener('il.bs.stateChange.afterStateChangePerformed', stateChangedListener);
 JS;
         $this->tpl->addOnLoadCode($onload_js);
     }
@@ -206,7 +211,7 @@ JS;
         $list_html = $this->user_action_gui->renderDropDown($user->getId());
 
         if ($contact_btn_html || $list_html) {
-            return $this->ui_factory->legacy(
+            return $this->ui_factory->legacy()->content(
                 "<div style='display:grid; grid-template-columns: max-content max-content;'>"
                 . "<div>"
                 . $contact_btn_html

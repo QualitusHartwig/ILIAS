@@ -26,6 +26,7 @@
  */
 class ilExPeerReviewGUI
 {
+    protected \ILIAS\Exercise\PeerReview\Criteria\CriteriaFileManager $criteria_file;
     protected \ILIAS\Exercise\Submission\SubmissionManager $subm;
     protected int $requested_giver_id;
     protected \ILIAS\Exercise\Notification\NotificationManager $notification;
@@ -47,7 +48,7 @@ class ilExPeerReviewGUI
 
     public function __construct(
         ilExAssignment $a_ass,
-        ilExSubmission $a_submission = null
+        ?ilExSubmission $a_submission = null
     ) {
         global $DIC;
 
@@ -75,6 +76,7 @@ class ilExPeerReviewGUI
         $this->ctrl->saveParameter($this, array("peer_id"));
         $this->notification = $this->domain->notification($request->getRefId());
         $this->subm = $this->domain->submission($a_ass->getId());
+        $this->criteria_file = $this->domain->peerReview()->criteriaFile($a_ass->getId());
     }
 
     /**
@@ -650,7 +652,7 @@ class ilExPeerReviewGUI
 
         return $f->panel()->sub(
             $title,
-            $f->legacy($tpl->get() . $mess_html)
+            $f->legacy()->content($tpl->get() . $mess_html)
         );
     }
 
@@ -802,7 +804,7 @@ class ilExPeerReviewGUI
     }
 
     public function editPeerReviewItemObject(
-        ilPropertyFormGUI $a_form = null
+        ?ilPropertyFormGUI $a_form = null
     ): void {
         $tpl = $this->tpl;
 
@@ -1128,17 +1130,22 @@ class ilExPeerReviewGUI
         $giver_id = $this->requested_review_giver_id;
         $peer_id = $this->requested_review_peer_id;
         $crit_id = $this->requested_review_crit_id;
-
         if (!is_numeric($crit_id)) {
             $crit = ilExcCriteria::getInstanceByType($crit_id);
+            $file_crit_id = 0;
         } else {
             $crit = ilExcCriteria::getInstanceById($crit_id);
+            $file_crit_id = $crit_id;
         }
 
         $crit->setPeerReviewContext($this->ass, $giver_id, $peer_id);
         $file = $crit->getFileByHash();
         if ($file) {
-            ilFileDelivery::deliverFileLegacy($file, basename($file));
+            $this->criteria_file->deliverFileOfReview(
+                $giver_id,
+                $peer_id,
+                $file_crit_id
+            );
         }
 
         $ilCtrl->redirect($this, "returnToParent");
@@ -1185,7 +1192,7 @@ class ilExPeerReviewGUI
             $r = $this->gui->ui()->renderer();
             $p = $f->panel()->standard(
                 $this->lng->txt("exc_peer_review_overview_invalid_users"),
-                $f->legacy($ptpl->get())
+                $f->legacy()->content($ptpl->get())
             );
 
             $panel = $r->render($p);

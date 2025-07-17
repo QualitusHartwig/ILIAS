@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -16,8 +14,9 @@ declare(strict_types=1);
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
  *
- ********************************************************************
- */
+ *********************************************************************/
+
+declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -28,9 +27,7 @@ class ilQTIResponseLabelTest extends TestCase
         $this->assertInstanceOf(ilQTIResponseLabel::class, new ilQTIResponseLabel());
     }
 
-    /**
-     * @dataProvider rshuffles
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('rshuffles')]
     public function testSetGetRshuffle(string $input, ?string $expected): void
     {
         $instance = new ilQTIResponseLabel();
@@ -38,9 +35,7 @@ class ilQTIResponseLabelTest extends TestCase
         $this->assertEquals($expected, $instance->getRshuffle());
     }
 
-    /**
-     * @dataProvider areas
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('areas')]
     public function testSetGetRarea(string $input, ?string $expected): void
     {
         $instance = new ilQTIResponseLabel();
@@ -48,9 +43,7 @@ class ilQTIResponseLabelTest extends TestCase
         $this->assertEquals($expected, $instance->getRarea());
     }
 
-    /**
-     * @dataProvider rranges
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('rranges')]
     public function testSetGetRrange(string $input, ?string $expected): void
     {
         $instance = new ilQTIResponseLabel();

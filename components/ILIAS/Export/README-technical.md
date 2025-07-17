@@ -18,7 +18,6 @@ The export tab should be placed accoring to the [tabs guidelines](https://docu.i
 // in execute command:
 ...
 $exp_gui = new ilExportGUI($this); // $this is the ilObj...GUI class of the resource
-$exp_gui->addFormat("xml");
 $ret = $this->ctrl->forwardCommand($exp_gui);
 ...
 // in set/get tabs:
@@ -31,22 +30,7 @@ if ($ilAccess->checkAccess("write", "", $this->object->getRefId()))
 ...
 ```
 
-The simple example above can be found in `ILIAS/Exercise/classes/class.ilObjExerciseGUI.php`. A more complex usage can be found in learning modules, class `ILIAS/LearningModule/classes/class.ilObjContentObjectGUI.php`. This uses the `addFormat()` method to add multiple formats and custom columns and multi commands:
-
-```php
-// in executeCommand()
-...
-$exp_gui = new ilExportGUI($this);
-$exp_gui->addFormat("xml", "", $this, "export");
-$exp_gui->addFormat("html", "", $this, "exportHTML");
-$exp_gui->addFormat("scorm", "", $this, "exportSCORM");
-$exp_gui->addCustomColumn($this->lng->txt("cont_public_access"),
-    $this, "getPublicAccessColValue");
-$exp_gui->addCustomMultiCommand($this->lng->txt("cont_public_access"),
-    $this, "publishExportFile");
-$ret = $this->ctrl->forwardCommand($exp_gui);
-...
-```
+The simple example above can be found in `ILIAS/Exercise/classes/class.ilObjExerciseGUI.php`. A more complex usage can be found in learning modules, class `ILIAS/LearningModule/classes/class.ilObjContentObjectGUI.php`.
 
 ### Class il<Component>Exporter
 For the XML export the export user interface class calls a generic export method ilExport->exportObject (ILIAS/Export). To use this generic export, you need to implement an il\<Module\>Exporter class that is derived from `ilXmlExporter`.
@@ -248,9 +232,9 @@ $xml_file_spl = new SplFileInfo('path to my xml file')
 $xsd_file_spl = new SplFileInfo('path to my xsd file')
 
 // Initialize a xml/xsd file handler
-$import = new \ILIAS\Export\ImportHandler\ilFactory();
-$xml_file_handler = $import->file()->xml()->withFileInfo($xml_file_spl);
-$xsd_file_handler = $import->file()->xsd()->withFileInfo($xsd_file_spl);
+$import = new \ILIAS\Export\ImportHandler\Factory();
+$xml_file_handler = $import->file()->xml()->handler()->withFileInfo($xml_file_spl);
+$xsd_file_handler = $import->file()->xsd()->hanlder()->withFileInfo($xsd_file_spl);
 
 /** @var \ILIAS\Export\ImportStatus\ilCollection $validation_results */
 // Validate
@@ -274,17 +258,17 @@ $xml_file_spl = new SplFileInfo('path to my xml file')
 $xsd_file_spl = new SplFileInfo('path to my xsd file')
 
 // Initialize a xml/xsd file handler
-$import = new \ILIAS\Export\ImportHandler\ilFactory();
-$xml_file_handler = $import->file()->xml()->withFileInfo($xml_file_spl);
-$xsd_file_handler = $import->file()->xsd()->withFileInfo($xsd_file_spl);
+$import = new \ILIAS\Export\ImportHandler\Factory();
+$xml_file_handler = $import->file()->xml()->handler()->withFileInfo($xml_file_spl);
+$xsd_file_handler = $import->file()->xsd()->handler()->withFileInfo($xsd_file_spl);
 
 // Build xPath to xml node
 // $path->toString() = '/RootElement/namespace:TargetElement'
-/** @var \ILIAS\Export\ImportHandler\File\Path\ilHandler $path */
-$path = $import->file()->path()->handler()
+/** @var \ILIAS\Export\ImportHandler\Path\Handler $path */
+$path = $import->path()->handler()
     ->withStartAtRoot(true)
-    ->withNode($import->file()->path()->node()->simple()->withName('RootElement'))
-    ->withNode($import->file()->path()->node()->simple()->withName('namespace:TargetElement'));
+    ->withNode($import->path()->node()->simple()->withName('RootElement'))
+    ->withNode($import->path()->node()->simple()->withName('namespace:TargetElement'));
 
 // Because the path contains the namespace 'namespace' we have to add the namespace
 // info to the xml file handler

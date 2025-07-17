@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -16,8 +14,9 @@ declare(strict_types=1);
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
  *
- ********************************************************************
- */
+ *********************************************************************/
+
+declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -56,9 +55,7 @@ class ilQTIMattextTest extends TestCase
         $this->assertEquals('Some input.', $instance->getUri());
     }
 
-    /**
-     * @dataProvider xmlSpaces
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('xmlSpaces')]
     public function testSetGetXmlspace(string $input, ?string $expected): void
     {
         $instance = new ilQTIMattext();

@@ -99,7 +99,6 @@ class ilForumXMLParser extends ilSaxParser
 
     public function setHandlers($a_xml_parser): void
     {
-        xml_set_object($a_xml_parser, $this);
         xml_set_element_handler(
             $a_xml_parser,
             function (XMLParser $a_xml_parser, string $a_name, array $a_attribs): void {
@@ -536,7 +535,7 @@ class ilForumXMLParser extends ilSaxParser
                     );
                     $this->forumPost->setPosAuthorId((int) $author_id_data['usr_id']);
 
-                    if (isset($this->postArray['isAuthorModerator']) && $this->postArray['isAuthorModerator'] === 'NULL') {
+                    if (isset($this->postArray['isAuthorModerator']) && strtoupper($this->postArray['isAuthorModerator']) === 'NULL') {
                         $this->forumPost->setIsAuthorModerator(false);
                     } else {
                         $this->forumPost->setIsAuthorModerator((bool) $this->postArray['isAuthorModerator']);

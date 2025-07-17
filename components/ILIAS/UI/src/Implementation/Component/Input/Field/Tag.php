@@ -24,7 +24,7 @@ use ILIAS\Data\Factory as DataFactory;
 use ILIAS\Data\Result\Ok;
 use ILIAS\UI\Component as C;
 use ILIAS\UI\Component\Signal;
-use ILIAS\UI\Implementation\Component\Input\InputData;
+use ILIAS\UI\Component\Input\InputData;
 use stdClass;
 use ILIAS\Refinery\Constraint;
 use InvalidArgumentException;
@@ -75,7 +75,8 @@ class Tag extends FormInput implements C\Input\Field\Tag
             if (count($v) == 1 && $v[0] === '') {
                 return [];
             }
-            return array_map("urldecode", $v);
+            $array = array_map("urldecode", $v);
+            return array_map('strip_tags', $array);
         }));
     }
 

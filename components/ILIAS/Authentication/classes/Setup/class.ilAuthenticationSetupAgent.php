@@ -18,6 +18,7 @@
 
 declare(strict_types=1);
 
+use ILIAS\Authentication\Setup\AbandonCASAuthModeUpdateObjective;
 use ILIAS\Setup;
 use ILIAS\Refinery;
 
@@ -25,31 +26,53 @@ class ilAuthenticationSetupAgent implements Setup\Agent
 {
     use Setup\Agent\HasNoNamedObjective;
 
+    protected const int DEFAULT_SESSION_EXPIRE_IN_SECONDS = 1_800;
+
+    public function __construct(protected Refinery\Factory $refinery)
+    {
+    }
+
     public function hasConfig(): bool
     {
-        return false;
+        return true;
     }
 
     public function getArrayToConfigTransformation(): Refinery\Transformation
     {
-        throw new LogicException('Agent has no config.');
+        return $this->refinery->custom()->transformation(function ($data): ilAuthenticationSetupConfig {
+            return new ilAuthenticationSetupConfig($data['session_max_idle'] ?? self::DEFAULT_SESSION_EXPIRE_IN_SECONDS);
+        });
     }
 
-    public function getInstallObjective(Setup\Config $config = null): Setup\Objective
+    public function getInstallObjective(?Setup\Config $config = null): Setup\Objective
     {
-        return new Setup\Objective\NullObjective();
+        if ($config !== null) {
+            return new ilSessionMaxIdleIsSetObjective($config);
+        }
+
+        return new ilSessionMaxIdleIsSetObjective(
+            new ilAuthenticationSetupConfig(self::DEFAULT_SESSION_EXPIRE_IN_SECONDS)
+        );
     }
 
-    public function getUpdateObjective(Setup\Config $config = null): Setup\Objective
+    public function getUpdateObjective(?Setup\Config $config = null): Setup\Objective
     {
+        if ($config !== null) {
+            return new Setup\ObjectiveCollection(
+                'Authentication',
+                true,
+                new ilSessionMaxIdleIsSetObjective($config),
+                new ilDatabaseUpdateStepsExecutedObjective(
+                    new AbandonCASAuthModeUpdateObjective()
+                ),
+            );
+        }
+
         return new Setup\ObjectiveCollection(
             'Authentication',
             true,
             new ilDatabaseUpdateStepsExecutedObjective(
-                new ilAuthenticationDatabaseUpdateSteps8()
-            ),
-            new ilDatabaseUpdateStepsExecutedObjective(
-                new AbandonAuthRichTextEditorDatabaseUpdateSteps()
+                new AbandonCASAuthModeUpdateObjective()
             ),
         );
     }
@@ -66,11 +89,7 @@ class ilAuthenticationSetupAgent implements Setup\Agent
             true,
             new ilDatabaseUpdateStepsMetricsCollectedObjective(
                 $storage,
-                new ilAuthenticationDatabaseUpdateSteps8()
-            ),
-            new ilDatabaseUpdateStepsMetricsCollectedObjective(
-                $storage,
-                new AbandonAuthRichTextEditorDatabaseUpdateSteps()
+                new AbandonCASAuthModeUpdateObjective()
             ),
         );
     }

@@ -23,7 +23,7 @@ use ILIAS\DI\Container;
 use ILIAS\FileUpload\FileUpload;
 use ILIAS\Filesystem\Filesystems;
 use ILIAS\HTTP\Services as HTTPServices;
-use ILIAS\UI\Implementation\Factory;
+use ILIAS\UI\Implementation\FactoryInternal;
 use ILIAS\Refinery\Factory as RefineryFactory;
 use ILIAS\Refinery\Random\Group as RandomGroup;
 use GuzzleHttp\Psr7\Uri as GuzzleURI;
@@ -32,11 +32,11 @@ trait ilTestBaseTestCaseTrait
 {
     protected function defineGlobalConstants(): void
     {
-        if (!defined("ILIAS_HTTP_PATH")) {
-            define("ILIAS_HTTP_PATH", "http://localhost");
+        if (!defined('ILIAS_HTTP_PATH')) {
+            define('ILIAS_HTTP_PATH', 'http://localhost');
         }
-        if (!defined("CLIENT_DATA_DIR")) {
-            define("CLIENT_DATA_DIR", "/var/iliasdata");
+        if (!defined('CLIENT_DATA_DIR')) {
+            define('CLIENT_DATA_DIR', '/var/iliasdata');
         }
         if (!defined('IL_INST_ID')) {
             define('IL_INST_ID', '0');
@@ -44,17 +44,20 @@ trait ilTestBaseTestCaseTrait
         if (!defined("ANONYMOUS_USER_ID")) {
             define("ANONYMOUS_USER_ID", 13);
         }
-        if (!defined("ROOT_FOLDER_ID")) {
-            define("ROOT_FOLDER_ID", 8);
+        if (!defined('ANONYMOUS_USER_ID')) {
+            define('ANONYMOUS_USER_ID', 13);
         }
-        if (!defined("ILIAS_LOG_ENABLED")) {
-            define("ILIAS_LOG_ENABLED", true);
+        if (!defined('ROOT_FOLDER_ID')) {
+            define('ROOT_FOLDER_ID', 8);
         }
-        if (!defined("ILIAS_LOG_DIR")) {
-            define("ILIAS_LOG_DIR", '/var/log');
+        if (!defined('ILIAS_LOG_ENABLED')) {
+            define('ILIAS_LOG_ENABLED', true);
         }
-        if (!defined("ILIAS_LOG_FILE")) {
-            define("ILIAS_LOG_FILE", '/var/log/ilias.log');
+        if (!defined('ILIAS_LOG_DIR')) {
+            define('ILIAS_LOG_DIR', '/var/log');
+        }
+        if (!defined('ILIAS_LOG_FILE')) {
+            define('ILIAS_LOG_FILE', '/var/log/ilias.log');
         }
     }
 
@@ -282,7 +285,7 @@ trait ilTestBaseTestCaseTrait
 
     protected function addGlobal_uiFactory(): void
     {
-        $this->setGlobalVariable('ui.factory', $this->createMock(Factory::class));
+        $this->setGlobalVariable('ui.factory', $this->createMock(FactoryInternal::class));
     }
 
     protected function addGlobal_uiRenderer(): void
@@ -302,10 +305,14 @@ trait ilTestBaseTestCaseTrait
         $this->setGlobalVariable('skill', $this->createMock(ILIAS\Skill\Service\SkillService::class));
     }
 
+    protected function addGlobal_objectMetadata(): void
+    {
+        $this->setGlobalVariable('learning_object_metadata', $this->createMock(ILIAS\MetaData\Services\ServicesInterface::class));
+    }
+
     protected function addGlobal_objectService(): void
     {
-        global $DIC;
-        $DIC['object.customicons.factory'] = $this->getMockBuilder(ilObjectCustomIconFactory::class)->disableOriginalConstructor()->getMock();
+        $this->setGlobalVariable('object.customicons.factory', $this->getMockBuilder(ILIAS\ILIASObject\Properties\AdditionalProperties\Icon\Factory::class)->disableOriginalConstructor()->getMock());
         $object_mock = $this->getMockBuilder(\ilObjectService::class)->disableOriginalConstructor()->getMock();
 
         $this->setGlobalVariable('object', $object_mock);
@@ -322,6 +329,11 @@ trait ilTestBaseTestCaseTrait
             'file_delivery',
             $this->getFileDelivery()
         );
+    }
+
+    protected function addGlobal_uiUploadLimitResolver(): void
+    {
+        $this->setGlobalVariable('ui.upload_limit_resolver', $this->createMock(\ILIAS\UI\Implementation\Component\Input\UploadLimitResolver::class));
     }
 
     protected function getFileDelivery(): \ILIAS\FileDelivery\Services
@@ -345,7 +357,8 @@ trait ilTestBaseTestCaseTrait
                 $response_builder_mock,
                 $response_builder_mock
             ),
-            $data_signer
+            $data_signer,
+            $http_mock
         );
     }
 
@@ -386,13 +399,25 @@ trait ilTestBaseTestCaseTrait
             => $this->createMock(
                 \ilTestShuffler::class
             );
-        $local_dic_mock['results.factory'] = fn(Pimple\Container $c)
-            => $this->createMock(
-                \ilTestResultsFactory::class
-            );
         $local_dic_mock['results.presentation.factory'] = fn(Pimple\Container $c)
             => $this->createMock(
-                \ilTestResultsPresentationFactory::class
+                ILIAS\Test\Results\Presentation\Factory::class
+            );
+        $local_dic_mock['results.data.factory'] = fn(Pimple\Container $c)
+            => $this->createMock(
+                ILIAS\Test\Results\Data\Factory::class
+            );
+        $local_dic_mock['results.toplist.repository'] = fn(Pimple\Container $c)
+            => $this->createMock(
+                ILIAS\Test\Results\Toplist\TestTopListRepository::class
+            );
+        $local_dic_mock['results.data.test_result_repository'] = fn(Pimple\Container $c)
+            => $this->createMock(
+                \ILIAS\Test\Results\Data\Repository::class
+            );
+        $local_dic_mock['questions.properties.repository'] = fn(Pimple\Container $c)
+            => $this->createMock(
+                ILIAS\Test\Questions\Properties\Repository::class
             );
         return $local_dic_mock;
     }

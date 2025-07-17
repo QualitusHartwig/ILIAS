@@ -22,7 +22,7 @@ namespace ILIAS\MetaData\Services\CopyrightHelper;
 
 use ILIAS\MetaData\Services\Reader\ReaderInterface;
 use ILIAS\MetaData\Services\Manipulator\ManipulatorInterface;
-use ILIAS\MetaData\Repository\Search\Clauses\ClauseInterface as SearchClause;
+use ILIAS\MetaData\Search\Clauses\ClauseInterface as SearchClause;
 
 interface CopyrightHelperInterface
 {
@@ -59,7 +59,7 @@ interface CopyrightHelperInterface
      * Returns the custom copyright information from the LOM of
      * the reader's object.
      *
-     * If copyright selection is active, and one of the preset
+     * If copyright selection is inactive, or one of the preset
      * copyright options was selected for the object, this returns
      * an empty string.
      */

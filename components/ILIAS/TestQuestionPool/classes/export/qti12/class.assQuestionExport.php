@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -15,7 +16,7 @@
  *
  *********************************************************************/
 
-use ILIAS\TestQuestionPool\Questions\SuggestedSolution\SuggestedSolution;
+use ILIAS\TestQuestionPool\Questions\SuggestedSolution\SuggestedSolutionFile;
 
 /**
 * Class for question exports
@@ -231,45 +232,39 @@ class assQuestionExport
         );
     }
 
-    public const ITEM_SOLUTIONHINT = 'solutionhint';
-
-    protected function addSolutionHints(ilXmlWriter $writer): ilXmlWriter
+    protected function addSuggestedSolution(ilXmlWriter $writer): ilXmlWriter
     {
-        $question_id = (int) $this->object->getId();
-        $list = ilAssQuestionHintList::getListByQuestionId($question_id);
-
-        foreach ($list as $hint) {
-            $attrs = [
-                'index' => $hint->getIndex(),
-                'points' => $hint->getPoints()
-            ];
-            $data = $hint->getText();
-            $writer->xmlElement(self::ITEM_SOLUTIONHINT, $attrs, $data);
-        }
-        return $writer;
-    }
-
-    protected function addSuggestedSolutionLink(ilXmlWriter $writer, SuggestedSolution $suggested_solution): ilXmlWriter
-    {
-        if (!$suggested_solution->isOfTypeLink()) {
+        $solution = $this->object->getSuggestedSolution();
+        if ($solution === null) {
             return $writer;
         }
 
-        if (preg_match("/il_(\d*?)_(\w+)_(\d+)/", $suggested_solution->getInternalLink(), $matches) !== 1) {
-            return $writer;
-        }
-
-        $writer->xmlStartTag("material");
-        $intlink = "il_" . IL_INST_ID . "_" . $matches[2] . "_" . $matches[3];
-        if (strcmp($matches[1], "") != 0) {
-            $intlink = $suggested_solution->getInternalLink();
-        }
+        $mattext = ['type' => $solution->getType()];
         $attrs = [
-            "label" => "suggested_solution"
+            'label' => 'suggested_solution',
+            'texttype' => 'application/json'
         ];
-        $writer->xmlElement("mattext", $attrs, $intlink);
-        $writer->xmlEndTag("material");
 
+        if ($solution instanceof SuggestedSolutionFile) {
+            $mattext['title'] = $solution->getTitle();
+            $mattext['filename'] = $solution->getFilename();
+            $mattext['value'] = base64_encode(file_get_contents(
+                $this->object->getSuggestedSolutionPath() . $solution->getFilename()
+            ));
+        } else {
+            if (!preg_match('/il_(\d*?)_(\w+)_(\d+)/', $solution->getInternalLink(), $matches)) {
+                return $writer;
+            }
+            $mattext['value'] = 'il_' . IL_INST_ID . '_' . $matches[2] . '_' . $matches[3];
+            if ($matches[1] !== '') {
+                $mattext['value'] = $solution->getInternalLink();
+            }
+
+        }
+
+        $writer->xmlStartTag('material');
+        $writer->xmlElement('mattext', $attrs, json_encode($mattext));
+        $writer->xmlEndTag('material');
         return $writer;
     }
 

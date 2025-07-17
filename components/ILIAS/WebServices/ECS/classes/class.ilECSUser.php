@@ -13,7 +13,8 @@
  * us at:
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
- */
+ *
+ *********************************************************************/
 
 declare(strict_types=1);
 
@@ -140,9 +141,9 @@ class ilECSUser
         $this->email = ilUtil::stripSlashes(urldecode($this->source['ecs_email']));
         $this->institution = ilUtil::stripSlashes(urldecode($this->source['ecs_institution']));
 
-        if ($this->source['ecs_uid_hash']) {
+        if (isset($this->source['ecs_uid_hash'])) {
             $this->uid_hash = ilUtil::stripSlashes(urldecode($this->source['ecs_uid_hash']));
-        } elseif ($this->source['ecs_uid']) {
+        } elseif (isset($this->source['ecs_uid'])) {
             $this->uid_hash = ilUtil::stripSlashes(urldecode($this->source['ecs_uid']));
         }
     }

@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 require_once(__DIR__ . "/../../../../../../../vendor/composer/vendor/autoload.php");
 require_once(__DIR__ . "/../../../Base.php");
+require_once(__DIR__ . "/CommonFieldRendering.php");
 
 use ILIAS\UI\Implementation\Component as I;
 use ILIAS\UI\Implementation\Component\SignalGenerator;
@@ -30,6 +31,8 @@ use ILIAS\UI\Implementation\Component\Symbol as S;
 
 class DateTimeInputTest extends ILIAS_UI_TestBase
 {
+    use CommonFieldRendering;
+
     protected DefNamesource $name_source;
     protected Data\Factory $data_factory;
     protected I\Input\Field\Factory $factory;
@@ -44,7 +47,7 @@ class DateTimeInputTest extends ILIAS_UI_TestBase
     public function getUIFactory(): NoUIFactory
     {
         return new class () extends NoUIFactory {
-            public function symbol(): C\Symbol\Factory
+            public function symbol(): I\Symbol\Factory
             {
                 return new S\Factory(
                     new S\Icon\Factory(),
@@ -71,6 +74,7 @@ class DateTimeInputTest extends ILIAS_UI_TestBase
         $language = $this->createMock(ILIAS\Language\Language::class);
 
         return new I\Input\Field\Factory(
+            $this->createMock(\ILIAS\UI\Implementation\Component\Input\Field\Node\Factory::class),
             $this->createMock(\ILIAS\UI\Implementation\Component\Input\UploadLimitResolver::class),
             new SignalGenerator(),
             $this->data_factory,
@@ -185,5 +189,17 @@ class DateTimeInputTest extends ILIAS_UI_TestBase
         </fieldset>
         ');
         $this->assertEquals($expected, $html);
+    }
+
+    public function testCommonRendering(): void
+    {
+        $datetime = $this->factory->dateTime('label')
+            ->withNameFrom($this->name_source);
+
+        $this->testWithError($datetime);
+        $this->testWithNoByline($datetime);
+        $this->testWithRequired($datetime);
+        $this->testWithDisabled($datetime);
+        $this->testWithAdditionalOnloadCodeRendersId($datetime);
     }
 }

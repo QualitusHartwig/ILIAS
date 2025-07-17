@@ -49,7 +49,7 @@ $il-slate-bulky-link-padding: $il-slate-bulky-padding-vertical $il-padding-base-
 
 //
 // ALL SQUARE BUTTONS
-// in mainbar, metabar und toolbar tabs
+// in mainbar und toolbar tabs
 //
 
 .il-mainbar-triggers,
@@ -64,8 +64,7 @@ $il-slate-bulky-link-padding: $il-slate-bulky-padding-vertical $il-padding-base-
 
 .il-mainbar-triggers,
 .il-mainbar-tools-button,
-.il-mainbar-tool-trigger-item,
-.il-maincontrols-metabar {
+.il-mainbar-tool-trigger-item {
 	.btn-bulky,
 	.il-link.link-bulky {
 		padding: $il-mainbar-btn-padding;
@@ -205,7 +204,7 @@ $il-slate-bulky-link-padding: $il-slate-bulky-padding-vertical $il-padding-base-
 		&:not(:hover) {
 			background: $il-main-dark-bg;
 		}
-	}
+}
 }
 
 .il-maincontrols-mainbar,

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=0);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=0);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=0);
 
 /**
  * Member-tab content
@@ -204,7 +204,7 @@ class ilCourseMembershipGUI extends ilMembershipGUI
             $this->tpl->setOnScreenMessage('success', $this->lng->txt("crs_users_added"), true);
             $this->ctrl->redirect($this, 'participants');
         }
-        $this->tpl->setOnScreenMessage('failure', $this->lng->txt("crs_users_already_assigned"), true);
+        $this->tpl->setOnScreenMessage('info', $this->lng->txt("crs_users_already_assigned"), true);
         return false;
     }
 

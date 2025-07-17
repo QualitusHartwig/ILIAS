@@ -139,7 +139,7 @@ class ilUserQuery
     /**
      * Set last login filter
      */
-    public function setLastLogin(ilDateTime $dt = null): void
+    public function setLastLogin(?ilDateTime $dt = null): void
     {
         $this->last_login = $dt;
     }
@@ -252,6 +252,10 @@ class ilUserQuery
                     if ($f === "online_time") {
                         $this->default_fields[] = "ut_online.online_time";
                         $join = " LEFT JOIN ut_online ON (usr_data.usr_id = ut_online.usr_id) ";
+                    } elseif ($f === 'dpro_agreed_on') {
+                        $this->default_fields[] = 'dpro.dpro_agreed_on';
+                        $join = ' LEFT JOIN (SELECT value AS dpro_agreed_on, usr_id FROM usr_pref WHERE keyword = "dpro_agree_date") AS dpro' .
+                                ' ON (usr_data.usr_id = dpro.usr_id)';
                     } elseif (substr($f, 0, 4) === "udf_") {
                         $udf_fields[] = (int) substr($f, 4);
                     } else {
@@ -458,7 +462,7 @@ class ilUserQuery
 
         // order by
         switch ($this->order_field) {
-            case  "access_until":
+            case "access_until":
                 if ($this->order_dir === "desc") {
                     $query .= " ORDER BY usr_data.active DESC, usr_data.time_limit_unlimited DESC, usr_data.time_limit_until DESC";
                 } else {
@@ -560,9 +564,9 @@ class ilUserQuery
         bool $a_no_courses_filter = false,
         int $a_course_group_filter = 0,
         int $a_role_filter = 0,
-        array $a_user_folder_filter = null,
-        array $a_additional_fields = null,
-        array $a_user_filter = null,
+        ?array $a_user_folder_filter = null,
+        ?array $a_additional_fields = null,
+        ?array $a_user_filter = null,
         string $a_first_letter = "",
         string $a_authentication_filter = ""
     ): array {

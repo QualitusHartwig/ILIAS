@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 use ILIAS\TestQuestionPool\Questions\QuestionLMExportable;
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
 
 /**
@@ -155,14 +154,14 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
         }
 
         $result = $this->db->queryF(
-            "SELECT * FROM qpl_a_essay WHERE question_fi = %s",
+            'SELECT * FROM qpl_a_essay WHERE question_fi = %s',
             ['integer'],
             [$this->getId()]
         );
 
         $this->flushAnswers();
         while ($row = $this->db->fetchAssoc($result)) {
-            $this->addAnswer($row['answertext'], $row['points']);
+            $this->addAnswer($row['answertext'] ?? '', $row['points'] ?? 0.0);
         }
 
         parent::loadFromDb($question_id);
@@ -409,17 +408,13 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
 
     protected function getSolutionSubmit(): string
     {
-        if (ilObjAdvancedEditing::_getRichTextEditor() === 'tinymce') {
-            $text = ilUtil::stripSlashes($_POST["TEXT"], false);
-        } else {
-            $text = htmlentities($_POST["TEXT"]);
-        }
+        $text = $this->questionpool_request->string('TEXT', '');
 
-        if (ilUtil::isHTML($text)) {
-            $text = $this->getHtmlUserSolutionPurifier()->purify($text);
-        }
+        $text = ilObjAdvancedEditing::_getRichTextEditor() === 'tinymce'
+            ? ilUtil::stripSlashes($text, false)
+            : htmlentities($text);
 
-        return $text;
+        return ilUtil::isHTML($text) ? $this->getHtmlUserSolutionPurifier()->purify($text) : $text;
     }
 
     public function saveAdditionalQuestionDataToDb()
@@ -516,35 +511,6 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $solutions = $this->getSolutionValues($active_id, $pass);
-
-        $i = 1;
-        $worksheet->setCell($startrow + $i, $col, $this->lng->txt("result"));
-        $worksheet->setBold($worksheet->getColumnCoord($col) . ($startrow + $i));
-
-        $assessment_folder = new ilObjTestFolder();
-
-        $string_escaping_org_value = $worksheet->getStringEscaping();
-        if ($assessment_folder->getExportEssayQuestionsWithHtml()) {
-            $worksheet->setStringEscaping(false);
-        }
-
-        if (array_key_exists(0, $solutions) && strlen($solutions[0]["value1"])) {
-            $worksheet->setCell($startrow + $i, $col + 2, html_entity_decode($solutions[0]["value1"]));
-        }
-        $i++;
-
-        $worksheet->setStringEscaping($string_escaping_org_value);
-        return $startrow + $i + 1;
-    }
-
-    /**
     * Returns a JSON representation of the question
     */
     public function toJSON(): string
@@ -552,7 +518,7 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
         $result = [];
         $result['id'] = $this->getId();
         $result['type'] = (string) $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['nr_of_tries'] = $this->getNrOfTries();
         $result['shuffle'] = $this->getShuffle();
@@ -585,8 +551,7 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
         $order = 0,
         $answerimage = ""
     ): void {
-        $answer = new ASS_AnswerMultipleResponseImage($answertext, $points);
-        $this->answers[] = $answer;
+        $this->answers[] = new ASS_AnswerMultipleResponseImage($answertext, $points);
     }
 
     /**
@@ -607,7 +572,7 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
      * @access public
      * @see $answers
      */
-    public function getAnswer($index = 0): ?object
+    public function getAnswer($index = 0): ?ASS_AnswerMultipleResponseImage
     {
         if ($index < 0) {
             return null;
@@ -684,7 +649,10 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
 
         for ($i = 0; $i < $count; $i++) {
             if ($withPoints) {
-                $this->addAnswer($answers['answer'][$i], $answers['points'][$i]);
+                $this->addAnswer(
+                    $answers['answer'][$i],
+                    $this->refinery->kindlyTo()->float()->transform($answers['points'][$i])
+                );
             } else {
                 $this->addAnswer($answers[$i], 0);
             }
@@ -748,21 +716,6 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
         ];
     }
 
-    /**
-     * returns boolean wether it is possible to set
-     * this question type as obligatory or not
-     * considering the current question configuration
-     *
-     * (overwrites method in class assQuestion)
-     *
-     * @param integer $questionId
-     * @return boolean $obligationPossible
-     */
-    public static function isObligationPossible(int $questionId): bool
-    {
-        return true;
-    }
-
     public function countLetters($text): int
     {
         $text = strip_tags($text);
@@ -780,7 +733,7 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
 
     public function countWords($text): int
     {
-        if($text === '') {
+        if ($text === '') {
             return 0;
         }
         $text = str_replace('&nbsp;', ' ', $text);
@@ -829,7 +782,7 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
     {
         return [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_REACHABLE_POINTS => $this->getMaximumPoints(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT_WORDCOUNT_ENABLED => $additional_info
@@ -854,7 +807,7 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
 
     private function getScoringModeLangVar(string $scoring_mode): string
     {
-        switch($scoring_mode) {
+        switch ($scoring_mode) {
             case assTextQuestion::SCORING_MODE_KEYWORD_RELATION_NONE:
                 return 'essay_scoring_mode_without_keywords';
             case assTextQuestion::SCORING_MODE_KEYWORD_RELATION_ANY:
@@ -868,16 +821,38 @@ class assTextQuestion extends assQuestion implements ilObjQuestionScoringAdjusta
         }
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
     ): string {
-        if (!array_key_exists(0, $solution_values) ||
-            !array_key_exists('value1', $solution_values[0])) {
+        if (!array_key_exists(0, $solution_values)
+            || !array_key_exists('value1', $solution_values[0])) {
             return '';
         }
         return $this->refinery->string()->stripTags()->transform(
             html_entity_decode($solution_values[0]['value1'])
         );
+    }
+
+    public function solutionValuesToText(array $solution_values): string
+    {
+        if (!array_key_exists(0, $solution_values)
+            || !array_key_exists('value1', $solution_values[0])) {
+            return '';
+        }
+        return $solution_values[0]['value1'];
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): array|string
+    {
+        switch ($this->getKeywordRelation()) {
+            case self::SCORING_MODE_KEYWORD_RELATION_NONE:
+                return '';
+            default:
+                return array_map(
+                    static fn(ASS_AnswerMultipleResponseImage $v): string => $v->getAnswertext(),
+                    $this->getAnswers()
+                );
+        }
     }
 }

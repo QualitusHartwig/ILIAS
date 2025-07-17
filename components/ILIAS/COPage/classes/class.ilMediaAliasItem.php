@@ -536,9 +536,9 @@ class ilMediaAliasItem
             $this->getPcId()
         );
         if (is_object($ma_nodes[$a_nr - 1])) {
-            $childs = $ma_nodes[$a_nr - 1]->child_nodes();
+            $childs = $ma_nodes[$a_nr - 1]->childNodes;
             if (is_object($childs[0]) &&
-                ($childs[0]->node_name() == "IntLink" || $childs[0]->node_name() == "ExtLink")) {
+                ($childs[0]->nodeName == "IntLink" || $childs[0]->nodeName == "ExtLink")) {
                 $childs[0]->set_content($a_title);
             }
         }
@@ -560,11 +560,11 @@ class ilMediaAliasItem
         );
         if (is_object($ma_nodes[$a_nr - 1])) {
             $title = $this->getTitleOfArea($a_nr);
-            $this->dom_util->deleteAllChildsByName($ma_nodes[$a_nr - 1]->myDOMNode, array("IntLink", "ExtLink"));
+            $this->dom_util->deleteAllChildsByName($ma_nodes[$a_nr - 1], array("IntLink", "ExtLink"));
             $attributes = array("Type" => $a_type, "Target" => $a_target,
                 "TargetFrame" => $a_target_frame);
             $this->dom_util->setFirstOptionalElement(
-                $ma_nodes[$a_nr - 1]->myDOMNode,
+                $ma_nodes[$a_nr - 1],
                 "IntLink",
                 array(""),
                 $title,
@@ -660,10 +660,13 @@ class ilMediaAliasItem
         string $a_coords,
         string $a_title,
         array $a_link,
-        string $a_id = ""
+        string $a_id = "",
+        string $hl_mode = "",
+        string $hl_class = "",
     ): void {
         $attributes = array("Shape" => $a_shape_type,
-            "Coords" => $a_coords, "Id" => $a_id);
+            "Coords" => $a_coords, "Id" => $a_id,
+            "HighlightMode" => $hl_mode, "HighlightClass" => $hl_class);
 
         $ma_node = $this->dom_util->addElementToList(
             $this->getItemNode(),
@@ -874,7 +877,6 @@ class ilMediaAliasItem
         string $a_area_type,
         string $a_coords
     ): bool {
-        $a_st_item->copyOriginal();
         $a_st_item->buildMapWorkImage();
 
         // determine ratios (first see whether the instance has w/h defined)
@@ -886,7 +888,7 @@ class ilMediaAliasItem
             $width = $a_st_item->getWidth();
             $height = $a_st_item->getHeight();
         }
-        $size = getimagesize($a_st_item->getMapWorkCopyName());
+        $size = getimagesize($a_st_item->getOriginalSource());
         $x_ratio = 1;
         if ($size[0] > 0 && $width > 0) {
             $x_ratio = $width / $size[0];
@@ -931,7 +933,6 @@ class ilMediaAliasItem
             );
         }
 
-        $a_st_item->saveMapWorkImage();
         return true;
     }
 

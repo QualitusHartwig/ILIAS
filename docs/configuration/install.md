@@ -69,11 +69,11 @@ For best results we recommend:
 
   * a current version of Debian GNU Linux, Ubuntu or RHEL
   * MySQL 5.7.x or MariaDB 10.2
-  * PHP 8.2
+  * PHP 8.4
   * Apache 2.4.x with `mod_php`
   * php-gd, php-xml, php-mysql, php-mbstring, php-imagick, php-zip, php-intl
   * OpenJDK 17
-  * Node.js: 20-LTS (and 21)
+  * Node.js: 23
   * git
   * composer v2
   * a contemporary browser supporting ES6, CSS3 and HTML 5
@@ -111,7 +111,7 @@ The ILIAS Testserver (https://test7.ilias.de) is currently configured as follows
 |----------------|------------------|
 | Distribution   | Ubuntu 22.04 LTS |
 | MariaDB        | 10.6.18          |
-| PHP            | 8.2              |
+| PHP            | 8.4              |
 | Apache2        | 2.4.52           |
 | JDK            | OpenJDK 17       |
 | Node.js        | 16.20            |
@@ -202,8 +202,8 @@ systemctl restart httpd.service
 <a name="php-installation"></a>
 ### PHP Installation and Configuration
 
-Refer to the to documentation of your installation to install PHP 8.2
-to PHP 8.3 including packages for imagick, gd, mysql, mbstring, curl, dom, zip, intl, and xml.
+Refer to the to documentation of your installation to install PHP 8.3
+to PHP 8.4 including packages for imagick, gd, mysql, mbstring, curl, dom, zip, intl, and xml.
 
 To check if the installation was successfull create the file `/var/www/html/phpinfo.php`
 with the following contents:
@@ -346,10 +346,10 @@ Restart the apache webserver after you installed dependencies!
 
 Depending on your use case, you MAY want to install further dependencies (exact package names vary by distribution and PHP version you are using):
 
-* php8.2-curl
-* php8.2-xmlrpc
-* php8.2-soap
-* php8.2-ldap
+* php8.3-curl
+* php8.3-xmlrpc
+* php8.3-soap
+* php8.3-ldap
 * ffmpeg
 * mimetex
 
@@ -717,6 +717,20 @@ to manage and monitor your ILIAS installation.
 To check which update step gets currently executed run the following SQL-Statement
 on your ILIAS database: `SELECT * FROM `settings` WHERE keyword = "db_update_running"`.
 
+Database updates are performed in steps; it might happen that a step fails, e.g. due
+to some edge case or inconsistency in existing data, files, etc.
+In this case, a concecutive command `php setup/setup.php update` will error with 
+a message like 
+> step 2 was started last, but step 1 was finished last. 
+> Aborting because of that mismatch.
+
+You may reset the records for those steps by running:
+```
+php setup/setup.php achieve database.resetFailedSteps
+```
+However, be sure to understand the cause for the failing steps and tend to it before 
+resetting and running update again.
+
 
 ## Information on Updates
 
@@ -736,6 +750,7 @@ each ILIAS release.
 
 | ILIAS Version  | PHP Version                 |
 |----------------|-----------------------------|
+| 11.x           | 8.3.x, 8.4.x                |
 | 10.x           | 8.2.x, 8.3.x                |
 | 9.x            | 8.1.x, 8.2.x                |
 | 8.x            | 7.4.x, 8.0.x                |

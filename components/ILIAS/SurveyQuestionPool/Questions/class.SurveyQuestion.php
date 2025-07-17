@@ -969,7 +969,7 @@ class SurveyQuestion
 
     public static function _getInternalLinkHref(
         string $target = "",
-        int $a_parent_ref_id = null
+        ?int $a_parent_ref_id = null
     ): string {
         $linktypes = array(
             "lm" => "LearningModule",
@@ -1077,12 +1077,8 @@ class SurveyQuestion
         string $type_tag
     ): string {
         global $DIC;
-
-        if (file_exists("./components/ILIAS/SurveyQuestionPool/Questions/class." . $type_tag . ".php")) {
-            $lng = $DIC->language();
-            return $lng->txt($type_tag);
-        }
-        return "";
+        $lng = $DIC->language();
+        return $lng->txt($type_tag);
     }
 
 
@@ -1119,7 +1115,7 @@ class SurveyQuestion
 
     public static function _instanciateQuestionEvaluation(
         int $question_id,
-        array $a_finished_ids = null
+        ?array $a_finished_ids = null
     ): ?SurveyQuestionEvaluation {
         $question = self::_instanciateQuestion($question_id);
         if (is_null($a_finished_ids)) {

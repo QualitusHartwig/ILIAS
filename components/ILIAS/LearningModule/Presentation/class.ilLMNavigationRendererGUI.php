@@ -156,18 +156,15 @@ class ilLMNavigationRendererGUI
                     if (!$this->offline) {
                         $prev_href =
                             $this->linker->getLink("layout", $pre_id);
-                        $prev_target = 'target="' . ilFrameTargetInfo::_getFrame("MainContent") . '" ';
                     } else {
                         $prev_href =
                             $this->linker->getLink("layout", $pre_id);
-                        $prev_target = 'target="_top" ';
                     }
                 }
 
                 $tpl->setCurrentBlock("ilLMNavigation_Prev");
                 $tpl->setVariable("IMG_PREV", $prev_img);
                 $tpl->setVariable("HREF_PREV", $prev_href);
-                $tpl->setVariable("FRAME_PREV", $prev_target);
                 $tpl->setVariable("TXT_PREV", $prev_title);
                 $tpl->setVariable("ALT_PREV", $this->lng->txt("previous"));
                 $tpl->setVariable("SPACER_PREV", $this->offline
@@ -221,18 +218,15 @@ class ilLMNavigationRendererGUI
                     if (!$this->offline) {
                         $succ_href =
                             $this->linker->getLink("layout", $succ_id);
-                        $succ_target = ' target="' . ilFrameTargetInfo::_getFrame("MainContent") . '" ';
                     } else {
                         $succ_href =
                             $this->linker->getLink("layout", $succ_id);
-                        $succ_target = ' target="_top" ';
                     }
                 }
 
                 $tpl->setCurrentBlock("ilLMNavigation_Next");
                 $tpl->setVariable("IMG_SUCC", $succ_img);
                 $tpl->setVariable("HREF_SUCC", $succ_href);
-                $tpl->setVariable("FRAME_SUCC", $succ_target);
                 $tpl->setVariable("TXT_SUCC", $succ_title);
                 $tpl->setVariable("ALT_SUCC", $this->lng->txt("next"));
                 $tpl->setVariable("SPACER_SUCC", $this->offline

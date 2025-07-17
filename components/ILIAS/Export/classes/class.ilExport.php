@@ -18,19 +18,24 @@
 
 declare(strict_types=1);
 
+use ILIAS\Export\ExportHandler\I\Consumer\ExportWriter\HandlerInterface as ilExportHandlerConsumerExportWriterInterface;
+use ILIAS\Export\ExportHandler\I\Info\Export\Path\HandlerInterface as ExportPathInfoInterface;
+use ILIAS\Export\ExportHandler\I\Consumer\ExportConfig\CollectionInterface as ExportConfigCollectionInterface;
+use ILIAS\Export\ExportHandler\I\Consumer\ExportConfig\HandlerInterface as ExportConfigInterface;
+
 /**
  * Export
  * @author    Alex Killing <alex.killing@gmx.de>
  */
 class ilExport
 {
-    /**
-     * @todo currently used in ilLeanringModuleExporter
-     */
     public string $export_run_dir = '';
-
+    protected string $dir_relative = "";
+    protected string $dir_absolute = "";
     protected ilLogger $log;
-
+    protected ilExportHandlerConsumerExportWriterInterface $export_writer;
+    protected ExportPathInfoInterface $export_path_info;
+    protected ExportConfigCollectionInterface $export_configs;
     private static array $new_file_structure = array('cat',
                                                'exc',
                                                'crs',
@@ -45,8 +50,6 @@ class ilExport
     );
     // @todo this should be part of module.xml and be parsed in the future
     private static array $export_implementer = array("tst", "lm", "glo", "sahs");
-    private array $configs = [];
-
     private array $cnt = [];
     private ?ilXmlWriter $manifest_writer = null;
 
@@ -56,26 +59,84 @@ class ilExport
         $this->log = $DIC->logger()->exp();
     }
 
-    /**
-     * Get configuration (note that configurations are optional, null may be returned!)
-     * @param string $a_comp component (e.g. "components/ILIAS/Glossary")
-     * @return ilExportConfig $a_comp configuration object
-     * @throws ilExportException thronw if no config exists
-     */
-    public function getConfig(string $a_comp): ilExportConfig
-    {
-        // if created, return existing config object
-        if (isset($this->configs[$a_comp])) {
-            return $this->configs[$a_comp];
-        }
+    public function setPathInfo(
+        ExportPathInfoInterface $export_path_info
+    ): void {
+        $this->export_path_info = $export_path_info;
+    }
 
-        // create instance of export config object
-        $comp_arr = explode("/", $a_comp);
-        $component = str_replace("_", "", $comp_arr[2]);
-        $a_class = "il" . $component . "ExportConfig";
-        $exp_config = new $a_class();
-        $this->configs[$a_comp] = $exp_config;
-        return $exp_config;
+    /**
+     * @return string the path to the export directory of the current component in the container, for example:
+     * "1737382047__0__cat_100/components/ILIAS/Style/set_0
+     */
+    public function getExportDirInContainer(): string
+    {
+        return $this->export_path_info->getPathToComponentDirInContainer();
+    }
+
+    /**
+     * @return string the path to the expDir folder in the export directory of the current component in the container,
+     * for example:
+     * "1737382047__0__cat_100/components/ILIAS/Style/set_0/expDir_1
+     */
+    public function getPathToComponentExpDirInContainer(): string
+    {
+        return $this->export_path_info->getPathToComponentExpDirInContainer();
+    }
+
+    public function getPathToComponentExpDirInContainerWithLeadingSetNumber(): string
+    {
+        return "set_" . $this->export_path_info->getSetNumber() . DIRECTORY_SEPARATOR . $this->export_path_info->getPathToComponentExpDirInContainer();
+    }
+
+    public function getSetNumber(): int
+    {
+        return $this->export_path_info->getSetNumber();
+    }
+
+    public function isContainerExport(): bool
+    {
+        return $this->export_path_info->isContainerExport();
+    }
+
+    public function setExportDirectories(
+        string $a_dir_relative,
+        string $a_dir_absolute
+    ): void {
+        $this->dir_relative = $a_dir_relative;
+        $this->dir_absolute = $a_dir_absolute;
+    }
+
+    public function getRelativeExportDirectory(): string
+    {
+        return $this->dir_relative;
+    }
+
+    public function getAbsoluteExportDirectory(): string
+    {
+        return $this->dir_absolute;
+    }
+
+    public function setExportWriter(
+        ilExportHandlerConsumerExportWriterInterface $export_writer,
+    ): void {
+        $this->export_writer = $export_writer;
+    }
+
+    public function getExportWriter(): ilExportHandlerConsumerExportWriterInterface
+    {
+        return $this->export_writer;
+    }
+
+    public function setExportConfigs(
+        ExportConfigCollectionInterface $export_configs
+    ): void {
+        $this->export_configs = $export_configs;
+    }
+
+    public function getExportConfigs(): ExportConfigCollectionInterface
+    {
+        return $this->export_configs;
     }
 
     /**
@@ -106,6 +167,7 @@ class ilExport
     }
 
     /**
+     * @depricated
      * Get date of last export file
      * @param int    $a_obj_id   object id
      * @param string $a_type     export type ("xml", "html", ...), default "xml"
@@ -122,6 +184,7 @@ class ilExport
     }
 
     /**
+     * @depricated
      * Get last export file information
      * @param int    $a_obj_id   object id
      * @param string $a_type     export type ("xml", "html", ...), default "xml"
@@ -142,6 +205,7 @@ class ilExport
     }
 
     /**
+     * @depricated
      * Get export directory for an repository object
      * @param int    $a_obj_id   object id
      * @param string $a_type     export type ("xml", "html", ...), default "xml"
@@ -190,6 +254,7 @@ class ilExport
     }
 
     /**
+     * @depricated
      * @param int          $a_obj_id
      * @param string|array $a_export_types
      * @param string       $a_obj_type
@@ -269,6 +334,7 @@ class ilExport
     }
 
     /**
+     * @depricated
      * Generates an index.html file including links to all xml files included
      * (for container exports)
      */
@@ -321,6 +387,7 @@ class ilExport
      */
 
     /**
+     * @depricated
      * Export an ILIAS object (the object type must be known by objDefinition)
      * @param string $a_type           repository object type
      * @param int    $a_id             id of object or entity that shoudl be exported
@@ -402,6 +469,7 @@ class ilExport
     }
 
     /**
+     * @depricated
      * Export an ILIAS entity
      * @param string $a_entity         entity type, e.g. "sty"
      * @param mixed  $a_id             entity id
@@ -479,6 +547,7 @@ class ilExport
     }
 
     /**
+     * @depricated
      * Process exporter
      * @param string $a_comp           e.g. "components/ILIAS/Forum"
      * @param string $a_class
@@ -493,7 +562,7 @@ class ilExport
         string $a_class,
         string $a_entity,
         string $a_target_release,
-        array $a_id = null
+        ?array $a_id = null
     ): bool {
         $success = true;
         $this->log->debug("process exporter, comp: " . $a_comp . ", class: " . $a_class . ", entity: " . $a_entity .
@@ -508,9 +577,12 @@ class ilExport
 
         // get exporter object
         if (!class_exists($a_class)) {
-            $export_class_file = "./" . $a_comp . "/classes/class." . $a_class . ".php";
-            if (!is_file($export_class_file)) {
-                throw new ilExportException('Export class file "' . $export_class_file . '" not found.');
+            $a_class = substr($a_class, 0, 2) . "ILIAS" . substr($a_class, 2);
+            if (!class_exists($a_class)) {
+                $export_class_file = "./" . $a_comp . "/classes/class." . $a_class . ".php";
+                if (!is_file($export_class_file)) {
+                    throw new ilExportException('Export class file "' . $export_class_file . '" not found.');
+                }
             }
         }
 
@@ -587,7 +659,6 @@ class ilExport
                 $set_dir_absolute . "/expDir_" . $dir_cnt
             );
             $export_writer->xmlStartTag('exp:ExportItem', array("Id" => $id));
-            //$xml = $exp->getXmlRepresentation($a_entity, $a_target_release, $id);
             $xml = $exp->getXmlRepresentation($a_entity, $sv["schema_version"], (string) $id);
             $export_writer->appendXML($xml);
             $export_writer->xmlEndTag('exp:ExportItem');
@@ -606,6 +677,10 @@ class ilExport
         $this->log->debug("process tail dependencies of " . $a_entity);
         $sequence = $exp->getXmlExportTailDependencies($a_entity, $a_target_release, $a_id);
         foreach ($sequence as $s) {
+            if (empty((array) ($s["ids"] ?? []))) {
+                continue;
+            }
+
             $comp = explode("/", $s["component"]);
             $component = str_replace("_", "", $comp[2]);
             $exp_class = "il" . $component . "Exporter";

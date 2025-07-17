@@ -243,10 +243,7 @@ class ilAssQuestionSkillAssignmentList
 
         foreach ($this->assignments as $assignmentsByQuestion) {
             foreach ($assignmentsByQuestion as $assignment) {
-                /* @var ilAssQuestionSkillAssignment $assignment */
-
                 $key = $this->buildSkillKey($assignment->getSkillBaseId(), $assignment->getSkillTrefId());
-
                 if (!isset($skills[$key])) {
                     $skills[$key] = [
                         'skill' => new ilBasicSkill($assignment->getSkillBaseId()),
@@ -297,10 +294,11 @@ class ilAssQuestionSkillAssignmentList
 
     public function hasSkillsAssignedLowerThanBarrier(): bool
     {
-        $globalBarrier = ilObjTestFolder::getSkillTriggerAnswerNumberBarrier();
+        $global_barrier = (new ilObjTestFolder())->getGlobalSettingsRepository()
+            ->getGlobalSettings()->getSkillTriggeringNumberOfAnswers();
 
-        foreach ($this->getUniqueAssignedSkills() as $skillData) {
-            if ($skillData['num_assigns'] < $globalBarrier) {
+        foreach ($this->getUniqueAssignedSkills() as $skill_data) {
+            if ($skill_data['num_assigns'] < $global_barrier) {
                 return true;
             }
         }

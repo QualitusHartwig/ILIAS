@@ -21,6 +21,7 @@ declare(strict_types=1);
 use ILIAS\TestQuestionPool\QuestionPoolDIC;
 use ILIAS\TestQuestionPool\RequestDataCollector;
 use ILIAS\TestQuestionPool\Questions\GeneralQuestionPropertiesRepository;
+use ILIAS\Style\Content\Service as ContentStyle;
 
 /**
  * Class ilQuestionEditGUI
@@ -42,6 +43,7 @@ class ilQuestionEditGUI
     private readonly \ilAccessHandler $access;
     private readonly \ilLanguage $lng;
     private readonly \ilRbacSystem $rbac_system;
+    private readonly ContentStyle $content_style;
 
     private readonly RequestDataCollector $request;
     private readonly GeneralQuestionPropertiesRepository $questionrepository;
@@ -69,6 +71,7 @@ class ilQuestionEditGUI
         $this->access = $DIC['ilAccess'];
         $this->lng = $DIC['lng'];
         $this->rbac_system = $DIC['rbacsystem'];
+        $this->content_style = $DIC->contentStyle();
 
         $local_dic = QuestionPoolDIC::dic();
         $this->request = $local_dic['request_data_collector'];
@@ -155,6 +158,7 @@ class ilQuestionEditGUI
                     }
                 }
 
+                $this->tabs->activateTab('question');
                 if ($cmd !== 'save') {
                     return (string) $this->ctrl->forwardCommand($question_gui);
                 }
@@ -163,7 +167,6 @@ class ilQuestionEditGUI
                 }
 
                 return (string) $question_gui->editQuestion();
-                break;
         }
     }
 
@@ -178,7 +181,8 @@ class ilQuestionEditGUI
                 $this->tabs,
                 $this->lng,
                 $this->help,
-                $this->request
+                $this->request,
+                $this->content_style
             )
         );
     }

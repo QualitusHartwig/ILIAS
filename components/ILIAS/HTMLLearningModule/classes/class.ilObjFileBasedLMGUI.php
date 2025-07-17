@@ -20,12 +20,13 @@ use ILIAS\HTMLLearningModule\StandardGUIRequest;
 use ILIAS\ResourceStorage\Resource\StorableContainerResource;
 use ILIAS\components\ResourceStorage\Container\View\Configuration;
 use ILIAS\components\ResourceStorage\Container\View\Mode;
-use ILIAS\components\ResourceStorage\Container\View\ActionBuilder;
+use ILIAS\components\ResourceStorage\Container\View\ActionBuilder\TopAction;
+use ILIAS\Filesystem\Stream\Streams;
 
 /**
  * User Interface class for file based learning modules (HTML)
  * @author       Alexander Killing <killing@leifos.de>
- * @ilCtrl_Calls ilObjFileBasedLMGUI: ilFileSystemGUI, ilObjectMetaDataGUI, ilPermissionGUI, ilLearningProgressGUI, ilInfoScreenGUI
+ * @ilCtrl_Calls ilObjFileBasedLMGUI: ilObjectMetaDataGUI, ilPermissionGUI, ilLearningProgressGUI, ilInfoScreenGUI
  * @ilCtrl_Calls ilObjFileBasedLMGUI: ilCommonActionDispatcherGUI
  * @ilCtrl_Calls ilObjFileBasedLMGUI: ilExportGUI
  * @ilCtrl_Calls ilObjFileBasedLMGUI: ilContainerResourceGUI
@@ -34,8 +35,8 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
 {
     private const PARAM_PATH = "path";
     public const CMD_LIST_FILES = "listFiles";
+    public const CMD_IMPORT_FROM_UPLOAD_DIR = 'importFromUploadDir';
     private \ILIAS\ResourceStorage\Services $irss;
-    private \ILIAS\HTTP\Services $http;
     protected \ILIAS\HTMLLearningModule\InternalGUIService $gui;
     protected StandardGUIRequest $lm_request;
     protected ilPropertyFormGUI $form;
@@ -61,7 +62,6 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
         $this->access = $DIC->access();
         $this->toolbar = $DIC->toolbar();
         $this->help = $DIC["ilHelp"];
-        $this->http = $DIC->http();
         $lng = $DIC->language();
         $ilCtrl = $DIC->ctrl();
 
@@ -76,6 +76,7 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
         $this->type = "htlm";
         $lng->loadLanguageModule("content");
         $lng->loadLanguageModule("obj");
+        $lng->loadLanguageModule("htlm");
 
         parent::__construct($a_data, $a_id, $a_call_by_reference, false);
         $this->output_prepared = $a_prepare_output;
@@ -126,6 +127,37 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
                     ['text/*']
                 );
 
+                if ($this->getUploadDirectory()) {
+                    foreach ($this->getUploadFiles() as $file) {
+                        $options[$file] = $file;
+                    }
+
+                    $modal = $this->ui_factory->modal()->roundtrip(
+                        $this->lng->txt('import_from_upload_dir'),
+                        [],
+                        [
+                            $this->ui_factory->input()->field()->select(
+                                $this->lng->txt('import_from_upload_dir_file_name'),
+                                $options,
+                                $this->lng->txt('import_from_upload_dir_info'),
+                            )->withRequired(true)
+                        ],
+                        $this->ctrl->getFormActionByClass(
+                            \ilObjFileBasedLMGUI::class,
+                            \ilObjFileBasedLMGUI::CMD_IMPORT_FROM_UPLOAD_DIR
+                        )
+                    );
+
+                    $top_action = new TopAction(
+                        $this->lng->txt('import_from_upload_dir'),
+                        $modal->getShowSignal()
+                    );
+                    $view_configuration = $view_configuration->withExternalTopAction(
+                        'import_from_upload_dir',
+                        $top_action,
+                        $modal
+                    );
+                }
                 // build the collection GUI
                 $container_gui = new ilContainerResourceGUI(
                     $view_configuration
@@ -139,10 +171,6 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
                 $this->tabs->activateTab('id_meta_data');
                 $md_gui = new ilObjectMetaDataGUI($this->object);
                 $this->ctrl->forwardCommand($md_gui);
-                break;
-
-            case "ilfilesystemgui":
-                throw new ilException("ilfilesystemgui is not supported anymore");
                 break;
 
             case "ilinfoscreengui":
@@ -171,8 +199,6 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
             case "ilexportgui":
                 $this->tabs->activateTab("export");
                 $exp_gui = new ilExportGUI($this);
-                $exp_gui->addFormat("xml");
-                $exp_gui->addFormat("html", "", $this, "exportHTML");
                 $ret = $this->ctrl->forwardCommand($exp_gui);
                 break;
 
@@ -196,14 +222,6 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
         $this->addHeaderAction();
     }
 
-    protected function initCreationForms(string $new_type): array
-    {
-        return [
-            self::CFORM_NEW => $this->initCreateForm($new_type),
-            self::CFORM_IMPORT => $this->initImportForm($new_type)
-        ];
-    }
-
     final public function cancelCreationObject(): void
     {
         $this->ctrl->redirectByClass("ilrepositorygui", "frameset");
@@ -211,6 +229,9 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
 
     public function properties(): void
     {
+        if (!$this->checkPermissionBool("write")) {
+            $this->error->raiseError($this->lng->txt("permission_denied"), $this->error->MESSAGE);
+        }
         $this->tabs->activateTab("id_settings");
 
         $this->initSettingsForm();
@@ -305,12 +326,19 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
     {
         // If we already have a RID, we can redirect to Container GUI
         // otherwise we display an message which informs the user that the resource is not yet available
-
-        // $ilCtrl->redirectByClass("ilfilesystemgui", "listFiles"); // FSX TODO
+        if ($this->object->getRID() != "") {
+            $this->ctrl->redirectByClass(ilContainerResourceGUI::class);
+        } else {
+            $this->ctrl->redirectByClass(static::class, "properties");
+        }
     }
 
     public function saveProperties(): void
     {
+        if (!$this->checkPermissionBool("write")) {
+            $this->error->raiseError($this->lng->txt("permission_denied"), $this->error->MESSAGE);
+        }
+
         $obj_service = $this->getObjectService();
 
         $this->initSettingsForm();
@@ -379,10 +407,15 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
 
     public function setStartFile(): void
     {
+        if (!$this->checkPermissionBool("write")) {
+            $this->error->raiseError($this->lng->txt("permission_denied"), $this->error->MESSAGE);
+        }
+
         // try to determine start file from request
         $start_file = $this->http->wrapper()->query()->has('lm_path')
             ? $start_file = $this->http->wrapper()->query()->retrieve(
-                'lm_path', $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->string())
+                'lm_path',
+                $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->string())
             )[0] ?? ''
             : '';
         // the ContainerResourceGUI uses e bin2hex/hex2bin serialization of pathes. Due to the internals of
@@ -395,7 +428,7 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
 
         if ($start_file === '') {
             $this->tpl->setOnScreenMessage('failure', $this->lng->txt('cont_no_start_file'), true);
-        }else {
+        } else {
             $this->object->setStartFile($start_file);
             $this->object->update();
             $this->tpl->setOnScreenMessage('success', $this->lng->txt('cont_start_file_set'), true);
@@ -495,8 +528,6 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
 
     protected function getTabs(): void
     {
-        $this->access = $this->access;
-        $this->tabs = $this->tabs;
         $lng = $this->lng;
         $ilHelp = $this->help;
 
@@ -589,10 +620,12 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
             ilObjectGUI::_gotoRepositoryNode($a_target, "infoScreen");
         } elseif ($access->checkAccess("read", "", ROOT_FOLDER_ID)) {
             $main_tpl->setOnScreenMessage(
-                'failure', sprintf(
-                $lng->txt("msg_no_perm_read_item"),
-                ilObject::_lookupTitle(ilObject::_lookupObjId($a_target))
-            ), true
+                'failure',
+                sprintf(
+                    $lng->txt("msg_no_perm_read_item"),
+                    ilObject::_lookupTitle(ilObject::_lookupObjId($a_target))
+                ),
+                true
             );
             ilObjectGUI::_gotoRepositoryRoot();
         }
@@ -631,7 +664,7 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
         );
     }
 
-    protected function importFileObject(int $parent_id = null): void
+    protected function importFileObject(?int $parent_id = null): void
     {
         try {
             parent::importFileObject();
@@ -720,4 +753,87 @@ class ilObjFileBasedLMGUI extends ilObjectGUI
     {
         $this->redrawHeaderActionObject();
     }
+
+    public function importFromUploadDir(): void
+    {
+        global $DIC;
+        if (!$this->checkPermissionBool("write", "", "htlm")) {
+            $main_tpl = $DIC->ui()->mainTemplate();
+
+            $main_tpl->setOnScreenMessage(
+                'failure',
+                sprintf(
+                    $this->lng->txt("msg_no_perm_write"),
+                ),
+                true
+            );
+            ilObjectGUI::_gotoRepositoryRoot();
+        }
+
+        $file = $this->lm_request->getString('form/input_0');
+        $path = $this->getUploadDirectory() . DIRECTORY_SEPARATOR . $file;
+        if ($file === '') {
+            $DIC->ui()->mainTemplate()->setOnScreenMessage(
+                'failure',
+                $this->lng->txt('import_from_upload_dir_info'),
+                true
+            );
+        } elseif (str_starts_with(realpath($path), $this->getUploadDirectory())) {
+            $this->irss->manageContainer()->addStreamToContainer(
+                $this->object->getResource()->getIdentification(),
+                Streams::ofResource(fopen($path, 'rb')),
+                $file
+            );
+            $DIC->ui()->mainTemplate()->setOnScreenMessage(
+                'success',
+                $this->lng->txt('file_imported_from_upload_dir'),
+                true
+            );
+        } else {
+            $DIC->ui()->mainTemplate()->setOnScreenMessage(
+                'failure',
+                $this->lng->txt('file_import_from_upload_dir_failed'),
+                true
+            );
+        }
+
+        $this->ctrl->setParameterByClass("ilObjFileBasedLMGUI", "ref_id", $this->object->getRefId());
+        $this->ctrl->redirectByClass(["ilrepositorygui", "ilObjFileBasedLMGUI", "ilContainerResourceGUI"]);
+    }
+
+    public function getUploadDirectory(): string
+    {
+        $lm_set = new ilSetting("lm");
+        $upload_dir = $lm_set->get("cont_upload_dir");
+
+        $import_file_factory = new ilImportDirectoryFactory();
+        try {
+            $import_directory = $import_file_factory->getInstanceForComponent(ilImportDirectoryFactory::TYPE_SAHS);
+        } catch (InvalidArgumentException $e) {
+            return '';
+        }
+        return $import_directory->getAbsolutePath();
+    }
+
+    public function getUploadFiles(): array
+    {
+        if (!$upload_dir = $this->getUploadDirectory()) {
+            return array();
+        }
+
+        // get the sorted content of the upload directory
+        $handle = opendir($upload_dir);
+        $files = array();
+        while (false !== ($file = readdir($handle))) {
+            $full_path = $upload_dir . "/" . $file;
+            if (is_file($full_path) and is_readable($full_path)) {
+                $files[] = $file;
+            }
+        }
+        closedir($handle);
+        sort($files);
+
+        return $files;
+    }
+
 }

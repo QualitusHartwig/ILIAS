@@ -134,6 +134,31 @@ $il-standard-filter-add-input-popover-list-button-width: 100%;
 			width: $il-standard-filter-add-input-popover-list-button-width;
 		}
 	}
+
+	span[data-collapse-glyph-visibility="1"] {
+		display: inline;
+	}
+	span[data-collapse-glyph-visibility="0"] {
+		display: none;
+	}
+	span[data-expand-glyph-visibility="1"] {
+		display: inline;
+	}
+	span[data-expand-glyph-visibility="0"] {
+		display: none;
+	}
+	div[data-active-inputs-expanded="1"] {
+		display: block;
+	}
+	div[data-active-inputs-expanded="0"] {
+		display: none;
+	}
+	div[data-section-inputs-expanded="1"] {
+		display: flex;
+	}
+	div[data-section-inputs-expanded="0"] {
+		display: none;
+	}
 }
 
 .il-filter-bar {
@@ -148,13 +173,14 @@ $il-standard-filter-add-input-popover-list-button-width: 100%;
 			background-color: $il-main-darker-bg;
 		}
 
-		.btn-bulky {
+		button {
 			min-height: 0px;
 			width: $il-standard-filter-input-group-width;
+			padding: $il-padding-large-vertical $il-padding-large-horizontal;
 			border: none;
 			background-color: initial;
 			font-size: $il-standard-filter-bar-btn-font-size;
-			justify-content: left;
+			text-align: left;
 
 			.glyph {
 				padding-right: $il-standard-filter-bar-glyph-padding-right;
@@ -219,6 +245,7 @@ $il-standard-filter-add-input-popover-list-button-width: 100%;
 
 	.leftaddon {
 		font-size: $il-font-size-small;
+		padding: $il-padding-base-vertical $il-padding-base-horizontal;
 	}
 
 	.il-input-multiselect {

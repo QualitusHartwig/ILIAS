@@ -189,9 +189,9 @@ class ilPortfolioExerciseGUI
             }
 
             ilDatePresentation::setUseRelativeDates($rel);
-            $info_arr["submitted_date"] = ilDatePresentation::formatDate(new ilDateTime($submitted["ts"], IL_CAL_DATETIME));
+            $info_arr["submitted_date"] = ilDatePresentation::formatDate(new ilDateTime($submitted?->getTimestamp(), IL_CAL_DATETIME));
             $info_arr["submitted"] = true;
-            if ($submitted["ts"] == "") {
+            if ($submitted?->getTimestamp() == "") {
                 $info_arr["submitted"] = false;
             }
         }
@@ -227,7 +227,7 @@ class ilPortfolioExerciseGUI
         }
 
         if ($tooltip) {
-            $modal = $ui->factory()->modal()->roundtrip($lng->txt("exc_instruction"), $ui->factory()->legacy($tooltip))
+            $modal = $ui->factory()->modal()->roundtrip($lng->txt("exc_instruction"), $ui->factory()->legacy()->content($tooltip))
                 ->withCancelButtonLabel($lng->txt("close"));
             $elements[] = $modal;
             $buttons[] = $ui->factory()->button()->standard($lng->txt("exc_instruction"), '#')

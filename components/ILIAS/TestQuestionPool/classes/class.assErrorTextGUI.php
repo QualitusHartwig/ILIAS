@@ -67,8 +67,8 @@ class assErrorTextGUI extends assQuestionGUI implements ilGuiQuestionScoringAdju
 
     public function writeAnswerSpecificPostData(ilPropertyFormGUI $form): void
     {
-        $errordata = $this->restructurePostDataForSaving($this->request->raw('errordata') ?? []);
-        $this->object->setErrorData($errordata);
+        $data = $this->restructurePostDataForSaving($this->request_data_collector->raw('errordata') ?? []);
+        $this->object->setErrorData($data);
         $this->object->removeErrorDataWithoutPosition();
     }
 
@@ -89,22 +89,22 @@ class assErrorTextGUI extends assQuestionGUI implements ilGuiQuestionScoringAdju
     public function writeQuestionSpecificPostData(ilPropertyFormGUI $form): void
     {
         $this->object->setQuestion(
-            $this->request->raw('question')
+            $this->request_data_collector->string('question')
         );
 
         $this->object->setErrorText(
-            $this->request->raw('errortext')
+            $this->request_data_collector->raw('errortext')
         );
 
         $this->object->parseErrorText();
 
         $this->object->setPointsWrong(
-            $this->request->float('points_wrong') ?? self::DEFAULT_POINTS_WRONG
+            $this->request_data_collector->float('points_wrong') ?? self::DEFAULT_POINTS_WRONG
         );
 
         if (!$this->object->getSelfAssessmentEditingMode()) {
             $this->object->setTextSize(
-                $this->request->float('textsize')
+                $this->request_data_collector->float('textsize')
             );
         }
     }
@@ -217,9 +217,11 @@ class assErrorTextGUI extends assQuestionGUI implements ilGuiQuestionScoringAdju
     */
     public function analyze(): void
     {
+        $this->setAdditionalContentEditingModeFromPost();
         $this->writePostData(true);
         $this->saveTaxonomyAssignments();
         $this->object->setErrorsFromParsedErrorText();
+        $this->tabs->activateTab('edit_question');
         $this->editQuestion();
     }
 
@@ -235,12 +237,43 @@ class assErrorTextGUI extends assQuestionGUI implements ilGuiQuestionScoringAdju
         bool $show_question_text = true,
         bool $show_inline_feedback = true
     ): string {
-        // get the solution of the user for the active pass or from the last pass if allowed
+        $user_solutions = $this->getUsersSolutionFromPreviewOrDatabase($active_id, $pass);
+        return $this->renderSolutionOutput(
+            $user_solutions,
+            $active_id,
+            $pass,
+            $graphical_output,
+            $result_output,
+            $show_question_only,
+            $show_feedback,
+            $show_correct_solution,
+            $show_manual_scoring,
+            $show_question_text,
+            false,
+            $show_inline_feedback,
+        );
+    }
+
+    public function renderSolutionOutput(
+        mixed $user_solutions,
+        int $active_id,
+        ?int $pass,
+        bool $graphical_output = false,
+        bool $result_output = false,
+        bool $show_question_only = true,
+        bool $show_feedback = false,
+        bool $show_correct_solution = false,
+        bool $show_manual_scoring = false,
+        bool $show_question_text = true,
+        bool $show_autosave_title = false,
+        bool $show_inline_feedback = false,
+    ): ?string {
         $template = new ilTemplate("tpl.il_as_qpl_errortext_output_solution.html", true, true, "components/ILIAS/TestQuestionPool");
 
-
         $selections = [
-            'user' => $this->getUsersSolutionFromPreviewOrDatabase((int) $active_id, $pass)
+            'user' => $user_solutions ?
+                $user_solutions :
+                $this->getUsersSolutionFromPreviewOrDatabase($active_id, $pass)
         ];
         $selections['best'] = $this->object->getBestSelection();
 
@@ -276,7 +309,7 @@ class assErrorTextGUI extends assQuestionGUI implements ilGuiQuestionScoringAdju
         $feedback = '';
         if ($show_feedback) {
             if (!$this->isTestPresentationContext()) {
-                $fb = $this->getGenericFeedbackOutput((int) $active_id, $pass);
+                $fb = $this->getGenericFeedbackOutput($active_id, $pass);
                 $feedback .= mb_strlen($fb) ? $fb : '';
             }
 
@@ -368,7 +401,7 @@ class assErrorTextGUI extends assQuestionGUI implements ilGuiQuestionScoringAdju
 
         if ($active_id > 0) {
             $selections = [];
-            $solutions = $this->object->getTestOutputSolutions($active_id, $pass ?? 0);
+            $solutions = $this->object->getSolutionValues($active_id, $pass ?? 0, true);
             foreach ($solutions as $solution) {
                 $selections[] = $solution['value1'];
             }
@@ -513,7 +546,7 @@ class assErrorTextGUI extends assQuestionGUI implements ilGuiQuestionScoringAdju
     {
         $existing_errordata = $this->object->getErrorData();
         $this->object->flushErrorData();
-        $new_errordata = $this->request->raw('errordata');
+        $new_errordata = $this->request_data_collector->raw('errordata');
         $errordata = [];
         foreach ($new_errordata['points'] as $index => $points) {
             $errordata[$index] = $existing_errordata[$index]->withPoints(

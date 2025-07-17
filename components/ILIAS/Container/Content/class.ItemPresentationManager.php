@@ -1,19 +1,22 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
+ *
  * ILIAS is licensed with the GPL-3.0,
  * see https://www.gnu.org/licenses/gpl-3.0.en.html
  * You should have received a copy of said license along with the
  * source code, too.
+ *
  * If this is not the case or you just want to try ILIAS, you'll find
  * us at:
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
- */
+ *
+ *********************************************************************/
+
+declare(strict_types=1);
 
 namespace ILIAS\Container\Content;
 
@@ -115,12 +118,23 @@ class ItemPresentationManager
     /**
      * Are we currently in ordering view and the items can be ordered?
      */
-    public function isActiveItemOrdering(): bool
+    public function isActiveItemOrdering(string $type): bool
     {
+        // see #43205
         if ($this->mode_manager->isActiveItemOrdering()) {
+            if ($type === "sess" && $this->container->getViewMode() === \ilContainer::VIEW_SESSIONS) {
+                return false;
+            }
             return true;
         }
         return false;
+    }
+
+    public function forceSessionOrderingByDate(): bool
+    {
+        // see #43205
+        return ($this->container->getViewMode() === \ilContainer::VIEW_SESSIONS ||
+            $this->container->getOrderType() !== \ilContainer::SORT_MANUAL);
     }
 
 
@@ -170,7 +184,11 @@ class ItemPresentationManager
         if ($this->filteredSubtree()) {
             $this->item_set = $this->domain->content()->itemSetTree($ref_id, $this->container_user_filter);
         } else {
-            $this->item_set = $this->domain->content()->itemSetFlat($ref_id, $this->container_user_filter);
+            $this->item_set = $this->domain->content()->itemSetFlat(
+                $ref_id,
+                $this->container_user_filter,
+                $this->forceSessionOrderingByDate()
+            );
         }
 
         // get view

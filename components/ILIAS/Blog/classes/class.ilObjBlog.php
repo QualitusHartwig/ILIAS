@@ -18,12 +18,9 @@
 
 declare(strict_types=1);
 
-use ILIAS\Filesystem\Util\Convert\ImageOutputOptions;
+use ILIAS\Blog\Settings\SettingsManager;
+use ILIAS\Blog\Settings\Settings;
 
-/**
- * Class ilObjBlog
- * @author Jörg Lützenkirchen <luetzenkirchen@leifos.com>
- */
 class ilObjBlog extends ilObject2
 {
     public const NAV_MODE_LIST = 1;
@@ -32,31 +29,13 @@ class ilObjBlog extends ilObject2
     public const ABSTRACT_DEFAULT_IMAGE_WIDTH = 144;
     public const ABSTRACT_DEFAULT_IMAGE_HEIGHT = 144;
     public const NAV_MODE_LIST_DEFAULT_POSTINGS = 10;
+    protected ?Settings $blog_settings = null;
+    protected SettingsManager $settings_manager;
     protected \ILIAS\Style\Content\DomainService $content_style_domain;
     protected \ILIAS\Notes\Service $notes_service;
 
-    protected int $nav_mode_list_months_with_post = 0;
     protected bool $notes = false;
-    protected string $bg_color = "";
-    protected string $font_color = "";
-    protected string $img = "";
-    protected bool $ppic = false;
-    protected bool $rss = false;
-    protected bool $approval = false;
     protected bool $style = false;
-    protected bool $abstract_shorten = false;
-    protected int $abstract_shorten_length = self::ABSTRACT_DEFAULT_SHORTEN_LENGTH;
-    protected bool $abstract_image = false;
-    protected int $abstract_image_width = self::ABSTRACT_DEFAULT_IMAGE_WIDTH;
-    protected int $abstract_image_height = self::ABSTRACT_DEFAULT_IMAGE_HEIGHT;
-    protected bool $keywords = true;
-    protected int $nav_mode = self::NAV_MODE_LIST;
-    protected int $nav_mode_list_postings = self::NAV_MODE_LIST_DEFAULT_POSTINGS;
-    protected ?int $nav_mode_list_months = null;
-    protected ?int $overview_postings = 5;
-    protected bool $authors = true;
-    protected array $order = [];
-    private \ILIAS\Filesystem\Util\Convert\LegacyImages $image_conversion;
 
     public function __construct(
         int $a_id = 0,
@@ -65,13 +44,18 @@ class ilObjBlog extends ilObject2
         global $DIC;
 
         $this->notes_service = $DIC->notes();
+        $this->settings_manager = $DIC->blog()->internal()->domain()->blogSettings();
+
         parent::__construct($a_id, $a_reference);
         $this->rbac_review = $DIC->rbac()->review();
-        $this->image_conversion = $DIC->fileConverters()->legacyImages();
 
         $this->content_style_domain = $DIC
             ->contentStyle()
             ->domain();
+
+        if ($this->getId() > 0) {
+            $this->blog_settings = $this->settings_manager->getByObjId($this->getId());
+        }
     }
 
     protected function initType(): void
@@ -81,35 +65,11 @@ class ilObjBlog extends ilObject2
 
     protected function doRead(): void
     {
-        $ilDB = $this->db;
-
-        $set = $ilDB->query("SELECT * FROM il_blog" .
-                " WHERE id = " . $ilDB->quote($this->id, "integer"));
-        $row = $ilDB->fetchAssoc($set);
-        $this->setProfilePicture((bool) $row["ppic"]);
-        $this->setBackgroundColor((string) $row["bg_color"]);
-        $this->setFontColor((string) $row["font_color"]);
-        $this->setRSS((bool) $row["rss_active"]);
-        $this->setApproval((bool) $row["approval"]);
-        $this->setAbstractShorten((bool) $row["abs_shorten"]);
-        $this->setAbstractShortenLength($row["abs_shorten_len"]);
-        $this->setAbstractImage((bool) $row["abs_image"]);
-        $this->setAbstractImageWidth($row["abs_img_width"]);
-        $this->setAbstractImageHeight($row["abs_img_height"]);
-        $this->setKeywords((bool) $row["keywords"]);
-        $this->setAuthors((bool) $row["authors"]);
-        $this->setNavMode($row["nav_mode"]);
-        $this->setNavModeListMonthsWithPostings((int) $row["nav_list_mon_with_post"]);
-        $this->setNavModeListMonths($row["nav_list_mon"]);
-        $this->setOverviewPostings($row["ov_post"]);
-        if (trim((string) $row["nav_order"])) {
-            $this->setOrder(explode(";", $row["nav_order"]));
-        }
-
         // #14661
         $this->setNotesStatus(
             $this->notes_service->domain()->commentsActive($this->id)
         );
+        $this->blog_settings = $this->settings_manager->getByObjId($this->getId());
     }
 
     protected function doCreate(bool $clone_mode = false): void
@@ -125,16 +85,16 @@ class ilObjBlog extends ilObject2
             $ilDB->quote(true, "integer") . "," .
             $ilDB->quote(true, "integer") . "," .
             $ilDB->quote(false, "integer") . "," .
-            $ilDB->quote($this->hasAbstractShorten(), "integer") . "," .
-            $ilDB->quote($this->getAbstractShortenLength(), "integer") . "," .
-            $ilDB->quote($this->hasAbstractImage(), "integer") . "," .
-            $ilDB->quote($this->getAbstractImageWidth(), "integer") . "," .
-            $ilDB->quote($this->getAbstractImageHeight(), "integer") . "," .
-            $ilDB->quote($this->hasKeywords(), "integer") . "," .
-            $ilDB->quote($this->hasAuthors(), "integer") . "," .
-            $ilDB->quote($this->getNavMode(), "integer") . "," .
-            $ilDB->quote($this->getNavModeListMonthsWithPostings(), "integer") . "," .
-            $ilDB->quote($this->getOverviewPostings(), "integer") .
+            $ilDB->quote(false, "integer") . "," .
+            $ilDB->quote(0, "integer") . "," .
+            $ilDB->quote(false, "integer") . "," .
+            $ilDB->quote(0, "integer") . "," .
+            $ilDB->quote(0, "integer") . "," .
+            $ilDB->quote(true, "integer") . "," .
+            $ilDB->quote(false, "integer") . "," .
+            $ilDB->quote(self::NAV_MODE_LIST, "integer") . "," .
+            $ilDB->quote(5, "integer") . "," .
+            $ilDB->quote(5, "integer") .
             ")");
 
         // #14661
@@ -158,31 +118,9 @@ class ilObjBlog extends ilObject2
 
     protected function doUpdate(): void
     {
-        $ilDB = $this->db;
-
         $this->updateMetaData();
 
         if ($this->id) {
-            $ilDB->manipulate("UPDATE il_blog" .
-                    " SET ppic = " . $ilDB->quote($this->hasProfilePicture(), "integer") .
-                    ",bg_color = " . $ilDB->quote($this->getBackgroundColor(), "text") .
-                    ",font_color = " . $ilDB->quote($this->getFontColor(), "text") .
-                    ",rss_active = " . $ilDB->quote($this->hasRSS(), "integer") .
-                    ",approval = " . $ilDB->quote($this->hasApproval(), "integer") .
-                    ",abs_shorten = " . $ilDB->quote($this->hasAbstractShorten(), "integer") .
-                    ",abs_shorten_len = " . $ilDB->quote($this->getAbstractShortenLength(), "integer") .
-                    ",abs_image = " . $ilDB->quote($this->hasAbstractImage(), "integer") .
-                    ",abs_img_width = " . $ilDB->quote($this->getAbstractImageWidth(), "integer") .
-                    ",abs_img_height = " . $ilDB->quote($this->getAbstractImageHeight(), "integer") .
-                    ",keywords = " . $ilDB->quote($this->hasKeywords(), "integer") .
-                    ",authors = " . $ilDB->quote($this->hasAuthors(), "integer") .
-                    ",nav_mode = " . $ilDB->quote($this->getNavMode(), "integer") .
-                    ",nav_list_mon_with_post = " . $ilDB->quote($this->getNavModeListMonthsWithPostings(), "integer") .
-                    ",nav_list_mon = " . $ilDB->quote($this->getNavModeListMonths(), "integer") .
-                    ",ov_post = " . $ilDB->quote($this->getOverviewPostings(), "integer") .
-                    ",nav_order = " . $ilDB->quote(implode(";", $this->getOrder()), "text") .
-                    " WHERE id = " . $ilDB->quote($this->id, "integer"));
-
             // #14661
             $this->notes_service->domain()->activateComments(
                 $this->id,
@@ -196,17 +134,9 @@ class ilObjBlog extends ilObject2
         assert($new_obj instanceof ilObjBlog);
 
         $new_obj->setNotesStatus($this->getNotesStatus());
-        $new_obj->setProfilePicture($this->hasProfilePicture());
-        $new_obj->setBackgroundColor($this->getBackgroundColor());
-        $new_obj->setFontColor($this->getFontColor());
-        $new_obj->setRSS($this->hasRSS());
-        $new_obj->setApproval($this->hasApproval());
-        $new_obj->setAbstractShorten($this->hasAbstractShorten());
-        $new_obj->setAbstractShortenLength($this->getAbstractShortenLength());
-        $new_obj->setAbstractImage($this->hasAbstractImage());
-        $new_obj->setAbstractImageWidth($this->getAbstractImageWidth());
-        $new_obj->setAbstractImageHeight($this->getAbstractImageHeight());
         $new_obj->update();
+
+        $this->settings_manager->clone($this->getId(), $new_obj->getId());
 
         // set/copy stylesheet
         $this->content_style_domain->styleForObjId($this->getId())->cloneTo($new_obj->getId());
@@ -224,185 +154,6 @@ class ilObjBlog extends ilObject2
         $this->notes = $a_status;
     }
 
-    public function hasProfilePicture(): bool
-    {
-        return $this->ppic;
-    }
-
-    public function setProfilePicture(bool $a_status): void
-    {
-        $this->ppic = $a_status;
-    }
-
-    public function getBackgroundColor(): string
-    {
-        if (!$this->bg_color) {
-            $this->bg_color = "ffffff";
-        }
-        return $this->bg_color;
-    }
-
-    public function setBackgroundColor(string $a_value): void
-    {
-        $this->bg_color = $a_value;
-    }
-
-    public function getFontColor(): string
-    {
-        if (!$this->font_color) {
-            $this->font_color = "505050";
-        }
-        return $this->font_color;
-    }
-
-    public function setFontColor(string $a_value): void
-    {
-        $this->font_color = $a_value;
-    }
-
-    public function hasRSS(): bool
-    {
-        return $this->rss;
-    }
-
-    public function setRSS(bool $a_status): void
-    {
-        $this->rss = $a_status;
-    }
-
-    public function hasApproval(): bool
-    {
-        return $this->approval;
-    }
-
-    public function setApproval(bool $a_status): void
-    {
-        $this->approval = $a_status;
-    }
-
-
-    public function hasAbstractShorten(): bool
-    {
-        return $this->abstract_shorten;
-    }
-
-    public function setAbstractShorten(bool $a_value): void
-    {
-        $this->abstract_shorten = $a_value;
-    }
-
-    public function getAbstractShortenLength(): int
-    {
-        return $this->abstract_shorten_length;
-    }
-
-    public function setAbstractShortenLength(int $a_value): void
-    {
-        $this->abstract_shorten_length = $a_value;
-    }
-
-    public function hasAbstractImage(): bool
-    {
-        return $this->abstract_image;
-    }
-
-    public function setAbstractImage(bool $a_value): void
-    {
-        $this->abstract_image = $a_value;
-    }
-
-    public function getAbstractImageWidth(): int
-    {
-        return $this->abstract_image_width;
-    }
-
-    public function setAbstractImageWidth(int $a_value): void
-    {
-        $this->abstract_image_width = $a_value;
-    }
-
-    public function getAbstractImageHeight(): int
-    {
-        return $this->abstract_image_height;
-    }
-
-    public function setAbstractImageHeight(int $a_value): void
-    {
-        $this->abstract_image_height = $a_value;
-    }
-
-    public function setKeywords(bool $a_value): void
-    {
-        $this->keywords = $a_value;
-    }
-
-    public function hasKeywords(): bool
-    {
-        return $this->keywords;
-    }
-
-    public function setAuthors(bool $a_value): void
-    {
-        $this->authors = $a_value;
-    }
-
-    public function hasAuthors(): bool
-    {
-        return $this->authors;
-    }
-
-    public function setNavMode(int $a_value): void
-    {
-        if (in_array($a_value, array(self::NAV_MODE_LIST, self::NAV_MODE_MONTH))) {
-            $this->nav_mode = $a_value;
-        }
-    }
-
-    public function getNavMode(): int
-    {
-        return $this->nav_mode;
-    }
-
-    public function setNavModeListMonthsWithPostings(int $a_value): void
-    {
-        $this->nav_mode_list_months_with_post = $a_value;
-    }
-
-    public function getNavModeListMonthsWithPostings(): int
-    {
-        return $this->nav_mode_list_months_with_post;
-    }
-
-    public function setNavModeListMonths(?int $a_value): void
-    {
-        $this->nav_mode_list_months = $a_value;
-    }
-
-    public function getNavModeListMonths(): ?int
-    {
-        return $this->nav_mode_list_months;
-    }
-
-    public function setOverviewPostings(?int $a_value): void
-    {
-        $this->overview_postings = $a_value;
-    }
-
-    public function getOverviewPostings(): ?int
-    {
-        return $this->overview_postings;
-    }
-
-    public function setOrder(array $a_values = []): void
-    {
-        $this->order = $a_values;
-    }
-
-    public function getOrder(): array
-    {
-        return $this->order;
-    }
-
     public static function sendNotification(
         string $a_action,
         bool $a_in_wsp,
@@ -412,92 +163,13 @@ class ilObjBlog extends ilObject2
     ): void {
         global $DIC;
 
-        $ilUser = $DIC->user();
-
-        // get blog object id (repository or workspace)
-        if ($a_in_wsp) {
-            $tree = new ilWorkspaceTree($ilUser->getId()); // owner of tree is irrelevant
-            $blog_obj_id = $tree->lookupObjectId($a_blog_node_id);
-            $access_handler = new ilWorkspaceAccessHandler($tree);
-        } else {
-            $blog_obj_id = ilObject::_lookupObjId($a_blog_node_id);
-            $access_handler = null;
-        }
-        if (!$blog_obj_id) {
-            return;
-        }
-
-        $posting = new ilBlogPosting($a_posting_id);
-
-        // #11138
-        $ignore_threshold = ($a_action === "comment");
-
-        $admin_only = false;
-
-        // approval handling
-        if (!$posting->isApproved()) {
-            $blog = new self($blog_obj_id, false);
-            if ($blog->hasApproval()) {
-                switch ($a_action) {
-                    case "update":
-                        // un-approved posting was updated - no notifications
-                        return;
-
-                    case "new":
-                        // un-approved posting was activated - admin-only notification
-                        $admin_only = true;
-                        $ignore_threshold = true;
-                        $a_action = "approve";
-                        break;
-                }
-            }
-        }
-
-        // create/update news item (only in repository)
-        if (!$a_in_wsp &&
-            in_array($a_action, array("update", "new"))) {
-            $posting->handleNews(($a_action === "update"));
-        }
-
-        // recipients
-        $users = ilNotification::getNotificationsForObject(
-            ilNotification::TYPE_BLOG,
-            $blog_obj_id,
+        $DIC->blog()->internal()->domain()->notification()->sendNotification(
+            $a_action,
+            $a_in_wsp,
+            $a_blog_node_id,
             $a_posting_id,
-            $ignore_threshold
+            $a_comment
         );
-        if (!count($users)) {
-            return;
-        }
-
-        $ntf = new ilSystemNotification($a_in_wsp);
-        $ntf->setLangModules(array("blog"));
-        $ntf->setRefId($a_blog_node_id);
-        $ntf->setChangedByUserId($ilUser->getId());
-        $ntf->setSubjectLangId('blog_change_notification_subject');
-        $ntf->setIntroductionLangId('blog_change_notification_body_' . $a_action);
-        $ntf->addAdditionalInfo('blog_posting', $posting->getTitle());
-        if ($a_comment) {
-            $ntf->addAdditionalInfo('comment', $a_comment, true);
-        }
-        $ntf->setGotoLangId('blog_change_notification_link');
-        $ntf->setReasonLangId('blog_change_notification_reason');
-
-        $abstract = $posting->getNotificationAbstract();
-        if ($abstract) {
-            $ntf->addAdditionalInfo('content', $abstract, true);
-        }
-
-        $notified = $ntf->sendMailAndReturnRecipients(
-            $users,
-            "_" . $a_posting_id,
-            ($admin_only ? "write" : "read")
-        );
-
-        // #14387
-        if (count($notified)) {
-            ilNotification::updateNotificationTime(ilNotification::TYPE_BLOG, $blog_obj_id, $notified, $a_posting_id);
-        }
     }
 
     /**
@@ -529,11 +201,13 @@ class ilObjBlog extends ilObject2
             return;
         }
 
-        $blog = new self($obj_id, false);
-        if (!$blog->hasRSS()) {
+        $blog_settings = $DIC->blog()->internal()->domain()->blogSettings()
+            ->getByObjId($obj_id);
+        if (!$blog_settings?->getRSS()) {
             return;
         }
 
+        $blog = new self($obj_id, false);
         $feed = new ilFeedWriter();
 
         $url = $pl->getPermanentLink();
@@ -645,9 +319,5 @@ class ilObjBlog extends ilObject2
         }
 
         return $res;
-    }
-
-    protected function handleQuotaUpdate(): void
-    {
     }
 }

@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace ILIAS\FileDelivery;
 
+use ILIAS\FileDelivery\Delivery\StreamDelivery;
 use ILIAS\FileDelivery\Token\DataSigner;
 use ILIAS\Filesystem\Stream\FileStream;
 use ILIAS\FileDelivery\Delivery\Disposition;
@@ -33,14 +34,17 @@ class Services
 {
     public const DELIVERY_ENDPOINT = '/deliver.php/';
 
+    private ?string $base_uri = null;
+
     public function __construct(
-        private \ILIAS\FileDelivery\Delivery\StreamDelivery $delivery,
+        private StreamDelivery $delivery,
         private LegacyDelivery $legacy_delivery,
-        private DataSigner $data_signer
+        private DataSigner $data_signer,
+        private \ILIAS\HTTP\Services $http
     ) {
     }
 
-    public function delivery(): \ILIAS\FileDelivery\Delivery\StreamDelivery
+    public function delivery(): StreamDelivery
     {
         return $this->delivery;
     }
@@ -71,7 +75,18 @@ class Services
             $until
         );
         return new URI(
-            rtrim(ILIAS_HTTP_PATH, '/') . self::DELIVERY_ENDPOINT . $token
+            $this->getBaseURI() . self::DELIVERY_ENDPOINT . $token
+        );
+    }
+
+    protected function getBaseURI(): string
+    {
+        return $this->base_uri ?? $this->base_uri = rtrim(
+            $this->http->request()->getUri()->getScheme()
+            . '://' . $this->http->request()->getUri()->getHost()
+            . ($this->http->request()->getUri()->getPort() ? ':' . $this->http->request()->getUri()->getPort() : '')
+            . dirname($this->http->request()->getUri()->getPath()),
+            "/"
         );
     }
 }

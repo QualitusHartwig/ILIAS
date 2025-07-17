@@ -21,39 +21,26 @@ declare(strict_types=1);
 use ILIAS\HTTP\GlobalHttpState;
 use ILIAS\Refinery\Factory as Refinery;
 
-/**
- * Class ilAccountMail
- *
- * Sends e-mail to newly created accounts.
- *
- * @author Stefan Schneider <stefan.schneider@hrz.uni-giessen.de>
- * @author Alex Killing <alex.killing@hrz.uni-giessen.de>
- *
- */
 class ilAccountMail
 {
-    private readonly GlobalHttpState $http;
     private readonly ilSetting $settings;
-    private readonly Refinery $refinery;
-    private readonly ilTree $repositoryTree;
-    private readonly ilMailMimeSenderFactory $senderFactory;
+    private readonly ilTree $repository_tree;
+    private readonly ilMailMimeSenderFactory $sender_factory;
     public string $u_password = '';
     public ?ilObjUser $user = null;
-    public string $target = '';
     private bool $lang_variables_as_fallback = false;
-    /** @var string[] */
+    /** @var array<string, string> */
     private array $attachments = [];
-    private bool $attachConfiguredFiles = false;
+    private bool $attach_configured_files = false;
     private array $amail = [];
+    private ?string $permanent_link_target = null;
 
     public function __construct()
     {
         global $DIC;
-        $this->http = $DIC->http();
-        $this->refinery = $DIC->refinery();
         $this->settings = $DIC->settings();
-        $this->repositoryTree = $DIC->repositoryTree();
-        $this->senderFactory = $DIC->mail()->mime()->senderFactory();
+        $this->repository_tree = $DIC->repositoryTree();
+        $this->sender_factory = $DIC->mail()->mime()->senderFactory();
     }
 
     public function useLangVariablesAsFallback(bool $a_status): void
@@ -68,12 +55,12 @@ class ilAccountMail
 
     public function shouldAttachConfiguredFiles(): bool
     {
-        return $this->attachConfiguredFiles;
+        return $this->attach_configured_files;
     }
 
-    public function setAttachConfiguredFiles(bool $attachConfiguredFiles): void
+    public function setAttachConfiguredFiles(bool $attach_configured_files): void
     {
-        $this->attachConfiguredFiles = $attachConfiguredFiles;
+        $this->attach_configured_files = $attach_configured_files;
     }
 
     public function setUserPassword(string $a_pwd): void
@@ -98,39 +85,45 @@ class ilAccountMail
         $this->user = $a_user;
     }
 
+    public function setPermanentLinkTarget(?string $permanent_link_target): void
+    {
+        if ($permanent_link_target === '') {
+            throw new InvalidArgumentException(
+                'Permanent link target must not be empty'
+            );
+        }
+
+        $this->permanent_link_target = $permanent_link_target;
+    }
+
     public function getUser(): ?ilObjUser
     {
         return $this->user;
-    }
-
-    public function getTarget(): string
-    {
-        return $this->target;
     }
 
     public function reset(): void
     {
         $this->user = null;
         $this->u_password = '';
-        $this->target = '';
+        $this->permanent_link_target = null;
     }
 
     /**
-     * @param array{lang?: string, subject?: string, body?: string, sal_f?: string, sal_g?: string, sal_m?: string, type?: string, att_file?: string} $mailData
+     * @param array{lang?: string, subject?: string, body?: string, sal_f?: string, sal_g?: string, sal_m?: string, type?: string, att_file?: string} $mail_data
      * @return array{lang?: string, subject?: string, body?: string, sal_f?: string, sal_g?: string, sal_m?: string, type?: string, att_file?: string}
      */
-    private function ensureValidMailDataShape(array $mailData): array
+    private function ensureValidMailDataShape(array $mail_data): array
     {
         foreach (['lang', 'subject', 'body', 'sal_f', 'sal_g', 'sal_m', 'type'] as $key) {
-            if (!isset($mailData[$key])) {
-                $mailData[$key] = '';
+            if (!isset($mail_data[$key])) {
+                $mail_data[$key] = '';
             }
         }
 
-        $mailData['subject'] = trim($mailData['subject']);
-        $mailData['body'] = trim($mailData['body']);
+        $mail_data['subject'] = trim($mail_data['subject']);
+        $mail_data['body'] = trim($mail_data['body']);
 
-        return $mailData;
+        return $mail_data;
     }
 
     /**
@@ -148,23 +141,26 @@ class ilAccountMail
     }
 
     /**
-     * @param array{lang?: string, subject?: string, body?: string, sal_f?: string, sal_g?: string, sal_m?: string, type?: string, att_file?: string} $mailData
-     * @throws \ILIAS\Filesystem\Exception\IOException
+     * @param array{lang?: string, subject?: string, body?: string, sal_f?: string, sal_g?: string, sal_m?: string, type?: string, att_file?: string} $mail_data
      */
-    private function addAttachments(array $mailData): void
+    private function addAttachments(array $mail_data): void
     {
-        if (isset($mailData['att_file']) && $this->shouldAttachConfiguredFiles()) {
+        if (isset($mail_data['att_file']) && $this->shouldAttachConfiguredFiles()) {
             $fs = new ilFSStorageUserFolder(USER_FOLDER_ID);
             $fs->create();
 
-            $pathToFile = '/' . implode('/', array_map(static function (string $pathPart): string {
-                return trim($pathPart, '/');
-            }, [
-                $fs->getAbsolutePath(),
-                $mailData['lang'],
-            ]));
+            $path_to_tile = '/' . implode(
+                '/',
+                array_map(
+                    static fn(string $path_part): string => trim($path_part, '/'),
+                    [
+                        $fs->getAbsolutePath(),
+                        $mail_data['lang'],
+                    ]
+                )
+            );
 
-            $this->addAttachment($pathToFile, $mailData['att_file']);
+            $this->addAttachment($path_to_tile, $mail_data['att_file']);
         }
     }
 
@@ -173,7 +169,6 @@ class ilAccountMail
      * It first tries to read the mail body, subject and sender address from posted named formular fields.
      * If no field values found the defaults are used.
      * Placehoders will be replaced by the appropriate data.
-     * @throws RuntimeException
      */
     public function send(): bool
     {
@@ -233,7 +228,7 @@ class ilAccountMail
         }
 
         $mmail = new ilMimeMail();
-        $mmail->From($this->senderFactory->system());
+        $mmail->From($this->sender_factory->system());
         $mmail->Subject($mail_subject, true);
         $mmail->To($user->getEmail());
         $mmail->Body($mail_body);
@@ -250,8 +245,7 @@ class ilAccountMail
     public function replacePlaceholders(string $a_string, ilObjUser $a_user, array $a_amail, string $a_lang): string
     {
         global $DIC;
-        $tree = $DIC->repositoryTree();
-        $ilSetting = $DIC->settings();
+        $settings = $DIC->settings();
         $mustache_factory = $DIC->mail()->mustacheFactory();
 
         $replacements = [];
@@ -271,9 +265,9 @@ class ilAccountMail
         $replacements['PASSWORD'] = $this->getUserPassword();
         $replacements['ILIAS_URL'] = ILIAS_HTTP_PATH . '/login.php?client_id=' . CLIENT_ID;
         $replacements['CLIENT_NAME'] = CLIENT_NAME;
-        $replacements['ADMIN_MAIL'] = $ilSetting->get('admin_email');
-        $replacements['IF_PASSWORD'] = $this->getUserPassword() != '';
-        $replacements['IF_NO_PASSWORD'] = $this->getUserPassword() == '';
+        $replacements['ADMIN_MAIL'] = $settings->get('admin_email');
+        $replacements['IF_PASSWORD'] = $this->getUserPassword() !== '';
+        $replacements['IF_NO_PASSWORD'] = $this->getUserPassword() === '';
 
         // #13346
         if (!$a_user->getTimeLimitUnlimited()) {
@@ -287,17 +281,14 @@ class ilAccountMail
 
         // target
         $replacements['IF_TARGET'] = false;
-        if ($this->http->wrapper()->query()->has('target') &&
-            $this->http->wrapper()->query()->retrieve('target', $this->refinery->kindlyTo()->string()) !== ''
-        ) {
-            $target = $this->http->wrapper()->query()->retrieve('target', $this->refinery->kindlyTo()->string());
-            $tarr = explode('_', (string) $target);
-            if ($this->repositoryTree->isInTree((int) $tarr[1])) {
+        if ($this->permanent_link_target !== null) {
+            $tarr = explode('_', $this->permanent_link_target);
+            if ($this->repository_tree->isInTree((int) $tarr[1])) {
                 $obj_id = ilObject::_lookupObjId((int) $tarr[1]);
                 $type = ilObject::_lookupType($obj_id);
                 if ($type === $tarr[0]) {
                     $replacements['TARGET_TITLE'] = ilObject::_lookupTitle($obj_id);
-                    $replacements['TARGET'] = ILIAS_HTTP_PATH . '/goto.php?client_id=' . CLIENT_ID . '&target=' . $target;
+                    $replacements['TARGET'] = ILIAS_HTTP_PATH . '/goto.php?client_id=' . CLIENT_ID . '&target=' . $this->permanent_link_target;
 
                     // this looks complicated, but we may have no initilised $lng object here
                     // if mail is send during user creation in authentication

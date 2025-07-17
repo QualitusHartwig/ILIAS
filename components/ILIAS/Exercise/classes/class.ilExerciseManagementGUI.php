@@ -103,7 +103,7 @@ class ilExerciseManagementGUI
      * @param InternalService $service
      * @param ilExAssignment|null       $a_ass
      */
-    public function __construct(InternalService $service, ilExAssignment $a_ass = null)
+    public function __construct(InternalService $service, ?ilExAssignment $a_ass = null)
     {
         global $DIC;
 
@@ -700,7 +700,7 @@ class ilExerciseManagementGUI
         if ($this->exercise->hasTutorFeedbackFile()) {
             $actions[] = $this->ui_factory->button()->shy(
                 $this->lng->txt("exc_tbl_action_feedback_file"),
-                $this->ctrl->getLinkTargetByClass("ilFileSystemGUI", "listFiles")
+                $this->ctrl->getLinkTargetByClass(ilResourceCollectionGUI::class)
             );
         }
 
@@ -746,8 +746,8 @@ class ilExerciseManagementGUI
             $card_tpl->parseCurrentBlock();
         }
 
-        $main_panel = $this->ui_factory->panel()->sub($a_data['uname'], $this->ui_factory->legacy($a_data['utext']))
-            ->withFurtherInformation($this->ui_factory->card()->standard($this->lng->txt('text_assignment'))->withSections(array($this->ui_factory->legacy($card_tpl->get()))))->withActions($actions_dropdown);
+        $main_panel = $this->ui_factory->panel()->sub($a_data['uname'], $this->ui_factory->legacy()->content($a_data['utext']))
+            ->withFurtherInformation($this->ui_factory->card()->standard($this->lng->txt('text_assignment'))->withSections(array($this->ui_factory->legacy()->content($card_tpl->get()))))->withActions($actions_dropdown);
 
         $feedback_tpl = new ilTemplate("tpl.exc_report_feedback.html", true, true, "components/ILIAS/Exercise");
         //if no feedback filter the feedback is displayed. Can be list submissions or compare submissions.
@@ -790,7 +790,7 @@ class ilExerciseManagementGUI
             : $a_data['comment'];
         $feedback_tpl->setVariable("COMMENT", $this->lng->txt('exc_comment') . ": <br>" . $comment);
 
-        $feedback_panel = $this->ui_factory->panel()->sub("", $this->ui_factory->legacy($feedback_tpl->get()));
+        $feedback_panel = $this->ui_factory->panel()->sub("", $this->ui_factory->legacy()->content($feedback_tpl->get()));
 
         $report = $this->ui_factory->panel()->report("", array($main_panel, $feedback_panel));
 
@@ -831,7 +831,7 @@ class ilExerciseManagementGUI
                 return "$('#$id').click(function() { $('#$form_id').submit(); return false; });";
             });
 
-        return  $this->ui_factory->modal()->roundtrip(strtoupper($this->lng->txt("grade_evaluate")), $this->ui_factory->legacy($modal_tpl->get()))->withActionButtons([$submit_btn]);
+        return  $this->ui_factory->modal()->roundtrip(strtoupper($this->lng->txt("grade_evaluate")), $this->ui_factory->legacy()->content($modal_tpl->get()))->withActionButtons([$submit_btn]);
     }
 
     public function getEvaluationModalForm(
@@ -1310,7 +1310,7 @@ class ilExerciseManagementGUI
      * Save assignment status (participant view)
      * @throws ilExcUnknownAssignmentTypeException
      */
-    public function saveStatusParticipantObject(array $selected_ass_ids = null): void
+    public function saveStatusParticipantObject(?array $selected_ass_ids = null): void
     {
         $ilCtrl = $this->ctrl;
 
@@ -1344,7 +1344,7 @@ class ilExerciseManagementGUI
      * @throws ilExcUnknownAssignmentTypeException
      */
     public function saveStatusAllObject(
-        array $a_selected = null,
+        ?array $a_selected = null,
         bool $a_redirect = true
     ): void {
         $user_ids = $this->listed_participants;
@@ -1542,7 +1542,7 @@ class ilExerciseManagementGUI
     }
 
     public function adoptTeamsFromGroupObject(
-        ilPropertyFormGUI $a_form = null
+        ?ilPropertyFormGUI $a_form = null
     ): void {
         $ilCtrl = $this->ctrl;
         $ilTabs = $this->tabs_gui;
@@ -1741,7 +1741,7 @@ class ilExerciseManagementGUI
 
 
     public function showMultiFeedbackObject(
-        FormAdapterGUI $form = null
+        ?FormAdapterGUI $form = null
     ): void {
         $lng = $this->lng;
         $tpl = $this->tpl;
@@ -1844,13 +1844,15 @@ class ilExerciseManagementGUI
         // prepare modal
         $modal = $this->ui_factory->modal()->roundtrip(
             $lng->txt("exc_individual_deadline"),
-            $this->ui_factory->legacy('<div id="ilExcIDlBody"></div>')
+            $this->ui_factory->legacy()->content('<div id="ilExcIDlBody"></div>')
         );
+        $show = $modal->getShowSignal()->getId();
+        $close = $modal->getCloseSignal()->getId();
 
         $ajax_url = $this->ctrl->getLinkTarget($this, "handleIndividualDeadlineCalls", "", true, false);
 
         $tpl->addJavaScript("assets/js/ilExcIDl.js", true, 3);
-        $tpl->addOnLoadCode('il.ExcIDl.init("' . $ajax_url . '");');
+        $tpl->addOnLoadCode("il.ExcIDl.init('" . $ajax_url . "','" . $show . "','" . $close . "');");
 
         ilCalendarUtil::initDateTimePicker();
 
@@ -1965,7 +1967,8 @@ class ilExerciseManagementGUI
                         }
                     }
 
-                    $ass->recalculateLateSubmissions();
+                    $subm = $this->domain->submission($ass->getId());
+                    $subm->recalculateLateSubmissions();
                 }
 
                 echo "ok";
@@ -2149,13 +2152,14 @@ class ilExerciseManagementGUI
 
         $obj_dir = $this->assignment->getAssignmentType()->getStringIdentifier() . "_" . $obj_id;
 
-        $index_html_file = ILIAS_WEB_DIR .
+        $index_html_file =
+            ILIAS_WEB_DIR .
             DIRECTORY_SEPARATOR .
             CLIENT_ID .
             DIRECTORY_SEPARATOR .
             dirname($zip_internal_path) .
-            DIRECTORY_SEPARATOR .
-            $obj_dir .
+            //DIRECTORY_SEPARATOR .
+            //$obj_dir .
             DIRECTORY_SEPARATOR .
             "index.html";
         $this->log->debug("index html file: " . $index_html_file);

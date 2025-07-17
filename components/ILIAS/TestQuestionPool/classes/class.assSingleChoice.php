@@ -21,7 +21,6 @@ declare(strict_types=1);
 use ILIAS\TestQuestionPool\Questions\QuestionLMExportable;
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
 use ILIAS\TestQuestionPool\ManipulateImagesInChoiceQuestionsTrait;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
 
 /**
@@ -117,10 +116,10 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
             $this->setQuestion(ilRTE::_replaceMediaObjectImageSrc($data["question_text"] ?? '', 1));
             $shuffle = (is_null($data['shuffle'])) ? true : $data['shuffle'];
             $this->setShuffle((bool) $shuffle);
-            if ($data['thumb_size'] !== null && $data['thumb_size'] >= self::MINIMUM_THUMB_SIZE) {
+            if ($data['thumb_size'] !== null && $data['thumb_size'] >= $this->getMinimumThumbSize()) {
                 $this->setThumbSize($data['thumb_size']);
             }
-            $this->is_singleline = $data['allow_images'] === '0';
+            $this->is_singleline = $data['allow_images'] === null || $data['allow_images'] === '0';
             $this->lastChange = $data['tstamp'];
             $this->feedback_setting = $data['feedback_setting'] ?? self::FEEDBACK_MODE_SELECTED_ANSWERS;
 
@@ -327,8 +326,8 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
         }
         $result = $this->getCurrentSolutionResultSet($active_id, $pass, $authorized_solution);
         while ($data = $this->db->fetchAssoc($result)) {
-            if (strcmp($data["value1"], "") != 0) {
-                array_push($found_values, $data["value1"]);
+            if ($data['value1'] !== '') {
+                array_push($found_values, $data['value1']);
             }
         }
         $points = 0.0;
@@ -350,12 +349,12 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
         $points = 0.0;
         foreach ($this->answers as $key => $answer) {
             if (is_numeric($participant_solution)
-                && $key === $participant_solution) {
+                && $key === (int) $participant_solution) {
                 $points = $answer->getPoints();
             }
         }
-        $reached_points = $this->deductHintPointsFromReachedPoints($preview_session, $points);
-        return $this->ensureNonNegativePoints($reached_points);
+
+        return $this->ensureNonNegativePoints($points);
     }
 
     public function saveWorkingData(
@@ -506,7 +505,7 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
 
                     // Reorder feedback
                     $feedback_order_db = intval($feedback_option['answer']);
-                    $db_answer_id = $db_answer_id_for_order[$feedback_order_db];
+                    $db_answer_id = $db_answer_id_for_order[$feedback_order_db] ?? null;
                     // This cuts feedback that currently would have no corresponding answer
                     // This case can happen while copying "broken" questions
                     // Or when saving a question with less answers than feedback
@@ -646,7 +645,7 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
     public function getRTETextWithMediaObjects(): string
     {
         $text = parent::getRTETextWithMediaObjects();
-        foreach ($this->answers as $index => $answer) {
+        foreach (array_keys($this->answers) as $index) {
             $text .= $this->feedbackOBJ->getSpecificAnswerFeedbackContent($this->getId(), 0, $index);
             $answer_obj = $this->answers[$index];
             $text .= $answer_obj->getAnswertext();
@@ -657,7 +656,7 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
     /**
     * Returns a reference to the answers array
     */
-    public function &getAnswers(): array
+    public function getAnswers(): array
     {
         return $this->answers;
     }
@@ -665,36 +664,6 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
     public function setAnswers(array $answers): void
     {
         $this->answers = $answers;
-    }
-
-    public function setExportDetailsXLSX(
-        ilAssExcelFormatHelper $worksheet,
-        int $startrow,
-        int $col,
-        int $active_id,
-        int $pass
-    ): int {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $solution = $this->getSolutionValues($active_id, $pass);
-        $i = 1;
-        foreach ($this->getAnswers() as $id => $answer) {
-            $worksheet->setCell($startrow + $i, $col, $answer->getAnswertext());
-            $worksheet->setBold($worksheet->getColumnCoord($col) . ($startrow + $i));
-            if (
-                count($solution) > 0 &&
-                isset($solution[0]) &&
-                is_array($solution[0]) &&
-                strlen($solution[0]['value1']) > 0 && $id == $solution[0]['value1']
-            ) {
-                $worksheet->setCell($startrow + $i, $col + 2, 1);
-            } else {
-                $worksheet->setCell($startrow + $i, $col + 2, 0);
-            }
-            $i++;
-        }
-
-        return $startrow + $i + 1;
     }
 
     protected function lmMigrateQuestionTypeSpecificContent(
@@ -714,7 +683,7 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
         $result = [];
         $result['id'] = $this->getId();
         $result['type'] = (string) $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['nr_of_tries'] = $this->getNrOfTries();
         $result['shuffle'] = $this->getShuffle();
@@ -770,18 +739,14 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
         }
     }
 
-    public function getMultilineAnswerSetting(): string
+    public function getMultilineAnswerSetting(): int
     {
-        $multilineAnswerSetting = $this->current_user->getPref('tst_multiline_answers');
-        if ($multilineAnswerSetting !== '1') {
-            $multilineAnswerSetting = '0';
-        }
-        return $multilineAnswerSetting;
+        return $this->current_user->getPref('tst_multiline_answers') === '1' ? 1 : 0;
     }
 
-    public function setMultilineAnswerSetting(string $setting = '0'): void
+    public function setMultilineAnswerSetting($setting = '0'): void
     {
-        $this->current_user->writePref('tst_multiline_answers', $setting);
+        $this->current_user->writePref('tst_multiline_answers', (string) $setting);
     }
 
     /**
@@ -804,11 +769,6 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
     public function getSpecificFeedbackAllCorrectOptionLabel(): string
     {
         return 'feedback_correct_sc_mc';
-    }
-
-    public static function isObligationPossible(int $question_id): bool
-    {
-        return true;
     }
 
     public function getOperators(string $expression): array
@@ -921,7 +881,7 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
     {
         $result = [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_SHUFFLE_ANSWER_OPTIONS => $additional_info
                 ->getTrueFalseTagForBool($this->getShuffle()),
@@ -946,7 +906,7 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
         return $result;
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
     ): string {
@@ -957,5 +917,31 @@ class assSingleChoice extends assQuestion implements ilObjQuestionScoringAdjusta
         }
 
         return $this->getAnswer((int) $solution_values[0]['value1'])->getAnswertext();
+    }
+
+    public function solutionValuesToText(array $solution_values): string
+    {
+        if ($solution_values === []
+            || !array_key_exists(0, $solution_values)
+            || !is_array($solution_values[0])) {
+            return '';
+        }
+
+        return $this->getAnswer((int) $solution_values[0]['value1'])->getAnswertext();
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): array
+    {
+        return array_reduce(
+            $this->getAnswers(),
+            function (array $c, ASS_AnswerBinaryStateImage $v): array {
+                if ($v->getPoints() > 0.0) {
+                    $c[] = $v->getAnswertext()
+                        . "({$this->lng->txt('points')}: {$v->getPoints()})";
+                }
+                return $c;
+            },
+            []
+        );
     }
 }

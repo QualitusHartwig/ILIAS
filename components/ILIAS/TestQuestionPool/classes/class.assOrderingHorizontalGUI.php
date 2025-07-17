@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -121,35 +122,57 @@ class assOrderingHorizontalGUI extends assQuestionGUI implements ilGuiQuestionSc
         bool $show_question_text = true,
         bool $show_inline_feedback = true
     ): string {
-        // get the solution of the user for the active pass or from the last pass if allowed
+        $user_solutions = [];
+        if (($active_id > 0) && (!$show_correct_solution)) {
+            $user_solutions = $this->object->getSolutionValues($active_id, $pass);
+        }
+
+        return $this->renderSolutionOutput(
+            $user_solutions,
+            $active_id,
+            $pass,
+            $graphical_output,
+            $result_output,
+            $show_question_only,
+            $show_feedback,
+            $show_correct_solution,
+            $show_manual_scoring,
+            $show_question_text,
+            false,
+            $show_inline_feedback,
+        );
+    }
+
+    public function renderSolutionOutput(
+        mixed $user_solutions,
+        int $active_id,
+        ?int $pass,
+        bool $graphical_output = false,
+        bool $result_output = false,
+        bool $show_question_only = true,
+        bool $show_feedback = false,
+        bool $show_correct_solution = false,
+        bool $show_manual_scoring = false,
+        bool $show_question_text = true,
+        bool $show_autosave_title = false,
+        bool $show_inline_feedback = false,
+    ): ?string {
         $template = new ilTemplate("tpl.il_as_qpl_orderinghorizontal_output_solution.html", true, true, "components/ILIAS/TestQuestionPool");
 
-        if (($active_id > 0) && (!$show_correct_solution)) {
-            $elements = [];
-            $solutions = $this->object->getSolutionValues($active_id, $pass);
+        $elements = [];
+        if (count($user_solutions) && strlen($user_solutions[0]["value1"])) {
+            $elements = explode("{::}", $user_solutions[0]["value1"]);
+        }
 
-            if (count($solutions) && strlen($solutions[0]["value1"])) {
-                $elements = explode("{::}", $solutions[0]["value1"]);
-            }
+        if (!count($elements)) {
+            $elements = $show_correct_solution ? $this->object->getOrderingElements() : $this->object->getRandomOrderingElements();
+        }
 
-            if (!count($elements)) {
-                $elements = $this->object->getRandomOrderingElements();
-            }
-
-            foreach ($elements as $id => $element) {
-                $template->setCurrentBlock("element");
-                $template->setVariable("ELEMENT_ID", "sol_e_" . $this->object->getId() . "_$id");
-                $template->setVariable("ELEMENT_VALUE", ilLegacyFormElementsUtil::prepareFormOutput($element));
-                $template->parseCurrentBlock();
-            }
-        } else {
-            $elements = $this->object->getOrderingElements();
-            foreach ($elements as $id => $element) {
-                $template->setCurrentBlock("element");
-                $template->setVariable("ELEMENT_ID", "sol_e_" . $this->object->getId() . "_$id");
-                $template->setVariable("ELEMENT_VALUE", ilLegacyFormElementsUtil::prepareFormOutput($element));
-                $template->parseCurrentBlock();
-            }
+        foreach ($elements as $id => $element) {
+            $template->setCurrentBlock("element");
+            $template->setVariable("ELEMENT_ID", "sol_e_" . $this->object->getId() . "_$id");
+            $template->setVariable("ELEMENT_VALUE", ilLegacyFormElementsUtil::prepareFormOutput($element));
+            $template->parseCurrentBlock();
         }
 
         if (($active_id > 0) && (!$show_correct_solution)) {
@@ -219,51 +242,35 @@ class assOrderingHorizontalGUI extends assQuestionGUI implements ilGuiQuestionSc
         bool $show_question_only = false,
         bool $show_inline_feedback = false
     ): string {
-        if (is_object($this->getPreviewSession()) && strlen((string) $this->getPreviewSession()->getParticipantsSolution())) {
-            $elements = (string) $this->getPreviewSession()->getParticipantsSolution();
-            $elements = $this->object->splitAndTrimOrderElementText($elements, $this->object->getAnswerSeparator());
+        $template = new ilTemplate('tpl.il_as_qpl_orderinghorizontal_output.html', true, true, 'components/ILIAS/TestQuestionPool');
+        $this->initializePlayerJS();
+
+        if ($this->getPreviewSession() !== null
+            && $this->getPreviewSession()->getParticipantsSolution() !== null) {
+            $elements = $this->object->splitAndTrimOrderElementText(
+                (string) $this->getPreviewSession()->getParticipantsSolution(),
+                $this->object->getAnswerSeparator()
+            );
         } else {
             $elements = $this->object->getRandomOrderingElements();
         }
 
-        $template = new ilTemplate("tpl.il_as_qpl_orderinghorizontal_preview.html", true, true, "components/ILIAS/TestQuestionPool");
-        $js = <<<JS
-
-        $('#horizontal_{QUESTION_ID}').ilHorizontalOrderingQuestion({
-            result_value_selector  : '.ilOrderingValue',
-            result_separator       : '{::}'
-        });
-
-JS;
-        $js = str_replace('{QUESTION_ID}', $this->object->getId(), $js);
-        $this->tpl->addOnLoadCode($js);
-
         foreach ($elements as $id => $element) {
-            $template->setCurrentBlock("element");
-            $template->setVariable("ELEMENT_ID", "e_" . $this->object->getId() . "_$id");
-            $template->setVariable("ORDERING_VALUE", ilLegacyFormElementsUtil::prepareFormOutput($element));
-            $template->setVariable("ELEMENT_VALUE", ilLegacyFormElementsUtil::prepareFormOutput($element));
+            $template->setCurrentBlock('element');
+            $template->setVariable('ELEMENT_ID', "e_{$this->object->getId()}_{$id}");
+            $template->setVariable('ELEMENT_VALUE', ilLegacyFormElementsUtil::prepareFormOutput($element));
             $template->parseCurrentBlock();
         }
-        $template->setVariable("QUESTION_ID", $this->object->getId());
-        $template->setVariable("VALUE_ORDERRESULT", ' value="' . join('{::}', $elements) . '"');
+        $template->setVariable('QUESTION_ID', $this->object->getId());
+        $template->setVariable('VALUE_ORDERRESULT', ' value="' . join('{::}', $elements) . '"');
         if ($this->object->getTextSize() >= 10) {
-            $template->setVariable("STYLE", " style=\"font-size: " . $this->object->getTextSize() . "%;\"");
+            $template->setVariable('STYLE', ' style="font-size: ' . $this->object->getTextSize() . '%;"');
         }
-        $template->setVariable("QUESTIONTEXT", $this->object->getQuestionForHTMLOutput());
-        $questionoutput = $template->get();
-        if (!$show_question_only) {
-            // get page object output
-            $questionoutput = $this->getILIASPage($questionoutput);
+        $template->setVariable('QUESTIONTEXT', $this->object->getQuestionForHTMLOutput());
+        if ($show_question_only) {
+            return $template->get();
         }
-        global $DIC; /* @var ILIAS\DI\Container $DIC */
-        if ($DIC->http()->agent()->isMobile() || $DIC->http()->agent()->isIpad()) {
-            iljQueryUtil::initjQuery();
-            iljQueryUtil::initjQueryUI();
-            $this->tpl->addJavaScript('assets/js/jquery.ui.touch-punch.js');
-        }
-        $this->tpl->addJavascript("assets/js/orderinghorizontal.js");
-        return $questionoutput;
+        return $this->getILIASPage($template->get());
     }
 
     public function getTestOutput(
@@ -273,29 +280,14 @@ JS;
         array|bool $user_post_solutions = false,
         bool $show_specific_inline_feedback = false
     ): string {
-        // generate the question output
-        $template = new ilTemplate("tpl.il_as_qpl_orderinghorizontal_output.html", true, true, "components/ILIAS/TestQuestionPool");
-        $plain_js = <<<JS
-    $().ready(function() {
-        if (typeof $.fn.ilHorizontalOrderingQuestion != 'undefined') {
-            $('#horizontal_{QUESTION_ID}').ilHorizontalOrderingQuestion({
-                result_value_selector: '.ilOrderingValue',
-                result_separator: '{::}'
-            });
-        }
-    });
-JS;
-        $js = str_replace('{QUESTION_ID}', $this->object->getId(), $plain_js);
-        $this->tpl->addOnLoadCode($js);
-
+        $template = new ilTemplate('tpl.il_as_qpl_orderinghorizontal_output.html', true, true, 'components/ILIAS/TestQuestionPool');
+        $this->initializePlayerJS();
 
         $elements = $this->object->getRandomOrderingElements();
-
         if ($active_id) {
             $solutions = $this->object->getTestOutputSolutions($active_id, $pass);
-            // hey.
-            if (is_array($solutions) && count($solutions) == 1) {
-                $elements = explode("{::}", $solutions[0]["value1"]);
+            if (count($solutions) == 1) {
+                $elements = explode('{::}', $solutions[0]['value1']);
             }
         }
         if (!is_array($solutions) || count($solutions) == 0) {
@@ -304,46 +296,18 @@ JS;
             ilSession::clear('qst_ordering_horizontal_elements');
         }
         foreach ($elements as $id => $element) {
-            $template->setCurrentBlock("element");
-            $template->setVariable("ELEMENT_ID", "e_" . $this->object->getId() . "_$id");
-            $template->setVariable("ORDERING_VALUE", ilLegacyFormElementsUtil::prepareFormOutput($element));
-            $template->setVariable("ELEMENT_VALUE", ilLegacyFormElementsUtil::prepareFormOutput($element));
+            $template->setCurrentBlock('element');
+            $template->setVariable('ELEMENT_ID', "e_{$this->object->getId()}_{$id}");
+            $template->setVariable('ELEMENT_VALUE', ilLegacyFormElementsUtil::prepareFormOutput($element));
             $template->parseCurrentBlock();
         }
-        $template->setVariable("QUESTION_ID", $this->object->getId());
+        $template->setVariable('QUESTION_ID', $this->object->getId());
         if ($this->object->getTextSize() >= 10) {
-            $template->setVariable("STYLE", " style=\"font-size: " . $this->object->getTextSize() . "%;\"");
+            $template->setVariable('STYLE', ' style="font-size: ' . $this->object->getTextSize() . '%;"');
         }
-        $template->setVariable("VALUE_ORDERRESULT", ' value="' . join('{::}', $elements) . '"');
-        $template->setVariable("QUESTIONTEXT", $this->object->getQuestionForHTMLOutput());
-        $questionoutput = $template->get();
-        //if (!$show_question_only) {
-        // get page object output
-        $questionoutput = $this->getILIASPage($questionoutput);
-        //}
-        global $DIC; /* @var ILIAS\DI\Container $DIC */
-        if ($DIC->http()->agent()->isMobile() || $DIC->http()->agent()->isIpad()) {
-            iljQueryUtil::initjQuery();
-            iljQueryUtil::initjQueryUI();
-            $this->tpl->addJavaScript('assets/js/jquery.ui.touch-punch.js');
-        }
-        $this->tpl->addJavascript("assets/js/orderinghorizontal.js");
-        $questionoutput = $template->get();
-        $pageoutput = $this->outQuestionPage("", $is_question_postponed, $active_id, $questionoutput);
-        return $pageoutput;
-    }
-
-    public function getPresentationJavascripts(): array
-    {
-        global $DIC; /* @var ILIAS\DI\Container $DIC */
-
-        $files = [];
-
-        if ($DIC->http()->agent()->isMobile() || $DIC->http()->agent()->isIpad()) {
-            $files[] = './node_modules/@andxor/jquery-ui-touch-punch-fix/jquery.ui.touch-punch.js';
-        }
-
-        return $files;
+        $template->setVariable('VALUE_ORDERRESULT', ' value="' . join('{::}', $elements) . '"');
+        $template->setVariable('QUESTIONTEXT', $this->object->getQuestionForHTMLOutput());
+        return $this->outQuestionPage("", $is_question_postponed, $active_id, $template->get());
     }
 
     public function getSpecificFeedbackOutput(array $userSolution): string
@@ -353,9 +317,9 @@ JS;
 
     public function writeQuestionSpecificPostData(ilPropertyFormGUI $form): void
     {
-        $this->object->setTextSize((float) str_replace(',', '.', $this->request->raw('textsize') ?? '0.0'));
-        $this->object->setOrderText($this->request->raw('ordertext'));
-        $this->object->setPoints((float) str_replace(',', '.', $this->request->raw('points')));
+        $this->object->setTextSize($this->request_data_collector->float('textsize'));
+        $this->object->setOrderText($this->request_data_collector->raw('ordertext'));
+        $this->object->setPoints($this->request_data_collector->float('points'));
     }
 
     /**
@@ -409,52 +373,6 @@ JS;
         return $form;
     }
 
-    /**
-     * Returns an html string containing a question specific representation of the answers so far
-     * given in the test for use in the right column in the scoring adjustment user interface.
-     * @param array $relevant_answers
-     * @return string
-     */
-    public function getAggregatedAnswersView(array $relevant_answers): string
-    {
-        return  $this->renderAggregateView(
-            $this->aggregateAnswers($relevant_answers, $this->object->getOrderText())
-        )->get();
-    }
-
-    public function aggregateAnswers($relevant_answers_chosen, $answer_defined_on_question): array
-    {
-        $aggregate = [];
-        foreach ($relevant_answers_chosen as $answer) {
-            $answer = str_replace($this->object->getAnswerSeparator(), '&nbsp;&nbsp;-&nbsp;&nbsp;', $answer);
-            if (in_array($answer['value1'], $aggregate)) {
-                $aggregate[$answer['value1']] = $aggregate[$answer['value1']] + 1;
-            } else {
-                $aggregate[$answer['value1']] = 1;
-            }
-        }
-
-        return $aggregate;
-    }
-
-    /**
-     * @param $aggregate
-     *
-     * @return ilTemplate
-     */
-    public function renderAggregateView($aggregate): ilTemplate
-    {
-        $tpl = new ilTemplate('tpl.il_as_aggregated_answers_table.html', true, true, "components/ILIAS/TestQuestionPool");
-
-        foreach ($aggregate as $key => $line_data) {
-            $tpl->setCurrentBlock('aggregaterow');
-            $tpl->setVariable('COUNT', $line_data);
-            $tpl->setVariable('OPTION', $key);
-            $tpl->parseCurrentBlock();
-        }
-        return $tpl;
-    }
-
     public function getAnswersFrequency($relevantAnswers, $questionIndex): array
     {
         $answers = [];
@@ -494,11 +412,16 @@ JS;
         $form->addItem($points);
     }
 
-    /**
-     * @param ilPropertyFormGUI $form
-     */
     public function saveCorrectionsFormProperties(ilPropertyFormGUI $form): void
     {
         $this->object->setPoints((float) str_replace(',', '.', $form->getInput('points')));
+    }
+
+    private function initializePlayerJS(): void
+    {
+        $this->tpl->addJavascript('assets/js/orderinghorizontal.js');
+        $this->tpl->addOnLoadCode(
+            "il.test.orderinghorizontal.init(document.querySelector('#horizontal_{$this->object->getId()}'));"
+        );
     }
 }

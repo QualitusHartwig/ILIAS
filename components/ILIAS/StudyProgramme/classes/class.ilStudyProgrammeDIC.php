@@ -53,7 +53,8 @@ class ilStudyProgrammeDIC
                 ilExportFieldsInfo::_getInstanceByType('prg'),
                 $dic['repo.assignment'],
                 $DIC['lng'],
-                $dic['permissionhelper']
+                $dic['permissionhelper'],
+                new ilCertificateDownloadValidator()
             );
         };
 
@@ -229,6 +230,8 @@ class ilStudyProgrammeDIC
                 $DIC->http()->wrapper(),
                 $DIC->refinery(),
                 $DIC['ui.factory'],
+                $DIC['ui.renderer'],
+                $DIC->http()->request(),
             );
         $dic['ilObjStudyProgrammeAutoMembershipsGUI'] = static fn($dic) =>
             new ilObjStudyProgrammeAutoMembershipsGUI(
@@ -245,22 +248,6 @@ class ilStudyProgrammeDIC
                 $DIC->http()->wrapper()->query(),
                 $DIC->refinery(),
                 $DIC['rbacreview']
-            );
-        $dic['ilObjStudyProgrammeTreeGUI'] = static fn($dic) =>
-            new ilObjStudyProgrammeTreeGUI(
-                $DIC['tpl'],
-                $DIC['ilCtrl'],
-                $DIC['ilAccess'],
-                $DIC['ilToolbar'],
-                $DIC['lng'],
-                $dic['Log'],
-                $DIC['ilias'],
-                $DIC['ilSetting'],
-                $DIC['tree'],
-                $DIC['rbacadmin'],
-                $DIC->http()->wrapper(),
-                $DIC->refinery(),
-                $DIC['ui.factory']
             );
         $dic['ilStudyProgrammeTypeGUI'] = static fn($dic): ilStudyProgrammeTypeGUI =>
             new ilStudyProgrammeTypeGUI(
@@ -359,7 +346,8 @@ class ilStudyProgrammeDIC
                 ilExportFieldsInfo::_getInstanceByType('prg'),
                 $dic['repo.assignment'],
                 $DIC['lng'],
-                $dic['permissionhelper']
+                $dic['permissionhelper'],
+                new ilCertificateDownloadValidator()
             );
         };
 

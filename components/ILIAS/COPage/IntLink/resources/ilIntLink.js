@@ -8,6 +8,7 @@ il.IntLink =
 	int_link_url: "",
 	cfg: {},
 	id: "",
+	modalTemplate: '',
 
 	save_pars: {
 		//"target_type": "",
@@ -124,14 +125,14 @@ il.IntLink =
 	{
 		// move node to body to prevent form in form, see e.g. #16369
 		$("#ilIntLinkModal").appendTo("body");
-		//console.log("ilIntLinkModal: appendTo body");
-		//console.trace();
-		// new: get link from onclick event
 		if(internal_link != undefined)
 		{
 			this.setInternalLinkUrl(internal_link);
 			this.id = id.substring(0, id.length-5);
 		}
+
+		const parent = document.getElementById('ilIntLinkModal');
+		parent.innerHTML = JSON.parse(il.IntLink.modalTemplate);
 
 		il.IntLink.showPanel();
 		var j = this.getInternalLinkUrl();
@@ -375,6 +376,10 @@ il.IntLink =
 	setMepPoolFolder: function(mep_fold_id) {
 		il.IntLink.initAjax({mode: 'set_mep_fold', mep_fold: mep_fold_id});
 		return false;
+	},
+
+	setModalTemplate: function (modalTemplate) {
+		il.IntLink.modalTemplate = modalTemplate;
 	}
 
 

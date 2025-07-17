@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -16,8 +14,9 @@ declare(strict_types=1);
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
  *
- ********************************************************************
- */
+ *********************************************************************/
+
+declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -32,18 +31,14 @@ class ilQTIAssessmentcontrolTest extends TestCase
         return $instance;
     }
 
-    /**
-     * @depends testConstruct
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstruct')]
     public function testGetView(ilQTIAssessmentcontrol $instance): void
     {
         $this->assertEquals('All', $instance->getView());
     }
 
-    /**
-     * @dataProvider validViews
-     * @depends testGetView
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testGetView')]
+    #[\PHPUnit\Framework\Attributes\DataProvider('validViews')]
     public function testSetViewValid(string $view): void
     {
         $instance = new ilQTIAssessmentcontrol();
@@ -51,9 +46,7 @@ class ilQTIAssessmentcontrolTest extends TestCase
         $this->assertEquals($view, $instance->getView());
     }
 
-    /**
-     * @depends testSetViewValid
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testSetViewValid')]
     public function testSetViewInvalid(): void
     {
         $instance = new ilQTIAssessmentcontrol();
@@ -61,10 +54,8 @@ class ilQTIAssessmentcontrolTest extends TestCase
         $this->assertEquals('All', $instance->getView());
     }
 
-    /**
-     * @dataProvider switches
-     * @depends testConstruct
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstruct')]
+    #[\PHPUnit\Framework\Attributes\DataProvider('switches')]
     public function testSwitchInitializeValue(string $suffix): void
     {
         $instance = new ilQTIAssessmentcontrol();
@@ -73,10 +64,8 @@ class ilQTIAssessmentcontrolTest extends TestCase
         $this->assertEquals('', $instance->$get());
     }
 
-    /**
-     * @dataProvider switches
-     * @depends testConstruct
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstruct')]
+    #[\PHPUnit\Framework\Attributes\DataProvider('switches')]
     public function testSwitchValuesConsideredAsYes(string $suffix): void
     {
         $instance = new ilQTIAssessmentcontrol();
@@ -91,10 +80,8 @@ class ilQTIAssessmentcontrolTest extends TestCase
     }
 
 
-    /**
-     * @dataProvider switches
-     * @depends testConstruct
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstruct')]
+    #[\PHPUnit\Framework\Attributes\DataProvider('switches')]
     public function testSwitchValuesConsideredAsNo(string $suffix): void
     {
         $instance = new ilQTIAssessmentcontrol();

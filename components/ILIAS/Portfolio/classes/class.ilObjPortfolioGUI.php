@@ -17,13 +17,14 @@
  *********************************************************************/
 
 use ILIAS\GlobalScreen\ScreenContext\ContextServices;
+use ILIAS\Portfolio\Settings\SettingsGUI;
+use ILIAS\Repository\Form\FormAdapterGUI;
 
 /**
- * Portfolio view gui class
- * @author Jörg Lützenkirchen <luetzenkirchen@leifos.com>
  * @ilCtrl_Calls ilObjPortfolioGUI: ilPortfolioPageGUI, ilPageObjectGUI
  * @ilCtrl_Calls ilObjPortfolioGUI: ilWorkspaceAccessGUI, ilCommentGUI, ilCommonActionDispatcherGUI
  * @ilCtrl_Calls ilObjPortfolioGUI: ilObjectContentStyleSettingsGUI, ilPortfolioExerciseGUI
+ * @ilCtrl_Calls ilObjPortfolioGUI: ILIAS\Portfolio\Settings\SettingsGUI
  */
 class ilObjPortfolioGUI extends ilObjPortfolioBaseGUI
 {
@@ -83,19 +84,6 @@ class ilObjPortfolioGUI extends ilObjPortfolioBaseGUI
         $next_class = $this->ctrl->getNextClass($this);
         $cmd = $this->ctrl->getCmd("view");
 
-        // we have to init the note js handling here, might go to
-        // a better place in the future
-        /*
-        $this->notes_gui->initJavascript(
-            $this->ctrl->getLinkTargetByClass(
-                array("ilnotegui"),
-                "",
-                "",
-                true,
-                false
-            )
-        );*/
-
         // trigger assignment tool
         $this->triggerAssignmentTool();
         switch ($next_class) {
@@ -130,31 +118,6 @@ class ilObjPortfolioGUI extends ilObjPortfolioBaseGUI
                 $this->ctrl->forwardCommand($gui);
                 break;
 
-                /*
-        case "ilobjstylesheetgui":
-                $this->ctrl->setReturn($this, "editStyleProperties");
-                $style_gui = new ilObjStyleSheetGUI("", $this->object->getStyleSheetId(), false, false);
-                $style_gui->enableWrite(true);
-                $style_gui->omitLocator();
-                if ($cmd == "create" || $this->port_request->getNewType() == "sty") {
-                    $style_gui->setCreationMode(true);
-                }
-
-                if ($cmd == "confirmedDelete") {
-                    $this->object->setStyleSheetId(0);
-                    $this->object->update();
-                }
-
-                $ret = $this->ctrl->forwardCommand($style_gui);
-
-                if ($cmd == "save" || $cmd == "copyStyle" || $cmd == "importStyle") {
-                    $style_id = $ret;
-                    $this->object->setStyleSheetId($style_id);
-                    $this->object->update();
-                    $this->ctrl->redirectByClass("ilobjstylesheetgui", "edit");
-                }
-                break;*/
-
             case "ilobjectcontentstylesettingsgui":
                 $this->checkPermission("write");
                 $this->addLocator();
@@ -175,6 +138,19 @@ class ilObjPortfolioGUI extends ilObjPortfolioBaseGUI
                 $this->ctrl->forwardCommand($gui);
                 break;
 
+            case strtolower(SettingsGUI::class):
+                $this->checkPermission("write");
+                $this->addLocator();
+                $this->setTabs();
+                $this->tabs_gui->activateTab("settings");
+                $this->setSettingsSubTabs("properties");
+                $gui = $this->gui->settings()->settingsGUI(
+                    $this->object->getId(),
+                    false
+                );
+                $this->ctrl->forwardCommand($gui);
+                break;
+
             default:
 
                 if ($cmd !== "preview") {
@@ -184,6 +160,11 @@ class ilObjPortfolioGUI extends ilObjPortfolioBaseGUI
                 $this->$cmd();
                 break;
         }
+    }
+
+    public function edit(): void
+    {
+        $this->ctrl->redirectByClass(SettingsGUI::class);
     }
 
     protected function triggerAssignmentTool(): void
@@ -220,7 +201,7 @@ class ilObjPortfolioGUI extends ilObjPortfolioBaseGUI
             $this->tabs_gui->addTab(
                 "settings",
                 $this->lng->txt("settings"),
-                $this->ctrl->getLinkTarget($this, "edit")
+                $this->ctrl->getLinkTargetByClass(SettingsGUI::class)
             );
 
             $this->tabs_gui->addNonTabbedLink(
@@ -296,13 +277,9 @@ class ilObjPortfolioGUI extends ilObjPortfolioBaseGUI
             $this->lng->loadLanguageModule($new_type);
             $this->ctrl->setParameter($this, "new_type", $new_type);
 
-            $forms = $this->initCreationForms($new_type);
+            $form = $this->getCreationForm();
 
-            // copy form validation error: do not show other creation forms
-            if ($this->port_request->getCopyFormProcess() && isset($forms[self::CFORM_CLONE])) {
-                $forms = array(self::CFORM_CLONE => $forms[self::CFORM_CLONE]);
-            }
-            $tpl->setContent($this->getCreationFormsHTML($forms));
+            $tpl->setContent($form->render());
         }
     }
 
@@ -339,33 +316,17 @@ class ilObjPortfolioGUI extends ilObjPortfolioBaseGUI
         return $message;
     }
 
-
-    protected function initCreationForms(string $new_type): array
-    {
-        return array(self::CFORM_NEW => $this->initCreateForm($new_type));
-    }
-
-    protected function initCreateForm(string $new_type): ilPropertyFormGUI
+    protected function getCreationForm(): FormAdapterGUI
     {
         $ilSetting = $this->settings;
-
         $this->ctrl->setParameter($this, "new_type", $this->getType());
 
-        $form = new ilPropertyFormGUI();
-        $form->setFormAction($this->ctrl->getFormAction($this));
-
-        // title
-        $ti = new ilTextInputGUI($this->lng->txt("title"), "title");
-        $ti->setSize(min(40, ilObject::TITLE_LENGTH));
-        $ti->setMaxLength(ilObject::TITLE_LENGTH);
-        $ti->setRequired(true);
-        $form->addItem($ti);
-
-        $form->setTitle($this->lng->txt("prtf_create_portfolio"));
-        $form->addCommandButton("save", $this->lng->txt("create"));
-        $form->addCommandButton("toRepository", $this->lng->txt("cancel"));
-
-        return $form;
+        return $this->gui->form([static::class], "save")
+            ->section("prop", $this->lng->txt("prtf_create_portfolio"))
+            ->addStdTitle(
+                0,
+                "prtf"
+            );
     }
 
     protected function initCreateFromTemplateForm(): ilPropertyFormGUI
@@ -408,8 +369,15 @@ class ilObjPortfolioGUI extends ilObjPortfolioBaseGUI
 
     public function save(): void
     {
-        $form = $this->initCreateForm("prtf");
-        parent::save();
+        $form = $this->getCreationForm();
+        if ($form->isValid()) {
+            $port = new ilObjPortfolio();
+            $port->setTitle($form->getData("title"));
+            $port->create();
+            $this->ctrl->setParameter($this, "prt_id", $port->getId());
+            $this->ctrl->redirect($this, "view");
+        }
+        $this->tpl->setContent($form->render());
     }
 
     public function saveFromTemplate(): void
@@ -573,7 +541,7 @@ class ilObjPortfolioGUI extends ilObjPortfolioBaseGUI
     //
 
     protected function createPortfolioFromTemplate(
-        ilPropertyFormGUI $a_form = null
+        ?ilPropertyFormGUI $a_form = null
     ): void {
         $title = $this->port_request->getPortfolioTitle();
         $prtt_id = $this->port_request->getPortfolioTemplate();

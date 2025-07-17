@@ -21,10 +21,11 @@ declare(strict_types=1);
 namespace ILIAS\Exercise;
 
 use ILIAS\Exercise\Assignment\Assignment;
-use ILIAS\Exercise\IRSS\ResourceInformation;
+use ILIAS\Repository\IRSS\ResourceInformation;
 use ILIAS\Exercise\Team\TeamMember;
 use ILIAS\Exercise\Submission\Submission;
 use ILIAS\Exercise\PeerReview\Criteria\CriteriaFile;
+use ILIAS\Exercise\Settings\Settings;
 
 /**
  * Internal factory for data objects
@@ -136,6 +137,32 @@ class InternalDataService
             $criteria_id,
             $rid,
             $title
+        );
+    }
+
+    public function settings(
+        int $obj_id = 0,
+        string $instruction = "",
+        int $time_stamp = 0,
+        string $pass_mode = \ilObjExercise::PASS_MODE_ALL,
+        int $nr_mandatory_random = 0,
+        int $pass_nr = 0,
+        bool $show_submissions = false,
+        bool $compl_by_submission = false,
+        int $certificate_visibility = 0,
+        int $tfeedback = 7
+    ): Settings {
+        return new Settings(
+            $obj_id,
+            $instruction,
+            $time_stamp,
+            $pass_mode,
+            $nr_mandatory_random,
+            $pass_nr,
+            $show_submissions,
+            $compl_by_submission,
+            $certificate_visibility,
+            $tfeedback
         );
     }
 }

@@ -25,8 +25,6 @@ use ILIAS\ResourceStorage\Flavour\Definition\FlavourDefinition;
 use ILIAS\ResourceStorage\Flavour\Definition\PagesToExtract;
 use ILIAS\ResourceStorage\Identification\ResourceIdentification;
 use ILIAS\UI\Component\Modal\LightboxImagePage;
-use ILIAS\components\File\Preview\Settings;
-use ILIAS\ResourceStorage\Flavour\Definition\CropToSquare;
 use ILIAS\ResourceStorage\Flavour\Definition\FitToSquare;
 use ILIAS\Modules\File\Preview\SettingsFactory;
 
@@ -175,7 +173,7 @@ class ilObjFilePreviewRendererGUI implements ilCtrlBaseClassInterface
                                   );
 
         if (!$as_button) {
-            $trigger = $this->ui_factory->symbol()->glyph()->eyeopen(
+            $trigger = $this->ui_factory->symbol()->glyph()->preview(
                 "#"
             )->withOnClick($modal->getShowSignal());
         } else {
@@ -295,7 +293,7 @@ class ilObjFilePreviewRendererGUI implements ilCtrlBaseClassInterface
         $modal = $this->ui_factory->modal()->lightbox($pages);
 
         // Send response and end script
-        $response = $this->http->response()->withBody(Streams::ofString($this->ui_renderer->render($modal)));
+        $response = $this->http->response()->withBody(Streams::ofString($this->ui_renderer->renderAsync($modal)));
         $this->http->saveResponse($response);
         $this->http->sendResponse();
     }

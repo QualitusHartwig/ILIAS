@@ -182,6 +182,13 @@ abstract class RequestProcessorTestCase extends TestCase
                 return $doc;
             }
 
+            public function writeSet(string $spec, string $name): \DOMDocument
+            {
+                $doc = new \DOMDocument();
+                $doc->appendChild($doc->createElement('set', $spec . ':' . $name));
+                return $doc;
+            }
+
             public function writeResumptionToken(
                 string $token,
                 int $complete_list_size,
@@ -275,7 +282,7 @@ abstract class RequestProcessorTestCase extends TestCase
      * Append datestamps to identifiers with +YYYY-MM-DD
      */
     protected function getRepository(
-        string $earliest_datestamp = null,
+        ?string $earliest_datestamp = null,
         int $record_count = 0,
         string ...$identifiers
     ): RepositoryInterface {

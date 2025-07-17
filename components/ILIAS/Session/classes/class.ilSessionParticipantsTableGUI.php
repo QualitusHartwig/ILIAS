@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -16,8 +14,9 @@ declare(strict_types=1);
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
  *
- ********************************************************************
- */
+ *********************************************************************/
+
+declare(strict_types=1);
 
 /**
  * @author Stefan Meyer <smeyer.ilias@gmx.de>
@@ -54,6 +53,10 @@ class ilSessionParticipantsTableGUI extends ilTable2GUI
             $this->getRepositoryObject()->getRefId()
         );
 
+        /*
+         * TODO this exact logic is also in ilSessionMembershipGUI and ilMembershipGUI,
+         *  should be centralized.
+         */
         if ($member_ref = $this->tree->checkForParentType($this->parent_ref_id, 'grp')) {
             $this->member_ref_id = $member_ref;
         } elseif ($member_ref = $this->tree->checkForParentType($this->parent_ref_id, 'crs')) {

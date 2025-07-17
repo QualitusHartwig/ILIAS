@@ -18,11 +18,6 @@
 
 declare(strict_types=1);
 
-/**
- * event listener
- *
- * @author Stefan Meyer <smeyer.ilias@gmx.de>
- */
 class ilOpenIdConnectAppEventListener implements ilAppEventListener
 {
     protected function handleLogoutFor(int $user_id): void
@@ -31,13 +26,12 @@ class ilOpenIdConnectAppEventListener implements ilAppEventListener
         $provider->handleLogout();
     }
 
-    /**
-     * @inheritDoc
-     */
     public static function handleEvent(string $a_component, string $a_event, array $a_parameter): void
     {
         global $DIC;
+
         $DIC->logger()->auth()->debug($a_component . ' : ' . $a_event);
+
         if (($a_component === 'components/ILIAS/Authentication') && $a_event === 'beforeLogout') {
             $listener = new self();
             $listener->handleLogoutFor($a_parameter['user_id']);

@@ -130,7 +130,7 @@ class LinkManager
      */
     public function resolveIntLinks(
         \DOMDocument $dom,
-        array $a_link_map = null
+        ?array $a_link_map = null
     ): bool {
         $changed = false;
         // resolve normal internal links
@@ -379,7 +379,6 @@ class LinkManager
                         $source_node = $node;
                         $new_node = $source_node->cloneNode(true);
                         //$new_node->parentNode->removeChild($new_node);
-                        $childs = $new_node->child_nodes();
                         foreach ($new_node->childNodes as $child) {
                             //$this->log->debug("... move node $j " . $child->node_name() . " before " . $source_node->node_name());
                             $source_node->parentNode->insertBefore($child, $source_node);

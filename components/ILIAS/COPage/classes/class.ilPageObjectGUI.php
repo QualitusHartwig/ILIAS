@@ -753,7 +753,7 @@ class ilPageObjectGUI
         ilObject $a_rep_obj,
         string $a_type,
         int $a_sub_obj_id,
-        object $a_observer_obj = null,
+        ?object $a_observer_obj = null,
         string $a_observer_func = ""
     ): void {
         $this->use_meta_data = true;
@@ -963,8 +963,7 @@ class ilPageObjectGUI
                     $this->tabs_gui->addNonTabbedLink(
                         "pres_view",
                         $this->getViewPageText(),
-                        $this->getViewPageLink(),
-                        $this->getViewPageTarget()
+                        $this->getViewPageLink()
                     );
                 }
                 $ret = $this->$cmd();
@@ -1058,12 +1057,17 @@ class ilPageObjectGUI
 
         // jquery and jquery ui are always provided for components
         iljQueryUtil::initjQuery();
-        iljQueryUtil::initjQueryUI();
 
         //		$this->initSelfAssessmentRendering();
         ilObjMediaObjectGUI::includePresentationJS($main_tpl);
 
-        $main_tpl->addJavaScript("components/ILIAS/COPage/js/ilCOPagePres.js");
+        $debug = false;
+        if ($debug) {
+            $main_tpl->addJavaScript("../components/ILIAS/COPage/js/ilCOPagePres.js");
+        } else {
+            $main_tpl->addJavaScript("components/ILIAS/COPage/js/ilCOPagePres.js");
+        }
+
 
         // init template
         if ($this->getOutputMode() == "edit") {
@@ -1351,7 +1355,8 @@ class ilPageObjectGUI
                 true,
                 $link_xml . $template_xml . $this->getComponentPluginsXML(),
                 false,
-                $this->getStyleId()
+                $this->getStyleId(),
+                $this->getOutputMode() === "offline"
             );
         }
 
@@ -1711,7 +1716,7 @@ class ilPageObjectGUI
         $a_anchors = false,
         $a_save_new = true,
         $a_user_links = false,
-        \ILIAS\COPage\Editor\Server\UIWrapper $ui_wrapper = null
+        ?\ILIAS\COPage\Editor\Server\UIWrapper $ui_wrapper = null
     ): string {
         global $DIC;
 
@@ -1719,6 +1724,8 @@ class ilPageObjectGUI
         $lng->loadLanguageModule("copg");
         $ctrl = $DIC->ctrl();
         $ui = $DIC->ui();
+
+        $ui->renderer()->renderAsync($ui->factory()->legacy()->content(""));
 
         $style_service = $DIC->contentStyle()->internal();
         $style_access_manager = $style_service->domain()->access(
@@ -1869,7 +1876,7 @@ class ilPageObjectGUI
                         "action" => $char_formats,
                         "aria-label" => $lng->txt("copg_more_character_formats")
         ];
-        $c_formats[] = ["text" => '<i><b><u>T</u></b><sub>x</sub></i>',
+        $c_formats[] = ["text" => '<i><strong><u>T</u></strong><sub>x</sub></i>',
                         "action" => "selection.removeFormat",
                         "data" => [],
                         "aria-label" => $lng->txt("copg_remove_formats")
@@ -2030,7 +2037,7 @@ class ilPageObjectGUI
             $btpl->setCurrentBlock("par_edit");
             $btpl->setVariable("TXT_PAR_FORMAT", $lng->txt("cont_par_format"));
 
-            $btpl->setVariable("STYLE_SELECTOR", $ui->renderer()->render($dd));
+            $btpl->setVariable("STYLE_SELECTOR", $ui->renderer()->renderAsync($dd));
 
             $btpl->parseCurrentBlock();
         }
@@ -2039,7 +2046,7 @@ class ilPageObjectGUI
         $sel = new \SectionStyleSelector($ui_wrapper, $a_style_id);
         $dd = $sel->getStyleSelector(" ", $type = "par-action", $action = "sec.class", $attr = "class", true);
         $btpl->setVariable("TXT_BLOCK", $lng->txt("cont_sur_block_format"));
-        $btpl->setVariable("BLOCK_STYLE_SELECTOR", $ui->renderer()->render($dd));
+        $btpl->setVariable("BLOCK_STYLE_SELECTOR", $ui->renderer()->renderAsync($dd));
 
 
         $btpl->setVariable("TINY_HEADER", $lng->txt("cont_text_editing"));
@@ -2141,7 +2148,7 @@ class ilPageObjectGUI
             $mode = "fullscreen";
         }
 
-        //echo "<b>XML:</b>".htmlentities($xml);
+        //echo "XML:".htmlentities($xml);
         // determine target frames for internal links
         $wb_path = ilFileUtils::getWebspaceDir("output") . "/";
         $enlarge_path = ilUtil::getImagePath("media/enlarge.svg");
@@ -2237,7 +2244,7 @@ class ilPageObjectGUI
                 $h["text"] = str_replace($page_toc_ph, "", $h["text"]);
 
                 $listing->node(
-                    $this->ui->factory()->legacy("<a href='#" . $h["anchor"] . "' class='ilc_page_toc_PageTOCLink'>" . $h["text"] . "</a>"),
+                    $this->ui->factory()->legacy()->content("<a href='#" . $h["anchor"] . "' class='ilc_page_toc_PageTOCLink'>" . $h["text"] . "</a>"),
                     (string) $i,
                     (string) ($par)
                 );
@@ -2548,7 +2555,7 @@ class ilPageObjectGUI
     public function displayValidationError($a_error): void
     {
         if (is_array($a_error)) {
-            $error_str = "<b>Error(s):</b><br>";
+            $error_str = "<strong>Error(s):</strong><br>";
             foreach ($a_error as $error) {
                 $err_mess = implode(" - ", $error);
                 if (!is_int(strpos($err_mess, ":0:"))) {
@@ -2917,11 +2924,11 @@ class ilPageObjectGUI
      * Get html for public and/or private notes
      */
     public function getNotesHTML(
-        object $a_content_object = null,
+        ?object $a_content_object = null,
         bool $a_enable_private_notes = true,
         bool $a_enable_public_notes = false,
         bool $a_enable_notes_deletion = false,
-        callable $a_callback = null,
+        ?callable $a_callback = null,
         bool $export = false
     ): string {
         // scorm 2004 page gui

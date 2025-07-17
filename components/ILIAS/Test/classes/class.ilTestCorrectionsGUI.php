@@ -19,18 +19,10 @@
 declare(strict_types=1);
 
 use ILIAS\Test\Scoring\Manual\TestScoring;
-
 use ILIAS\Test\Logging\TestLogger;
-use ILIAS\Test\RequestDataCollector;
-use ILIAS\Test\Logging\TestAdministrationInteractionTypes;
 use ILIAS\Test\Logging\TestQuestionAdministrationInteractionTypes;
-use ILIAS\Test\Logging\AdditionalInformationGenerator;
-use ILIAS\Test\Questions\QuestionsTable;
-
-use ILIAS\TestQuestionPool\Questions\GeneralQuestionPropertiesRepository;
-
+use ILIAS\Test\RequestDataCollector;
 use ILIAS\UI\Factory as UIFactory;
-use ILIAS\UI\Renderer as UIRenderer;
 use ILIAS\Refinery\Factory as RefineryFactory;
 
 /**
@@ -49,20 +41,16 @@ class ilTestCorrectionsGUI
     public function __construct(
         private readonly ilDBInterface $database,
         private readonly ilCtrlInterface $ctrl,
-        private readonly ilAccessHandler $access,
         private readonly ilLanguage $language,
         private readonly ilTabsGUI $tabs,
         private readonly ilHelpGUI $help,
         private readonly UIFactory $ui_factory,
-        private readonly UIRenderer $ui_renderer,
         private readonly ilGlobalTemplateInterface $main_tpl,
         private readonly RefineryFactory $refinery,
         private readonly TestLogger $logger,
         private readonly RequestDataCollector $testrequest,
         private readonly ilObjTest $test_obj,
         private readonly ilObjUser $scorer,
-        private readonly GeneralQuestionPropertiesRepository $questionrepository,
-        protected QuestionsTable $table
     ) {
         $question_id = $this->testrequest->getQuestionId();
         if ($question_id !== 0) {
@@ -84,38 +72,16 @@ class ilTestCorrectionsGUI
             return;
         }
 
+        $this->ctrl->saveParameterByClass(self::class, 'q_id');
         $command = $this->ctrl->getCmd('showQuestionList');
         $this->{$command}();
     }
 
-    protected function showQuestionList()
-    {
-        $this->tabs->activateTab(ilTestTabsManager::TAB_ID_CORRECTION);
-
-        if ($this->test_obj->isFixedTest()) {
-            $rendered_gui_component = $this->ui_renderer->render(
-                $this->table
-                    ->getTableComponent($this->getQuestions())
-                    ->withOrderingDisabled(true)
-            );
-        } else {
-            $txt = $this->language->txt('tst_corrections_incompatible_question_set_type');
-
-            $infoBox = $this->ui_factory->messageBox()->info($txt);
-
-            $rendered_gui_component = $this->ui_renderer->render($infoBox);
-        }
-
-        $this->main_tpl->setContent($rendered_gui_component);
-    }
-
-    protected function showQuestion(ilPropertyFormGUI $form = null)
+    protected function showQuestion(?ilPropertyFormGUI $form = null)
     {
         $this->setCorrectionTabsContext($this->question_gui, 'question');
 
-        if ($form === null) {
-            $form = $this->buildQuestionCorrectionForm($this->question_gui);
-        }
+        $form ??= $this->buildQuestionCorrectionForm($this->question_gui);
 
         $this->populatePageTitleAndDescription($this->question_gui);
         $this->main_tpl->setContent($form->getHTML());
@@ -163,7 +129,7 @@ class ilTestCorrectionsGUI
         $confirmation = sprintf(
             $this->language->txt('tst_corrections_manscore_reset_warning'),
             $scoring->getNumManualScorings(),
-            $this->question_gui->getObject()->getTitle(),
+            $this->question_gui->getObject()->getTitleForHTMLOutput(),
             $this->question_gui->getObject()->getId()
         );
 
@@ -218,7 +184,7 @@ class ilTestCorrectionsGUI
         }
 
         $this->main_tpl->setOnScreenMessage('success', $this->language->txt('saved_successfully'), true);
-        $this->ctrl->redirect($this, 'showQuestion');
+        $this->ctrl->redirectByClass([ilObjTestGUI::class, self::class], 'showQuestion');
     }
 
     protected function showSolution()
@@ -242,7 +208,7 @@ class ilTestCorrectionsGUI
         );
 
         $page_gui->setQuestionHTML([$question_gui->getObject()->getId() => $solution_html]);
-        $page_gui->setPresentationTitle($question_gui->getObject()->getTitle());
+        $page_gui->setPresentationTitle($question_gui->getObject()->getTitleForHTMLOutput());
 
         $tpl = new ilTemplate('tpl.tst_corrections_solution_presentation.html', true, true, 'components/ILIAS/Test');
         $tpl->setVariable('SOLUTION_PRESENTATION', $page_gui->preview());
@@ -267,17 +233,21 @@ class ilTestCorrectionsGUI
         $this->main_tpl->parseCurrentBlock();
     }
 
-    protected function showAnswerStatistic()
+    /**
+     * @param null|list<ilTestEvaluationUserData> $participant_results
+     */
+    protected function showAnswerStatistic(?array $participant_results = null): void
     {
-        $question_gui = $this->question_gui;
-        $solutions = $this->getSolutions($question_gui->getObject());
+        $solutions = $participant_results
+            ? $this->getSolutionsByParticipantResults($this->question_gui->getObject(), $participant_results)
+            : $this->getSolutions($this->question_gui->getObject());
 
-        $this->setCorrectionTabsContext($question_gui, 'answers');
+        $this->setCorrectionTabsContext($this->question_gui, 'answers');
 
         $tablesHtml = '';
 
-        foreach ($question_gui->getSubQuestionsIndex() as $subQuestionIndex) {
-            $table = $question_gui->getAnswerFrequencyTableGUI(
+        foreach ($this->question_gui->getSubQuestionsIndex() as $subQuestionIndex) {
+            $table = $this->question_gui->getAnswerFrequencyTableGUI(
                 $this,
                 'showAnswerStatistic',
                 $solutions,
@@ -287,15 +257,18 @@ class ilTestCorrectionsGUI
             $tablesHtml .= $table->getHTML() . $table->getAdditionalHtml();
         }
 
-        $this->populatePageTitleAndDescription($question_gui);
+        $this->populatePageTitleAndDescription($this->question_gui);
         $this->main_tpl->setContent($tablesHtml);
     }
 
     protected function addAnswer()
     {
-        $form_builder = new ilAddAnswerFormBuilder($this, $this->ui_factory, $this->refinery, $this->language, $this->ctrl);
-
-        $form = $form_builder->buildAddAnswerForm()
+        $form = (new ilAddAnswerFormBuilder(
+            $this->ui_factory,
+            $this->refinery,
+            $this->language,
+            $this->ctrl
+        ))->buildAddAnswerModal('')
             ->withRequest($this->testrequest->getRequest());
 
         $data = $form->getData();
@@ -323,7 +296,8 @@ class ilTestCorrectionsGUI
             $this->language
         );
         $scoring->setPreserveManualScores(true);
-        $scoring->recalculateSolutions();
+        $scoring->setQuestionId($question_index);
+        $participant_results = $scoring->recalculateSolutions();
 
         if ($this->logger->isLoggingEnabled()) {
             $this->logger->logQuestionAdministrationInteraction(
@@ -336,92 +310,7 @@ class ilTestCorrectionsGUI
         }
 
         $this->main_tpl->setOnScreenMessage('success', $this->language->txt('saved_successfully'));
-        $this->showAnswerStatistic();
-    }
-
-    protected function confirmQuestionRemoval()
-    {
-        $this->tabs->activateTab(ilTestTabsManager::TAB_ID_CORRECTION);
-
-        $confirmation = sprintf(
-            $this->language->txt('tst_corrections_qst_remove_confirmation'),
-            $this->question_gui->getObject()->getTitle(),
-            $this->question_gui->getObject()->getId()
-        );
-
-        $buttons = [
-            $this->ui_factory->button()->standard(
-                $this->language->txt('confirm'),
-                $this->ctrl->getLinkTarget($this, 'performQuestionRemoval')
-            ),
-            $this->ui_factory->button()->standard(
-                $this->language->txt('cancel'),
-                $this->ctrl->getLinkTarget($this, 'showQuestionList')
-            )
-        ];
-
-        $this->main_tpl->setContent($this->ui_renderer->render(
-            $this->ui_factory->messageBox()->confirmation($confirmation)->withButtons($buttons)
-        ));
-    }
-
-    protected function performQuestionRemoval(): void
-    {
-        $question_gui = $this->question_gui;
-        $scoring = new TestScoring(
-            $this->test_obj,
-            $this->scorer,
-            $this->database,
-            $this->language
-        );
-
-        $participant_data = new ilTestParticipantData($this->database, $this->language);
-        $participant_data->load($this->test_obj->getTestId());
-
-        $question_gui->getObject()->removeAllExistingSolutions();
-        $scoring->removeAllQuestionResults($question_gui->getObject()->getId());
-
-        $this->test_obj->removeQuestion($question_gui->getObject()->getId());
-        $reindexedSequencePositionMap = $this->test_obj->reindexFixedQuestionOrdering();
-        $this->test_obj->loadQuestions();
-
-        $this->test_obj->removeQuestionFromSequences(
-            $question_gui->getObject()->getId(),
-            $participant_data->getActiveIds(),
-            $reindexedSequencePositionMap
-        );
-
-        $scoring->updatePassAndTestResults($participant_data->getActiveIds());
-        ilLPStatusWrapper::_refreshStatus($this->test_obj->getId(), $participant_data->getUserIds());
-        $question_gui->getObject()->delete($question_gui->getObject()->getId());
-
-        if ($this->test_obj->getTestQuestions() === []) {
-            $object_properties = $this->test_obj->getObjectProperties();
-            $object_properties->storePropertyIsOnline(
-                $object_properties->getPropertyIsOnline()->withOffline()
-            );
-        }
-
-        if ($this->logger->isLoggingEnabled()) {
-            $this->logger->logTestAdministrationInteraction(
-                $this->logger->getInteractionFactory()->buildTestAdministrationInteraction(
-                    $this->test_obj->getRefId(),
-                    $this->scorer->getId(),
-                    TestAdministrationInteractionTypes::QUESTION_REMOVED_IN_CORRECTIONS,
-                    [
-                        AdditionalInformationGenerator::KEY_QUESTION_TITLE => $question_gui->getObject()->getTitle(),
-                        AdditionalInformationGenerator::KEY_QUESTION_TEXT => $question_gui->getObject()->getQuestion(),
-                        AdditionalInformationGenerator::KEY_QUESTION_ID => $question_gui->getObject()->getId(),
-                        AdditionalInformationGenerator::KEY_QUESTION_TYPE => $question_gui->getObject()->getQuestionType()
-                    ]
-                )
-            );
-        }
-
-        $this->question_gui = null;
-
-        $this->ctrl->clearParameterByClass(self::class, 'q_id');
-        $this->showQuestionList();
+        $this->showAnswerStatistic($participant_results);
     }
 
     protected function addHiddenItemsFromArray(ilConfirmationGUI $gui, $array, $curPath = [])
@@ -450,45 +339,42 @@ class ilTestCorrectionsGUI
         $this->tabs->clearTargets();
         $this->tabs->clearSubTabs();
 
-        $this->help->setScreenIdComponent("tst");
-        $this->help->setScreenId("scoringadjust");
+        $this->help->setScreenIdComponent('tst');
+        $this->help->setScreenId('scoringadjust');
         $this->help->setSubScreenId($active_tab_id);
 
+        $this->ctrl->setParameterByClass(self::class, 'q_id', $question_gui->getObject()->getId());
         $this->tabs->addTab(
             'question',
             $this->language->txt('tst_corrections_tab_question'),
-            $this->ctrl->getLinkTargetByClass(self::class, 'showQuestion')
+            $this->ctrl->getLinkTargetByClass([ilObjTestGUI::class, self::class], 'showQuestion')
         );
 
         $this->tabs->addTab(
             'solution',
             $this->language->txt('tst_corrections_tab_solution'),
-            $this->ctrl->getLinkTargetByClass(self::class, 'showSolution')
+            $this->ctrl->getLinkTargetByClass([ilObjTestGUI::class, self::class], 'showSolution')
         );
 
         if ($question_gui->isAnswerFrequencyStatisticSupported()) {
             $this->tabs->addTab(
                 'answers',
                 $this->language->txt('tst_corrections_tab_statistics'),
-                $this->ctrl->getLinkTargetByClass(self::class, 'showAnswerStatistic')
+                $this->ctrl->getLinkTargetByClass([ilObjTestGUI::class, self::class], 'showAnswerStatistic')
             );
         }
 
-        $this->ctrl->clearParameterByClass(ilObjTestGUI::class, 'q_id');
-        $this->ctrl->clearParameterByClass(self::class, 'q_id');
         $this->tabs->setBackTarget(
             $this->language->txt('back'),
-            $this->ctrl->getLinkTargetByClass(self::class, 'showQuestionList')
+            $this->ctrl->getLinkTargetByClass(ilObjTestGUI::class, 'showQuestions')
         );
-        $this->ctrl->setParameterByClass(ilObjTestGUI::class, 'q_id', $question_gui->getObject()->getId());
-        $this->ctrl->setParameterByClass(self::class, 'q_id', $question_gui->getObject()->getId());
 
         $this->tabs->activateTab($active_tab_id);
     }
 
     protected function populatePageTitleAndDescription(assQuestionGUI $question_gui): void
     {
-        $this->main_tpl->setTitle($question_gui->getObject()->getTitle());
+        $this->main_tpl->setTitle($question_gui->getObject()->getTitleForHTMLOutput());
         $this->main_tpl->setDescription($question_gui->outQuestionType());
     }
 
@@ -499,10 +385,6 @@ class ilTestCorrectionsGUI
         }
 
         if (!$this->supportsAdjustment($this->question_gui)) {
-            return false;
-        }
-
-        if (!$this->allowedInAdjustment($this->question_gui)) {
             return false;
         }
 
@@ -546,27 +428,44 @@ class ilTestCorrectionsGUI
     }
 
     /**
-     * @return array
+     * @param list<ilTestEvaluationUserData> $participant_results
      */
-    protected function getQuestions(): array
+    private function getSolutionsByParticipantResults(assQuestion $question, array $participant_results): array
     {
-        $questions = [];
+        $solutions = [];
 
-        foreach ($this->test_obj->getTestQuestions() as $question_data) {
-            $question_gui = $this->getQuestionGUI($question_data['question_id']);
-
-            if (!$this->supportsAdjustment($question_gui)) {
-                continue;
+        foreach ($participant_results as $active_id => $result) {
+            foreach ($result->getPasses() as $pass) {
+                foreach ($question->getSolutionValues($active_id, $pass->getPass()) as $row) {
+                    $solutions[] = $row;
+                }
             }
-
-            if (!$this->allowedInAdjustment($question_gui)) {
-                continue;
-            }
-
-            $questions[] = $question_data;
         }
 
-        return $questions;
+        return $solutions;
+    }
+
+    protected function getQuestions(): array
+    {
+
+        if (!$this->test_obj->getGlobalSettings()->isAdjustingQuestionsWithResultsAllowed()) {
+            return [];
+        }
+
+        return array_reduce(
+            $this->test_obj->getTestQuestions(),
+            function (array $c, array $v): array {
+                $question_gui = $this->getQuestionGUI($v['question_id']);
+
+                if (!$this->supportsAdjustment($question_gui)) {
+                    return $c;
+                }
+
+                $c[] = $v;
+                return $c;
+            },
+            []
+        );
     }
 
     /**
@@ -582,27 +481,5 @@ class ilTestCorrectionsGUI
                 || $question_object instanceof ilGuiAnswerScoringAdjustable)
             && ($question_object->getObject() instanceof ilObjQuestionScoringAdjustable
                 || $question_object->getObject() instanceof ilObjAnswerScoringAdjustable);
-    }
-
-    /**
-     * Returns if the question type is allowed for adjustments in the global test administration.
-     *
-     * @param assQuestionGUI $question_object
-     * @return bool
-     */
-    protected function allowedInAdjustment(\assQuestionGUI $question_object): bool
-    {
-        $setting = new ilSetting('assessment');
-        $types = explode(',', $setting->get('assessment_scoring_adjustment'));
-        $type_def = [];
-        foreach ($types as $type) {
-            $type_def[$type] = ilObjQuestionPool::getQuestionTypeByTypeId($type);
-        }
-
-        $type = $question_object->getQuestionType();
-        if (in_array($type, $type_def)) {
-            return true;
-        }
-        return false;
     }
 }

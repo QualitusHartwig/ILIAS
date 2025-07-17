@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -16,8 +14,9 @@ declare(strict_types=1);
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
  *
- ********************************************************************
- */
+ *********************************************************************/
+
+declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -35,9 +34,7 @@ class ilQTIResponseVarTest extends TestCase
         $this->assertEquals('Some input.', $instance->getVartype());
     }
 
-    /**
-     * @dataProvider cases
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('cases')]
     public function testSetGetCase(string $input, ?string $expected): void
     {
         $instance = new ilQTIResponseVar('a');
@@ -59,9 +56,7 @@ class ilQTIResponseVarTest extends TestCase
         $this->assertEquals('Some input.', $instance->getIndex());
     }
 
-    /**
-     * @dataProvider setMatches
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('setMatches')]
     public function testSetGetSetmatch(string $input, ?string $expected): void
     {
         $instance = new ilQTIResponseVar('a');
@@ -69,9 +64,7 @@ class ilQTIResponseVarTest extends TestCase
         $this->assertEquals($expected, $instance->getSetmatch());
     }
 
-    /**
-     * @dataProvider areaTypes
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('areaTypes')]
     public function testSetGetAreatype(string $input, ?string $expected): void
     {
         $instance = new ilQTIResponseVar('a');

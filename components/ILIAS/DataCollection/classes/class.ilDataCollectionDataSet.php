@@ -114,9 +114,7 @@ class ilDataCollectionDataSet extends ilDataSet
     ): void {
         foreach ($a_rec as $key => &$value) {
             $array = json_decode($value, true);
-            if ($key === 'title' || $key === 'description') {
-                $value = strip_tags($value, ilObjectGUI::ALLOWED_TAGS_IN_TITLE_AND_DESCRIPTION);
-            } elseif (is_array($array)) {
+            if (is_array($array)) {
                 $value = json_encode($this->escapeArray($array));
             } else {
                 $value = $this->refinery->encode()->htmlSpecialCharsAsEntities()->transform($value);
@@ -132,37 +130,41 @@ class ilDataCollectionDataSet extends ilDataSet
                 }
                 $new_obj->setTitle($a_rec['title']);
                 $new_obj->setDescription($a_rec['description']);
-                $new_obj->setApproval((bool) $a_rec['approval']);
-                $new_obj->setPublicNotes((bool) $a_rec['public_notes']);
-                $new_obj->setNotification((bool) $a_rec['notification']);
-                $new_obj->setPublicNotes((bool) $a_rec['public_notes']);
-                $new_obj->setOnline(false);
-                $new_obj->setRating((bool) $a_rec['rating']);
-                $new_obj->update(); //clone mode, so no table will be created
+                $new_obj->setApproval($a_rec['approval'] === '1');
+                $new_obj->setPublicNotes($a_rec['public_notes'] === '1');
+                $new_obj->setNotification($a_rec['notification'] === '1');
+                $new_obj->setRating($a_rec['rating'] === '1');
+                $new_obj->update();
                 $this->import_dc_object = $new_obj;
                 $a_mapping->addMapping('components/ILIAS/DataCollection', 'dcl', $a_rec['id'], (string) $new_obj->getId());
+                $a_mapping->addMapping(
+                    'components/ILIAS/MetaData',
+                    'md',
+                    $a_rec['id'] . ':0:dcl',
+                    $new_obj->getId() . ':0:dcl'
+                );
                 break;
             case 'il_dcl_table':
                 $table = new ilDclTable();
                 $table->setTitle($a_rec['title']);
                 $table->setObjId($this->import_dc_object->getId());
                 $table->setDescription($a_rec['description']);
-                $table->setAddPerm((bool) $a_rec['add_perm']);
-                $table->setEditPerm((bool) $a_rec['edit_perm']);
-                $table->setDeletePerm((bool) $a_rec['delete_perm']);
-                $table->setEditByOwner((bool) $a_rec['edit_by_owner']);
-                $table->setLimited((bool) $a_rec['limited']);
+                $table->setAddPerm($a_rec['add_perm'] === '1');
+                $table->setEditPerm($a_rec['edit_perm'] === '1');
+                $table->setDeletePerm($a_rec['delete_perm'] === '1');
+                $table->setEditByOwner($a_rec['edit_by_owner'] === '1');
+                $table->setLimited($a_rec['limited'] === '1');
                 $table->setLimitStart($a_rec['limit_start']);
                 $table->setLimitEnd($a_rec['limit_end']);
-                $table->setIsVisible((bool) $a_rec['is_visible']);
-                $table->setExportEnabled((bool) $a_rec['export_enabled']);
-                $table->setImportEnabled((bool) $a_rec['import_enabled']);
+                $table->setIsVisible($a_rec['is_visible'] === '1');
+                $table->setExportEnabled($a_rec['export_enabled'] === '1');
+                $table->setImportEnabled($a_rec['import_enabled'] === '1');
                 $table->setDefaultSortField($a_rec['default_sort_field_id']);
                 $table->setDefaultSortFieldOrder($a_rec['default_sort_field_order']);
-                $table->setPublicCommentsEnabled((bool) $a_rec['public_comments']);
-                $table->setViewOwnRecordsPerm((bool) $a_rec['view_own_records_perm']);
-                $table->setDeleteByOwner((bool) $a_rec['delete_by_owner']);
-                $table->setSaveConfirmation((bool) $a_rec['save_confirmation']);
+                $table->setPublicCommentsEnabled($a_rec['public_comments'] === '1');
+                $table->setViewOwnRecordsPerm($a_rec['view_own_records_perm'] === '1');
+                $table->setDeleteByOwner($a_rec['delete_by_owner'] === '1');
+                $table->setSaveConfirmation($a_rec['save_confirmation'] === '1');
                 $table->setOrder((int) $a_rec['table_order']);
                 $table->doCreate(false, false); // false => Do not create views! They are imported later
                 $a_mapping->addMapping('components/ILIAS/DataCollection', 'il_dcl_table', $a_rec['id'], (string) $table->getId());
@@ -191,34 +193,40 @@ class ilDataCollectionDataSet extends ilDataSet
                 }
                 break;
             case 'il_dcl_field':
-                $new_table_id = $a_mapping->getMapping('components/ILIAS/DataCollection', 'il_dcl_table', $a_rec['table_id']);
-                if ($new_table_id) {
-                    $field = new ilDclBaseFieldModel();
-                    $field->setTableId((int) $new_table_id);
-                    $field->setDatatypeId((int) $a_rec['datatype_id']);
-                    $field->setTitle($a_rec['title']);
-                    $field->setDescription($a_rec['description']);
-                    $field->setUnique((bool) $a_rec['is_unique']);
-                    $field->doCreate();
-                    $a_mapping->addMapping('components/ILIAS/DataCollection', 'il_dcl_field', $a_rec['id'], $field->getId());
-                    // Check if this field was used as default order by, if so, update to new id
-                    $table = ilDclCache::getTableCache((int) $new_table_id);
-                    if ($table->getDefaultSortField() == $a_rec['id']) {
-                        $table->setDefaultSortField($field->getId());
-                        $table->doUpdate();
+                $new_table_id = (int) $a_mapping->getMapping('components/ILIAS/DataCollection', 'il_dcl_table', $a_rec['table_id']);
+                if ($new_table_id > 0) {
+                    $datatype_id = (int) $a_rec['datatype_id'];
+                    $datatype = $a_rec['datatype_title'] ?? null;
+                    $datatypes = ilDclDatatype::getAllDatatype();
+                    if ($datatype !== null && ilDclFieldTypePlugin::isPluginDatatype($datatype)) {
+                        $datatype_id = null;
+                        foreach ($datatypes as $dt) {
+                            if ($dt->getTitle() === $datatype) {
+                                $datatype_id = $dt->getId();
+                            }
+                        }
+                    }
+                    if (in_array($datatype_id, array_keys($datatypes))) {
+                        $field = new ilDclBaseFieldModel();
+                        $field->setTableId($new_table_id);
+                        $field->setDatatypeId($datatype_id);
+                        $field->setTitle($a_rec['title']);
+                        $field->setDescription($a_rec['description']);
+                        $field->doCreate();
+                        $a_mapping->addMapping('components/ILIAS/DataCollection', 'il_dcl_field', $a_rec['id'], $field->getId());
                     }
                 }
                 break;
             case 'il_dcl_tfield_set':
-                $new_table_id = $a_mapping->getMapping('components/ILIAS/DataCollection', 'il_dcl_table', $a_rec['table_id']);
-                $new_field_id = $a_mapping->getMapping('components/ILIAS/DataCollection', 'il_dcl_field', $a_rec['field']);
-                if ($new_table_id) {
+                $new_table_id = (int) $a_mapping->getMapping('components/ILIAS/DataCollection', 'il_dcl_table', $a_rec['table_id']);
+                $new_field_id = is_numeric($a_rec['field']) ? $a_mapping->getMapping('components/ILIAS/DataCollection', 'il_dcl_field', $a_rec['field']) : $a_rec['field'];
+                if ($new_table_id > 0 && (is_string($new_field_id) || $new_field_id > 0)) {
                     $setting = ilDclTableFieldSetting::getInstance(
-                        (int) $new_table_id,
-                        $new_field_id ?: $a_rec['field']
+                        $new_table_id,
+                        $new_field_id
                     );
                     $setting->setFieldOrder((int) $a_rec['field_order']);
-                    $setting->setExportable((bool) $a_rec['exportable']);
+                    $setting->setExportable($a_rec['exportable'] === '1');
                     $setting->store();
                 }
                 break;
@@ -232,18 +240,18 @@ class ilDataCollectionDataSet extends ilDataSet
                 if ($new_tableview_id) {
                     $setting = new ilDclTableViewFieldSetting();
                     $setting->setTableviewId((int) $new_tableview_id);
-                    $setting->setVisible((bool) $a_rec['visible']);
+                    $setting->setVisible($a_rec['visible'] === '1');
                     $setting->setField($new_field_id ?: $a_rec['field']);
-                    $setting->setInFilter((bool) $a_rec['in_filter']);
-                    $setting->setFilterValue($a_rec['filter_value'] ?: null);
-                    $setting->setFilterChangeable((bool) $a_rec['filter_changeable']);
-                    $setting->setRequiredCreate((bool) ($a_rec['required_create'] ?? false));
-                    $setting->setLockedCreate((bool) ($a_rec['locked_create'] ?? false));
-                    $setting->setVisibleCreate((bool) ($a_rec['visible_create'] ?? true));
-                    $setting->setVisibleEdit((bool) ($a_rec['visible_edit'] ?? true));
-                    $setting->setRequiredEdit((bool) ($a_rec['required_edit'] ?? false));
-                    $setting->setLockedEdit((bool) ($a_rec['locked_edit'] ?? false));
-                    $setting->setDefaultValue($a_rec['default_value'] ?? null);
+                    $setting->setInFilter($a_rec['in_filter'] === '1');
+                    $setting->setFilterValue($a_rec['filter_value']);
+                    $setting->setFilterChangeable($a_rec['filter_changeable'] === '1');
+                    $setting->setRequiredCreate($a_rec['required_create'] === '1');
+                    $setting->setLockedCreate($a_rec['locked_create'] === '1');
+                    $setting->setVisibleCreate($a_rec['visible_create'] === '1');
+                    $setting->setVisibleEdit($a_rec['visible_edit'] === '1');
+                    $setting->setRequiredEdit($a_rec['required_edit'] === '1');
+                    $setting->setLockedEdit($a_rec['locked_edit'] === '1');
+                    $setting->setDefaultValue($a_rec['default_value']);
                     $setting->create();
                     $a_mapping->addMapping(
                         'components/ILIAS/DataCollection',
@@ -353,17 +361,16 @@ class ilDataCollectionDataSet extends ilDataSet
                             2 => 'regex',
                             3 => 'table_id',
                             4 => 'url',
-                            5 => 'text_area',
-                            6 => 'reference_link',
-                            7 => 'width',
-                            8 => 'height',
-                            9 => 'learning_progress',
-                            10 => 'ILIAS_reference_link',
-                            11 => 'multiple_selection',
-                            12 => 'expression',
-                            13 => 'display_action_menu',
+                            5 => 'reference_link',
+                            6 => 'width',
+                            7 => 'height',
+                            8 => 'learning_progress',
+                            9 => 'ILIAS_reference_link',
+                            10 => 'multiple_selection',
+                            11 => 'expression',
+                            12 => 'display_action_menu',
+                            13 => 'link_detail_page',
                             14 => 'link_detail_page',
-                            15 => 'link_detail_page',
                         ];
 
                         $name = $properties[$a_rec['datatype_prop_id']];
@@ -437,7 +444,7 @@ class ilDataCollectionDataSet extends ilDataSet
                             case ilDclDatatype::INPUTFORMAT_ILIAS_REF:
                                 $value = null;
                                 break;
-                            case ilDclDatatype::INPUTFORMAT_DATETIME:
+                            case ilDclDatatype::INPUTFORMAT_DATE:
                                 $value = $a_rec['value'];
                                 if ($value == '0000-00-00 00:00:00') {
                                     $value = null;
@@ -511,6 +518,14 @@ class ilDataCollectionDataSet extends ilDataSet
      */
     public function beforeFinishImport(ilImportMapping $a_mapping): void
     {
+        foreach ($this->import_dc_object->getTables() as $table) {
+            if (is_numeric($table->getDefaultSortField())) {
+                $table->setDefaultSortField(
+                    $a_mapping->getMapping('components/ILIAS/DataCollection', 'il_dcl_field', $table->getDefaultSortField())
+                );
+                $table->doUpdate();
+            }
+        }
         foreach ($this->import_temp_new_mob_ids as $new_mob_id) {
             if ($new_mob_id) {
                 ilObjMediaObject::_saveUsage((int) $new_mob_id, "dcl:html", $a_mapping->getTargetId());
@@ -598,7 +613,7 @@ class ilDataCollectionDataSet extends ilDataSet
                     'title' => 'text',
                     'description' => 'text',
                     'datatype_id' => 'integer',
-                    'is_unique' => 'integer',
+                    'datatype_title' => 'text',
                 ];
             case 'il_dcl_tview_set':
                 return [
@@ -706,7 +721,7 @@ class ilDataCollectionDataSet extends ilDataSet
                     'integer'
                 ));
                 $ids_records = $this->buildCache('il_dcl_record', $set);
-                $set = $this->db->query('SELECT * FROM il_dcl_field WHERE table_id = ' . $this->db->quote(
+                $set = $this->db->query('SELECT il_dcl_field.*, il_dcl_datatype.title as datatype_title FROM il_dcl_field INNER JOIN il_dcl_datatype ON il_dcl_field.datatype_id = il_dcl_datatype.id WHERE table_id = ' . $this->db->quote(
                     $a_rec['id'],
                     'integer'
                 ));
@@ -869,11 +884,11 @@ class ilDataCollectionDataSet extends ilDataSet
                             'id' => $dcl_id,
                             'title' => $obj->getTitle(),
                             'description' => $obj->getDescription(),
-                            'is_online' => $obj->getOnline(),
-                            'rating' => $obj->getRating(),
-                            'public_notes' => $obj->getPublicNotes(),
-                            'approval' => $obj->getApproval(),
-                            'notification' => $obj->getNotification(),
+                            'is_online' => $obj->getOnline() ? '1' : '0',
+                            'rating' => $obj->getRating() ? '1' : '0',
+                            'public_notes' => $obj->getPublicNotes() ? '1' : '0',
+                            'approval' => $obj->getApproval() ? '1' : '0',
+                            'notification' => $obj->getNotification() ? '1' : '0',
                         ];
                         $this->caches['dcl'][$dcl_id] = $data;
                         $this->data[] = $data;

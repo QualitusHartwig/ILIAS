@@ -24,16 +24,20 @@
 class ilMediaPoolExporter extends ilXmlExporter
 {
     private ilMediaPoolDataSet $ds;
-    private ilExportConfig $config;
+    private ilMediaPoolExportConfig $config;
 
     public function init(): void
     {
         $this->ds = new ilMediaPoolDataSet();
-        $this->ds->setExportDirectories($this->dir_relative, $this->dir_absolute);
+        $this->ds->initByExporter($this);
         $this->ds->setDSPrefix("ds");
-        $this->config = $this->getExport()->getConfig("components/ILIAS/MediaPool");
+        /** @var ilMediaPoolExportConfig $config */
+        $config = $this->getExport()->getExportConfigs()->getElementByComponent('components/ILIAS/MediaPool');
+        $this->config = $config;
         if ($this->config->getMasterLanguageOnly()) {
-            $conf = $this->getExport()->getConfig("components/ILIAS/COPage");
+            /** @var ilCOPageExportConfig $co_config */
+            $co_config = $this->getExport()->getExportConfigs()->getElementByComponent('components/ILIAS/COPage');
+            $conf = $co_config;
             $conf->setMasterLanguageOnly(true, $this->config->getIncludeMedia());
             $this->ds->setMasterLanguageOnly(true);
         }
@@ -88,17 +92,17 @@ class ilMediaPoolExporter extends ilXmlExporter
 
         if (!$this->config->getMasterLanguageOnly()) {
             $deps[] = array(
-                "component" => "components/ILIAS/Object",
+                "component" => "components/ILIAS/ILIASObject",
                 "entity" => "transl",
                 "ids" => $a_ids);
             $deps[] = array(
-                "component" => "components/ILIAS/Object",
+                "component" => "components/ILIAS/ILIASObject",
                 "entity" => "transl_entry",
                 "ids" => $a_ids);
         }
 
         $deps[] = array(
-            "component" => "components/ILIAS/Object",
+            "component" => "components/ILIAS/ILIASObject",
             "entity" => "tile",
             "ids" => $a_ids);
 

@@ -84,13 +84,13 @@ class InternalGUIService
         $tpl->addOnLoadCode("ilNotes.setAjaxUrl('" . $ajax_url . "');");
         $tpl->addOnLoadCode('ilNotes.setModalTemplate("' . addslashes(json_encode($modal_template["template"])) . '");');
         $tpl->addOnLoadCode("ilNotes.setShowSignal('" . $modal_template["show"] . "');");
-        $tpl->addOnLoadCode("ilNotes.setCloseSignal('" . $modal_template["close"] . "');");
+        $tpl->addOnLoadCode("ilNotes.setHideSignal('" . $modal_template["close"] . "');");
     }
 
     public function getModalTemplate(): array
     {
         $ui = $this->ui();
-        $modal = $ui->factory()->modal()->roundtrip('#notes_title#', $ui->factory()->legacy(''));
+        $modal = $ui->factory()->modal()->roundtrip('#notes_title#', $ui->factory()->legacy()->content(''));
         $modalt["show"] = $modal->getShowSignal()->getId();
         $modalt["close"] = $modal->getCloseSignal()->getId();
         $modalt["template"] = $ui->renderer()->renderAsync($modal);

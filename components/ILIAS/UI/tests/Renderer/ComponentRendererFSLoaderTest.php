@@ -41,7 +41,7 @@ class ComponentRendererFSLoaderTest extends TestCase
 
     protected function getComponentRendererFSLoader(): FSLoader
     {
-        $ui_factory = $this->getMockBuilder(ILIAS\UI\Factory::class)->getMock();
+        $ui_factory = $this->getMockBuilder(ILIAS\UI\Implementation\FactoryInternal::class)->disableOriginalConstructor()->getMock();
         $tpl_factory = $this->getMockBuilder(I\Render\TemplateFactory::class)->getMock();
         $lng = $this->getMockBuilder(ILIAS\Language\Language::class)->disableOriginalConstructor()->getMock();
         $js_binding = $this->getMockBuilder(I\Render\JavaScriptBinding::class)->getMock();
@@ -63,9 +63,18 @@ class ComponentRendererFSLoaderTest extends TestCase
         );
         $this->glyph_renderer = $this->createMock(I\Render\RendererFactory::class);
         $this->icon_renderer = $this->createMock(I\Render\RendererFactory::class);
+        $messagebox_renderer = $this->createMock(I\Render\RendererFactory::class);
+        $form_renderer = $this->createMock(I\Render\RendererFactory::class);
 
         $field_renderer = $this->createMock(I\Render\RendererFactory::class);
-        return new FSLoader($default_renderer_factory, $this->glyph_renderer, $this->icon_renderer, $field_renderer);
+        return new FSLoader(
+            $default_renderer_factory,
+            $this->glyph_renderer,
+            $this->icon_renderer,
+            $field_renderer,
+            $messagebox_renderer,
+            $form_renderer,
+        );
     }
 
     public function testGetRendererSuccessfully(): void

@@ -18,12 +18,6 @@
 
 declare(strict_types=1);
 
-/**
- * Class ilOpenIdConnectSettingsGUI
- *
- * @author Stefan Meyer <smeyer.ilias@gmx.de>
- *
- */
 class ilOpenIdConnectSyncForbiddenException extends ilException
 {
 }

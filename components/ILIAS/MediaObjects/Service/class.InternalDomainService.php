@@ -26,6 +26,7 @@ use ILIAS\Repository\GlobalDICDomainServices;
 use ILIAS\MediaObjects\MediaType\MediaTypeManager;
 use ILIAS\MediaObjects\Tracking\TrackingManager;
 use ILIAS\MediaObjects\Metadata\MetadataManager;
+use ILIAS\MediaObjects\Thumbs\ThumbsManager;
 
 /**
  * @author Alexander Killing <killing@leifos.de>
@@ -34,29 +35,25 @@ class InternalDomainService
 {
     use GlobalDICDomainServices;
 
-    protected InternalRepoService $repo_service;
-    protected InternalDataService $data_service;
+    protected static array $instance = [];
 
     public function __construct(
         Container $DIC,
-        InternalRepoService $repo_service,
-        InternalDataService $data_service
+        protected InternalRepoService $repo_service,
+        protected InternalDataService $data_service
     ) {
-        $this->repo_service = $repo_service;
-        $this->data_service = $data_service;
         $this->initDomainServices($DIC);
     }
 
-    /*
-    public function access(int $ref_id, int $user_id) : Access\AccessManager
+    public function mediaObject(): MediaObjectManager
     {
-        return new Access\AccessManager(
+        return self::$instance["mob"] ??= new MediaObjectManager(
+            $this->data_service,
+            $this->repo_service,
             $this,
-            $this->access,
-            $ref_id,
-            $user_id
+            new \ilMobStakeholder()
         );
-    }*/
+    }
 
     public function imageMap(): ImageMapManager
     {
@@ -81,4 +78,13 @@ class InternalDomainService
     {
         return new MetadataManager($this->learningObjectMetadata());
     }
+
+    public function thumbs(): ThumbsManager
+    {
+        return new ThumbsManager(
+            $this->data_service,
+            $this
+        );
+    }
+
 }

@@ -1,19 +1,25 @@
 /**
-* This file is part of ILIAS, a powerful learning management system
-* published by ILIAS open source e-Learning e.V.
-*
-* ILIAS is licensed with the GPL-3.0,
-* see https://www.gnu.org/licenses/gpl-3.0.en.html
-* You should have received a copy of said license along with the
-* source code, too.
-*
-* If this is not the case or you just want to try ILIAS, you'll find
-* us at:
-* https://www.ilias.de
-* https://github.com/ILIAS-eLearning
-*/
+ * This file is part of ILIAS, a powerful learning management system
+ * published by ILIAS open source e-Learning e.V.
+ *
+ * ILIAS is licensed with the GPL-3.0,
+ * see https://www.gnu.org/licenses/gpl-3.0.en.html
+ * You should have received a copy of said license along with the
+ * source code, too.
+ *
+ * If this is not the case or you just want to try ILIAS, you'll find
+ * us at:
+ * https://www.ilias.de
+ * https://github.com/ILIAS-eLearning
+ *
+ ******************************************************************** */
 
 export default class Drilldown {
+  /**
+   * @type {Set<function(string)>}
+   */
+  #engageListeners = new Set();
+
   /**
    * @type {DrilldownPersistence}
    */
@@ -30,43 +36,83 @@ export default class Drilldown {
   #mapping;
 
   /**
-   * @param {jQuery} $
+   * @type {string}
+   */
+  #backSignal;
+
+  /**
+   * @param {JQueryEventListener} jqueryEventListener
    * @param {DrilldownPersistence} persistence
    * @param {DrilldownModel} model
    * @param {DrilldownMapping} mapping
    * @param {string} backSignal
    */
-  constructor($, persistence, model, mapping, backSignal) {
+  constructor(jqueryEventListener, document, persistence, model, mapping, backSignal) {
     this.#persistence = persistence;
     this.#model = model;
     this.#mapping = mapping;
+    this.#backSignal = backSignal;
 
-    $(document).on(backSignal, () => { this.#upLevel(); });
-    this.#mapping.setFilterHandler(
+    jqueryEventListener.on(document, this.#backSignal, () => { this.#upLevel(); });
+    this.#mapping.maybeAddFilterHandler(
       (e) => {
-        this.#filter(e);
+        if (e.key !== 'Tab' && e.key !== 'Shift') {
+          this.#filter(e);
+        }
       },
     );
+
+    this.parseLevels();
+    this.engageLevel(this.#persistence.read());
+  }
+
+  parseLevels() {
     this.#mapping.parseLevel(
-      (headerDisplayElement, parent, leaves) => this.#model
-        .addLevel(headerDisplayElement, parent, leaves),
+      (headerDisplayElement, parent, leaves, sublist, level) => this.#model
+        .addLevel(headerDisplayElement, parent, leaves, sublist, level),
       (index, text) => this.#model.buildLeaf(index, text),
       (levelId) => {
-        this.#engageLevel(levelId);
+        this.engageLevel(levelId);
       },
     );
-
-    this.#engageLevel(this.#persistence.read());
   }
 
   /**
-   *
-   * @param {integer} levelId
+   * @param {function(string)} callback (receives drilldown-level argument)
+   */
+  removeEngageListener(callback) {
+    if (this.#engageListeners.has(callback)) {
+      this.#engageListeners.delete(callback);
+    }
+  }
+
+  /**
+   * @param {function(string)} callback
+   */
+  addEngageListener(callback) {
+    if (!this.#engageListeners.has(callback)) {
+      this.#engageListeners.add(callback);
+    }
+  }
+
+  /**
+   * Returns the signal which is triggered when the back-nav is clicked.
+   * @returns {string}
+   */
+  getBackSignal() {
+    return this.#backSignal;
+  }
+
+  /**
+   * @param {string} levelId
    * @returns {void}
    */
-  #engageLevel(levelId) {
+  engageLevel(levelId) {
     this.#model.engageLevel(levelId);
     this.#apply();
+    this.#engageListeners.forEach((callback) => {
+      callback(levelId);
+    });
   }
 
   /**
@@ -85,7 +131,7 @@ export default class Drilldown {
    */
   #upLevel() {
     this.#model.upLevel();
-    this.#apply();
+    this.engageLevel(this.#model.getCurrent().id);
   }
 
   /**

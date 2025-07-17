@@ -22,6 +22,7 @@ namespace ILIAS\Test\Setup;
 
 use ILIAS\Test\Logging\TestLoggingDatabaseRepository;
 use ILIAS\Test\Certificate\TestPlaceholderValues;
+use ILIAS\Test\ExportImport\DBRepository;
 
 class Test10DBUpdateSteps implements \ilDatabaseUpdateSteps
 {
@@ -280,5 +281,187 @@ class Test10DBUpdateSteps implements \ilDatabaseUpdateSteps
             $this->db->addPrimaryKey(TestLoggingDatabaseRepository::ERROR_LOG_TABLE, ['id']);
             $this->db->addIndex(TestLoggingDatabaseRepository::ERROR_LOG_TABLE, ['ref_id'], 'rid');
         }
+    }
+
+    public function step_4(): void
+    {
+        if (!$this->db->tableColumnExists('tst_invited_user', 'ip_range_from')) {
+            $this->db->addTableColumn(
+                'tst_invited_user',
+                'ip_range_from',
+                [
+                    'type' => 'text',
+                    'length' => 39
+                ]
+            );
+        }
+        if (!$this->db->tableColumnExists('tst_invited_user', 'ip_range_to')) {
+            $this->db->addTableColumn(
+                'tst_invited_user',
+                'ip_range_to',
+                [
+                    'type' => 'text',
+                    'length' => 39
+                ]
+            );
+        }
+
+
+        if ($this->db->tableColumnExists('tst_invited_user', 'clientip')) {
+            $this->db->manipulate('UPDATE tst_invited_user SET ip_range_from = clientip, ip_range_to = clientip WHERE ip_range_from IS NULL AND ip_range_to IS NULL');
+            $this->db->dropTableColumn('tst_invited_user', 'clientip');
+        }
+    }
+
+    public function step_5(): void
+    {
+        if (!$this->db->tableColumnExists('tst_addtime', 'user_fi')) {
+            $this->db->addTableColumn(
+                'tst_addtime',
+                'user_fi',
+                [
+                    'type' => \ilDBConstants::T_INTEGER,
+                    'length' => 8,
+                    'notnull' => true
+                ]
+            );
+        }
+        if (!$this->db->tableColumnExists('tst_addtime', 'test_fi')) {
+            $this->db->addTableColumn(
+                'tst_addtime',
+                'test_fi',
+                [
+                    'type' => \ilDBConstants::T_INTEGER,
+                    'length' => 8,
+                    'notnull' => true
+                ]
+            );
+        }
+
+        if ($this->db->tableColumnExists('tst_addtime', 'active_fi')) {
+            $this->db->manipulate(
+                '
+                UPDATE tst_addtime INNER JOIN tst_active ON tst_active.active_id = tst_addtime.active_fi
+                SET tst_addtime.test_fi = tst_active.test_fi, tst_addtime.user_fi = tst_active.user_fi'
+            );
+
+            $this->db->dropTableColumn('tst_addtime', 'active_fi');
+        }
+
+        if (!$this->db->primaryExistsByFields('tst_addtime', ['user_fi', 'test_fi'])) {
+            $this->db->addPrimaryKey('tst_addtime', ['user_fi', 'test_fi']);
+        }
+    }
+
+    public function step_6(): void
+    {
+        if ($this->db->tableColumnExists('tst_tests', 'broken')) {
+            $this->db->dropTableColumn('tst_tests', 'broken');
+        }
+    }
+
+    public function step_7(): void
+    {
+        if ($this->db->tableColumnExists('tst_tests', 'obligations_enabled')) {
+            $this->db->dropTableColumn('tst_tests', 'obligations_enabled');
+        }
+
+        if ($this->db->tableColumnExists('tst_pass_result', 'obligations_answered')) {
+            $this->db->dropTableColumn('tst_pass_result', 'obligations_answered');
+        }
+
+        if ($this->db->tableColumnExists('tst_test_question', 'obligatory')) {
+            $this->db->dropTableColumn('tst_test_question', 'obligatory');
+        }
+
+        if ($this->db->tableColumnExists('tst_result_cache', 'obligations_answered')) {
+            $this->db->dropTableColumn('tst_result_cache', 'obligations_answered');
+        }
+    }
+
+    public function step_8(): void
+    {
+        if (!$this->db->tableColumnExists('tst_pass_result', 'finalized_by')) {
+            $this->db->addTableColumn(
+                'tst_pass_result',
+                'finalized_by',
+                [
+                    'type' => \ilDBConstants::T_TEXT,
+                    'length' => 256,
+                    'notnull' => false
+                ]
+            );
+        }
+    }
+
+    public function step_9(): void
+    {
+        $this->db->manipulate('DELETE FROM rbac_operations WHERE operation = "tst_statistics"');
+    }
+
+    public function step_10(): void
+    {
+        if ($this->db->tableColumnExists('tst_tests', 'author')) {
+            $this->db->dropTableColumn('tst_tests', 'author');
+        }
+    }
+
+    public function step_11(): void
+    {
+        if ($this->db->tableColumnExists('tst_tests', 'enable_processing_time')) {
+            $this->db->manipulateF(
+                'UPDATE tst_tests SET enable_processing_time = %s WHERE enable_processing_time IS NULL',
+                [\ilDBConstants::T_INTEGER],
+                [0]
+            );
+            $this->db->modifyTableColumn(
+                'tst_tests',
+                'enable_processing_time',
+                [
+                    'type' => \ilDBConstants::T_INTEGER,
+                    'length' => 1,
+                    'notnull' => true,
+                    'default' => 0
+                ]
+            );
+        }
+    }
+
+    public function step_12(): void
+    {
+        if (!$this->db->tableExists(DBRepository::TST_EXPORT_TABLE)) {
+            $this->db->createTable(DBRepository::TST_EXPORT_TABLE, [
+                'object_id' => [
+                    'type' => \ilDBConstants::T_INTEGER,
+                    'length' => 8,
+                    'notnull' => true
+                ],
+                'type' => [
+                    'type' => \ilDBConstants::T_TEXT,
+                    'length' => 32,
+                    'notnull' => true
+                ],
+                'rid' => [
+                    'type' => \ilDBConstants::T_TEXT,
+                    'length' => 64
+                ]
+            ]);
+            $this->db->addPrimaryKey(DBRepository::TST_EXPORT_TABLE, ['rid']);
+            $this->db->addIndex(DBRepository::TST_EXPORT_TABLE, ['object_id'], 'oid');
+        }
+    }
+
+    public function step_13(): void
+    {
+        $this->db->update(
+            'rbac_operations',
+            ['op_order' => [\ilDBConstants::T_INTEGER, 4100]],
+            ['operation' => [\ilDBConstants::T_TEXT, 'tst_history_read']]
+        );
+        $this->db->update(
+            'rbac_operations',
+            ['op_order' => [\ilDBConstants::T_INTEGER, 4200]],
+            ['operation' => [\ilDBConstants::T_TEXT, 'tst_results']]
+        );
     }
 }

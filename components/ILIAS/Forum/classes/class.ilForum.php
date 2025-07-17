@@ -18,6 +18,8 @@
 
 declare(strict_types=1);
 
+use ILIAS\User\Profile\Mode as PersonalProfileMode;
+
 /**
  * Class Forum
  * core functions for forum
@@ -26,9 +28,9 @@ declare(strict_types=1);
  */
 class ilForum
 {
-    private const SORT_TITLE = 1;
-    private const SORT_DATE = 2;
-    private const DEFAULT_PAGE_HITS = 30;
+    private const int SORT_TITLE = 1;
+    private const int SORT_DATE = 2;
+    private const int DEFAULT_PAGE_HITS = 30;
 
     /** @var array<int, int[]> */
     protected static array $moderators_by_ref_id_map = [];
@@ -1019,9 +1021,9 @@ class ilForum
         while ($row = $this->db->fetchAssoc($res)) {
             if (
                 !in_array($row['public_profile'], [
-                    ilPersonalProfileMode::PROFILE_ENABLED_LOGGED_IN_USERS,
-                    ilPersonalProfileMode::PROFILE_ENABLED_GLOBAL], true)
-                || ($this->user->isAnonymous() && $row['public_profile'] !== ilPersonalProfileMode::PROFILE_ENABLED_GLOBAL)
+                    PersonalProfileMode::PROFILE_ENABLED_LOGGED_IN_USERS,
+                    PersonalProfileMode::PROFILE_ENABLED_GLOBAL], true)
+                || ($this->user->isAnonymous() && $row['public_profile'] !== PersonalProfileMode::PROFILE_ENABLED_GLOBAL)
             ) {
                 $row['lastname'] = '';
                 $row['firstname'] = '';

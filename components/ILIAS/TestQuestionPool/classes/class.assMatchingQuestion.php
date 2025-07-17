@@ -20,9 +20,7 @@ declare(strict_types=1);
 
 use ILIAS\TestQuestionPool\Questions\QuestionLMExportable;
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
-
 use ILIAS\Refinery\Random\Group as RandomGroup;
 use ILIAS\Refinery\Random\Seed\RandomSeed;
 
@@ -421,7 +419,7 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
      *
      * @see $matchingpairs
      */
-    public function addMatchingPair(assAnswerMatchingTerm $term = null, assAnswerMatchingDefinition $definition = null, $points = 0.0): void
+    public function addMatchingPair(?assAnswerMatchingTerm $term = null, ?assAnswerMatchingDefinition $definition = null, $points = 0.0): void
     {
         $pair = $this->createMatchingPair($term, $definition, $points);
         array_push($this->matchingpairs, $pair);
@@ -594,7 +592,7 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
     * @param string $term The text of the term
     * @see $terms
     */
-    public function insertTerm($position, assAnswerMatchingTerm $term = null): void
+    public function insertTerm($position, ?assAnswerMatchingTerm $term = null): void
     {
         if (is_null($term)) {
             $term = $this->createMatchingTerm();
@@ -614,7 +612,7 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
     * @param object $definition The definition
     * @see $definitions
     */
-    public function insertDefinition($position, assAnswerMatchingDefinition $definition = null): void
+    public function insertDefinition($position, ?assAnswerMatchingDefinition $definition = null): void
     {
         if (is_null($definition)) {
             $definition = $this->createMatchingDefinition();
@@ -886,30 +884,6 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
         return $result;
     }
 
-    private function fetchSubmittedMatchingsFromPost(): array
-    {
-        $post = $this->questionpool_request->getParsedBody();
-
-        $matchings = [];
-        if (array_key_exists('matching', $post)) {
-            $postData = $post['matching'][$this->getId()];
-            foreach ($this->getDefinitions() as $definition) {
-                if (isset($postData[$definition->getIdentifier()])) {
-                    foreach ($this->getTerms() as $term) {
-                        if (isset($postData[$definition->getIdentifier()][$term->getIdentifier()])) {
-                            if (!is_array($postData[$definition->getIdentifier()])) {
-                                $postData[$definition->getIdentifier()] = [];
-                            }
-                            $matchings[$definition->getIdentifier()][] = $term->getIdentifier();
-                        }
-                    }
-                }
-            }
-        }
-
-        return $matchings;
-    }
-
     private function checkSubmittedMatchings(array $submitted_matchings): bool
     {
         if ($this->getMatchingMode() == self::MATCHING_MODE_N_ON_N) {
@@ -946,7 +920,7 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
             $pass = ilObjTest::_getPass($active_id);
         }
 
-        $submitted_matchings = $this->fetchSubmittedMatchingsFromPost();
+        $submitted_matchings = $this->questionpool_request->getMatchingPairs();
         if (!$this->checkSubmittedMatchings($submitted_matchings)) {
             return false;
         }
@@ -967,7 +941,7 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
 
     protected function savePreviewData(ilAssQuestionPreviewSession $previewSession): void
     {
-        $submitted_matchings = $this->fetchSubmittedMatchingsFromPost();
+        $submitted_matchings = $this->questionpool_request->getMatchingPairs();
 
         if ($this->checkSubmittedMatchings($submitted_matchings)) {
             $previewSession->setParticipantsSolution($submitted_matchings);
@@ -1028,48 +1002,9 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
     /**
     * Returns the matchingpairs array
     */
-    public function &getMatchingPairs(): array
+    public function getMatchingPairs(): array
     {
         return $this->matchingpairs;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $solutions = $this->getSolutionValues($active_id, $pass);
-
-        $imagepath = $this->getImagePath();
-        $i = 1;
-        foreach ($solutions as $solution) {
-            $matches_written = false;
-            foreach ($this->getMatchingPairs() as $idx => $pair) {
-                if (!$matches_written) {
-                    $worksheet->setCell($startrow + $i, $col + 1, $this->lng->txt("matches"));
-                }
-                $matches_written = true;
-                if ($pair->getDefinition()->getIdentifier() == $solution["value2"]) {
-                    if (strlen($pair->getDefinition()->getText())) {
-                        $worksheet->setCell($startrow + $i, $col, $pair->getDefinition()->getText());
-                    } else {
-                        $worksheet->setCell($startrow + $i, $col, $pair->getDefinition()->getPicture());
-                    }
-                }
-                if ($pair->getTerm()->getIdentifier() == $solution["value1"]) {
-                    if (strlen($pair->getTerm()->getText())) {
-                        $worksheet->setCell($startrow + $i, $col + 2, $pair->getTerm()->getText());
-                    } else {
-                        $worksheet->setCell($startrow + $i, $col + 2, $pair->getTerm()->getPicture());
-                    }
-                }
-            }
-            $i++;
-        }
-
-        return $startrow + $i + 1;
     }
 
     /**
@@ -1180,7 +1115,7 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
 
         $result['id'] = $this->getId();
         $result['type'] = (string) $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['nr_of_tries'] = $this->getNrOfTries();
         $result['matching_mode'] = $this->getMatchingMode();
@@ -1200,6 +1135,8 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
             ];
         }
         $result['terms'] = $terms;
+
+        $this->setShuffler($this->randomGroup->shuffleArray(new RandomSeed()));
 
         $definitions = [];
         foreach ($this->getShuffler()->transform($this->getDefinitions()) as $def) {
@@ -1396,8 +1333,8 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
         return new assAnswerMatchingDefinition($term, $picture, $identifier);
     }
     protected function createMatchingPair(
-        assAnswerMatchingTerm $term = null,
-        assAnswerMatchingDefinition $definition = null,
+        ?assAnswerMatchingTerm $term = null,
+        ?assAnswerMatchingDefinition $definition = null,
         float $points = 0.0
     ): assAnswerMatchingPair {
         $term = $term ?? $this->createMatchingTerm();
@@ -1409,7 +1346,7 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
     {
         $result = [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_SHUFFLE_ANSWER_OPTIONS => $additional_info
                 ->getTrueFalseTagForBool($this->getShuffle()),
@@ -1443,10 +1380,15 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
         return $result;
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
     ): array {
+        return $this->solutionValuesToText($solution_values);
+    }
+
+    public function solutionValuesToText(array $solution_values): array
+    {
         $reducer = static function (array $c, assAnswerMatchingTerm|assAnswerMatchingDefinition $v): array {
             $c[$v->getIdentifier()] = $v->getText() !== ''
                 ? $v->getPicture()
@@ -1467,9 +1409,18 @@ class assMatchingQuestion extends assQuestion implements ilObjQuestionScoringAdj
         );
 
         return array_map(
-            static fn(array $v): string => $definitions_by_identifier['value2']
-                . ':' . $terms_by_identifier['value1'],
+            static fn(array $v): string => $definitions_by_identifier[$v['value2']]
+                . ':' . $terms_by_identifier[$v['value1']],
             $solution_values
+        );
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): array
+    {
+        return array_map(
+            fn(assAnswerMatchingPair $v): string => $v->getDefinition()->getText() . ': '
+                . $v->getTerm()->getText(),
+            $this->getMatchingPairs()
         );
     }
 }

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=1);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=1);
 
 use ILIAS\UI\Help;
 
@@ -40,10 +40,12 @@ class ilHelpUITextRetriever implements ILIAS\UI\HelpTextRetriever
 {
     public function getHelpText(Help\Purpose $purpose, Help\Topic ...$topics): array
     {
+        global $DIC;
+
         if ($purpose->isTooltip()) {
             return array_filter(
                 array_map(
-                    fn($topic) => ilHelp::getTooltipPresentationText($topic->get()),
+                    fn($topic) => $DIC->help()->internal()->domain()->tooltips()->getTooltipPresentationText($topic->get()),
                     $topics
                 )
             );

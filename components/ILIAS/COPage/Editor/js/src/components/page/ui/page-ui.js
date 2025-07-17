@@ -96,7 +96,7 @@ export default class PageUI {
     toolSlate,
     pageModifier,
   ) {
-    this.debug = true;
+    this.debug = false;
     this.droparea = "<div class='il_droparea'></div>";
     this.add = "<span class='glyphicon glyphicon-plus-sign'></span>";
     this.model = {};
@@ -280,6 +280,7 @@ export default class PageUI {
             }
             li.querySelector('a').addEventListener('click', (event) => {
               event.isDropDownSelectionEvent = true;
+              this.hideAllAddDropdowns();
               dispatch.dispatch(action.page().editor().componentInsert(
                 cname,
                 area.dataset.pcid,
@@ -290,15 +291,27 @@ export default class PageUI {
             });
             ul.appendChild(li);
           }
-          if (ul.style.display == 'block') {
-            ul.style.display = '';
-          } else {
+
+          if (ul.dataset.copgDDShown !== '1') {
+            this.hideAllAddDropdowns();
             ul.style.display = 'block';
+            ul.dataset.copgDDShown = '1';
+          } else {
+            ul.style.display = 'none';
+            ul.dataset.copgDDShown = '0';
           }
         });
       });
     });
     this.refreshAddButtonText();
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  hideAllAddDropdowns() {
+    document.querySelectorAll("[data-copg-ed-type='add-area'] ul.dropdown-menu").forEach((el) => {
+      el.style.display = 'none';
+      el.dataset.copgDDShown = '0';
+    });
   }
 
   /**
@@ -321,7 +334,7 @@ export default class PageUI {
       const originalHTML = area.innerHTML;
       area.innerHTML = uiModel.dropdown;
 
-      console.log(uiModel.dropdown);
+      this.log(uiModel.dropdown);
 
       const { model } = this;
 
@@ -364,7 +377,7 @@ export default class PageUI {
             li.querySelector('a').innerHTML = txt;
             li.querySelector('a').addEventListener('click', (event) => {
               event.isDropDownSelectionEvent = true;
-              console.log(area.dataset);
+              this.log(area.dataset);
               dispatch.dispatch(action.page().editor().editListItem(listCommand, area.dataset.pcid));
             });
             ul.appendChild(li);
@@ -426,7 +439,7 @@ export default class PageUI {
         if (event.shiftKey || event.ctrlKey || event.metaKey) {
           area.dispatchEvent(new Event('areaCmdClick'));
         } else {
-          console.log('*** DISPATCH areaClick');
+          this.log('*** DISPATCH areaClick');
           area.dispatchEvent(new Event('areaClick'));
         }
       });
@@ -435,7 +448,7 @@ export default class PageUI {
     // init add buttons
     document.querySelectorAll(coverSelector).forEach((cover) => {
       cover.addEventListener('click', (event) => {
-        console.log('---COVER CLICKED---');
+        this.log('---COVER CLICKED---');
         if (event.isDropDownToggleEvent === true
             || event.isDropDownSelectionEvent === true) {
           return;
@@ -537,6 +550,7 @@ export default class PageUI {
       }
     }
 
+    let dragClone;
 
     document.querySelectorAll(draggableSelector).forEach((draggableElement) => {
       if (pageUI.isProtectedElement(draggableElement)) {
@@ -547,9 +561,10 @@ export default class PageUI {
 
       draggableElement.addEventListener('dragstart', (event) => {
         event.dataTransfer.setData('text/plain', event.target.id);
-
+        event.dataTransfer.effectAllowed = 'move';
+        event.stopPropagation();
         // Create a transparent clone for the drag image
-        const dragClone = draggableElement.cloneNode(true);
+        dragClone = draggableElement.cloneNode(true);
         dragClone.style.position = 'absolute';
         dragClone.style.top = '-9999px'; // Move it offscreen
         document.body.appendChild(dragClone);
@@ -561,21 +576,35 @@ export default class PageUI {
         mainElement.addEventListener('dragover', autoScroll);
       });
 
-      draggableElement.addEventListener('dragend', () => {
+      draggableElement.addEventListener('dragend', (event) => {
         // event.target.classList.remove('copg-dragging');
         dispatch.dispatch(action.page().editor().dndStopped());
         mainElement.removeEventListener('dragover', autoScroll);
+
+        // remove clone
+        if (dragClone) {
+          dragClone.remove();
+        }
       });
     });
 
     document.querySelectorAll(droppableSelector).forEach((droppableElement) => {
       droppableElement.addEventListener('dragover', (event) => {
         event.preventDefault(); // Necessary to allow a drop
+        event.dataTransfer.dropEffect = "move";
+      });
+
+      droppableElement.addEventListener('dragenter', (event) => {
+        droppableElement.classList.add('il_editarea_selected');
+      });
+
+      droppableElement.addEventListener('dragleave', (event) => {
+        droppableElement.classList.remove('il_editarea_selected');
       });
 
       droppableElement.addEventListener('drop', (event) => {
         event.preventDefault();
-
+        droppableElement.classList.remove('il_editarea_selected');
         const sourceId = event.dataTransfer.getData('text/plain');
         const targetId = event.target.id.substr(6); // Remove 'TARGET' prefix
 
@@ -768,8 +797,8 @@ export default class PageUI {
       .style.display = 'none';
     document.querySelector('#il-copg-format-media')
       .style.display = 'none';
-    console.log('***INIT FORMAT');
-    console.log(selected);
+    this.log('***INIT FORMAT');
+    this.log(selected);
     selected.forEach((id) => {
       cname = this.getCnameForPCID(id.split(':')[1]);
       switch (cname) {

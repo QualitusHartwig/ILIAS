@@ -31,7 +31,7 @@ class ilGlossaryExporter extends ilXmlExporter
         global $DIC;
 
         $this->ds = new ilGlossaryDataSet();
-        $this->ds->setExportDirectories($this->dir_relative, $this->dir_absolute);
+        $this->ds->initByExporter($this);
         $this->ds->setDSPrefix("ds");
         $this->metadata = $DIC->glossary()->internal()->domain()->metadata();
     }
@@ -119,7 +119,7 @@ class ilGlossaryExporter extends ilXmlExporter
 
             // service settings
             $deps[] = array(
-                "component" => "components/ILIAS/Object",
+                "component" => "components/ILIAS/ILIASObject",
                 "entity" => "common",
                 "ids" => $a_ids);
 

@@ -22,20 +22,13 @@ namespace ILIAS\Test\Settings\ScoreReporting;
 
 use ILIAS\Test\Settings\TestSettings;
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
-
 use ILIAS\UI\Component\Input\Field\Factory as FieldFactory;
 use ILIAS\UI\Component\Input\Container\Form\FormInput;
 use ILIAS\Refinery\Factory as Refinery;
 
 class SettingsResultSummary extends TestSettings
 {
-    public const SCORE_REPORTING_DISABLED = 0;
-    public const SCORE_REPORTING_FINISHED = 1;
-    public const SCORE_REPORTING_IMMIDIATLY = 2;
-    public const SCORE_REPORTING_DATE = 3;
-    public const SCORE_REPORTING_AFTER_PASSED = 4;
-
-    protected int $score_reporting = 0;
+    protected ScoreReportingTypes $score_reporting = ScoreReportingTypes::SCORE_REPORTING_DISABLED;
     protected ?\DateTimeImmutable $reporting_date = null;
     protected bool $pass_deletion_allowed = false;
     /**
@@ -55,7 +48,7 @@ class SettingsResultSummary extends TestSettings
         \ilLanguage $lng,
         FieldFactory $f,
         Refinery $refinery,
-        array $environment = null
+        ?array $environment = null
     ): FormInput {
         $trafo = $refinery->custom()->transformation(
             function ($v) {
@@ -71,10 +64,10 @@ class SettingsResultSummary extends TestSettings
 
         $results_time_group = $f->switchableGroup(
             [
-                self::SCORE_REPORTING_IMMIDIATLY => $f->group([], $lng->txt('tst_results_access_always'), $lng->txt('tst_results_access_always_desc')),
-                self::SCORE_REPORTING_FINISHED => $f->group([], $lng->txt('tst_results_access_finished'), $lng->txt('tst_results_access_finished_desc')),
-                self::SCORE_REPORTING_AFTER_PASSED => $f->group([], $lng->txt('tst_results_access_passed'), $lng->txt('tst_results_access_passed_desc')),
-                self::SCORE_REPORTING_DATE => $f->group(
+                ScoreReportingTypes::SCORE_REPORTING_IMMIDIATLY->value => $f->group([], $lng->txt('tst_results_access_always'), $lng->txt('tst_results_access_always_desc')),
+                ScoreReportingTypes::SCORE_REPORTING_FINISHED->value => $f->group([], $lng->txt('tst_results_access_finished'), $lng->txt('tst_results_access_finished_desc')),
+                ScoreReportingTypes::SCORE_REPORTING_AFTER_PASSED->value => $f->group([], $lng->txt('tst_results_access_passed'), $lng->txt('tst_results_access_passed_desc')),
+                ScoreReportingTypes::SCORE_REPORTING_DATE->value => $f->group(
                     [
                     $f->dateTime($lng->txt('tst_reporting_date'), "")
                         ->withTimezone($environment['user_time_zone'])
@@ -97,8 +90,8 @@ class SettingsResultSummary extends TestSettings
         ->withRequired(true)
         ->withAdditionalTransformation($trafo);
 
-        if ($this->getScoreReporting() > 0) {
-            $results_time_group = $results_time_group->withValue($this->getScoreReporting());
+        if ($this->getScoreReporting() !== ScoreReportingTypes::SCORE_REPORTING_DISABLED) {
+            $results_time_group = $results_time_group->withValue($this->getScoreReporting()->value);
         }
 
 
@@ -126,10 +119,10 @@ class SettingsResultSummary extends TestSettings
             $lng->txt('tst_results_access_enabled_desc')
         );
 
-        if ($this->getScoreReportingEnabled()) {
+        if ($this->getScoreReporting()->isReportingEnabled()) {
             $optional_group = $optional_group->withValue(
                 [
-                    "score_reporting_mode" => $this->getScoreReporting(),
+                    "score_reporting_mode" => $this->getScoreReporting()->value,
                     "show_grading_status" => $this->getShowGradingStatusEnabled(),
                     "show_grading_mark" => $this->getShowGradingMarkEnabled(),
                     "show_pass_details" => $this->getShowPassDetails(),
@@ -158,7 +151,7 @@ class SettingsResultSummary extends TestSettings
                             ;
                         }
                         return $settings
-                            ->withScoreReporting((int) $mode)
+                            ->withScoreReporting(ScoreReportingTypes::from($mode))
                             ->withReportingDate($date);
                     }
                 )
@@ -174,7 +167,7 @@ class SettingsResultSummary extends TestSettings
         }
         return [
             'pass_deletion_allowed' => ['integer', (int) $this->getPassDeletionAllowed()],
-            'score_reporting' => ['integer', $this->getScoreReporting()],
+            'score_reporting' => ['integer', $this->getScoreReporting()->value],
             'reporting_date' => ['text', (string) $dat],
             'show_grading_status' => ['integer', (int) $this->getShowGradingStatusEnabled()],
             'show_grading_mark' => ['integer', (int) $this->getShowGradingMarkEnabled()]
@@ -184,26 +177,26 @@ class SettingsResultSummary extends TestSettings
     public function toLog(AdditionalInformationGenerator $additional_info): array
     {
         switch ($this->getScoreReporting()) {
-            case self::SCORE_REPORTING_DISABLED:
+            case ScoreReportingTypes::SCORE_REPORTING_DISABLED:
                 $log_array[AdditionalInformationGenerator::KEY_SCORING_REPORTING] = $additional_info
                     ->getEnabledDisabledTagForBool(false);
                 break;
-            case self::SCORE_REPORTING_FINISHED:
+            case ScoreReportingTypes::SCORE_REPORTING_FINISHED:
                 $log_array[AdditionalInformationGenerator::KEY_SCORING_REPORTING] = $additional_info
                     ->getTagForLangVar('tst_results_access_finished');
                 $log_array += $this->getLogEntriesForScoreReportingEnabled($additional_info);
                 break;
-            case self::SCORE_REPORTING_IMMIDIATLY:
+            case ScoreReportingTypes::SCORE_REPORTING_IMMIDIATLY:
                 $log_array[AdditionalInformationGenerator::KEY_SCORING_REPORTING] = $additional_info
                     ->getTagForLangVar('tst_results_access_always');
                 $log_array += $this->getLogEntriesForScoreReportingEnabled($additional_info);
                 break;
-            case self::SCORE_REPORTING_DATE:
+            case ScoreReportingTypes::SCORE_REPORTING_DATE:
                 $log_array[AdditionalInformationGenerator::KEY_SCORING_REPORTING] = $this->getReportingDate()
                     ->setTimezone(new \DateTimeZone('UTC'))->format(AdditionalInformationGenerator::DATE_STORAGE_FORMAT);
                 $log_array += $this->getLogEntriesForScoreReportingEnabled($additional_info);
                 break;
-            case self::SCORE_REPORTING_AFTER_PASSED:
+            case ScoreReportingTypes::SCORE_REPORTING_AFTER_PASSED:
                 $log_array[AdditionalInformationGenerator::KEY_SCORING_REPORTING] = $additional_info
                     ->getTagForLangVar('tst_results_access_passed');
                 $log_array += $this->getLogEntriesForScoreReportingEnabled($additional_info);
@@ -227,20 +220,15 @@ class SettingsResultSummary extends TestSettings
         ];
     }
 
-    public function getScoreReporting(): int
+    public function getScoreReporting(): ScoreReportingTypes
     {
         return $this->score_reporting;
     }
-    public function withScoreReporting(int $score_reporting): self
+    public function withScoreReporting(ScoreReportingTypes $score_reporting): self
     {
         $clone = clone $this;
         $clone->score_reporting = $score_reporting;
         return $clone;
-    }
-
-    public function getScoreReportingEnabled(): bool
-    {
-        return $this->score_reporting !== self::SCORE_REPORTING_DISABLED;
     }
 
     public function getReportingDate(): ?\DateTimeImmutable

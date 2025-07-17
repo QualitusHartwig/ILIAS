@@ -21,7 +21,6 @@ declare(strict_types=1);
 use ILIAS\TestQuestionPool\QuestionPoolDIC;
 use ILIAS\TestQuestionPool\RequestDataCollector;
 use ILIAS\TestQuestionPool\Questions\QuestionLMExportable;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
 
 /**
@@ -120,12 +119,12 @@ class assImagemapQuestion extends assQuestion implements ilObjQuestionScoringAdj
 
     public function isComplete(): bool
     {
-        if (strlen($this->title)
-            && ($this->author)
-            && ($this->question)
-            && ($this->image_filename)
-            && (count($this->answers))
-            && ($this->getMaximumPoints() > 0)
+        if ($this->title !== ''
+            && $this->author
+            && $this->question
+            && $this->image_filename
+            && $this->answers !== []
+            && $this->getMaximumPoints() > 0
         ) {
             return true;
         }
@@ -207,7 +206,7 @@ class assImagemapQuestion extends assQuestion implements ilObjQuestionScoringAdj
         }
 
         $src = opendir($image_source_path);
-        while($src_file = readdir($src)) {
+        while ($src_file = readdir($src)) {
             if ($src_file === '.' || $src_file === '..') {
                 continue;
             }
@@ -238,7 +237,7 @@ class assImagemapQuestion extends assQuestion implements ilObjQuestionScoringAdj
             $this->setOwner($data['owner']);
             $this->setIsMultipleChoice($data['is_multiple_choice'] == self::MODE_MULTIPLE_CHOICE);
             $this->setQuestion(ilRTE::_replaceMediaObjectImageSrc((string) $data['question_text'], 1));
-            $this->setImageFilename($data['image_file']);
+            $this->setImageFilename($data['image_file'] ?? '');
 
             try {
                 $this->setLifecycle(ilAssQuestionLifecycle::getInstance($data['lifecycle']));
@@ -356,7 +355,7 @@ class assImagemapQuestion extends assQuestion implements ilObjQuestionScoringAdj
         return count($this->answers);
     }
 
-    public function getAnswer(int $index = 0): ?object
+    public function getAnswer(int $index = 0): ?ASS_AnswerImagemap
     {
         if ($index < 0) {
             return null;
@@ -446,9 +445,7 @@ class assImagemapQuestion extends assQuestion implements ilObjQuestionScoringAdj
 
         $reached_points = $this->calculateReachedPointsForSolution(is_array($solution_data) ? array_values($solution_data) : []);
 
-        return $this->ensureNonNegativePoints(
-            $this->deductHintPointsFromReachedPoints($preview_session, $reached_points)
-        );
+        return $this->ensureNonNegativePoints($reached_points);
     }
 
     /**
@@ -596,36 +593,6 @@ class assImagemapQuestion extends assQuestion implements ilObjQuestionScoringAdj
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $solution = $this->getSolutionValues($active_id, $pass);
-
-        $i = 1;
-        foreach ($this->getAnswers() as $id => $answer) {
-            $worksheet->setCell($startrow + $i, $col, $answer->getArea() . ': ' . $answer->getCoords());
-            $worksheet->setBold($worksheet->getColumnCoord($col) . ($startrow + $i));
-
-            $cellValue = 0;
-            foreach ($solution as $solIndex => $sol) {
-                if ($sol['value1'] === $id) {
-                    $cellValue = 1;
-                    break;
-                }
-            }
-
-            $worksheet->setCell($startrow + $i, $col + 2, $cellValue);
-
-            $i++;
-        }
-
-        return $startrow + $i + 1;
-    }
-
-    /**
     * Deletes the image file
     */
     public function deleteImage(): void
@@ -644,7 +611,7 @@ class assImagemapQuestion extends assQuestion implements ilObjQuestionScoringAdj
         $result = [];
         $result['id'] = $this->getId();
         $result['type'] = (string) $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['nr_of_tries'] = $this->getNrOfTries();
         $result['shuffle'] = $this->getShuffle();
@@ -851,7 +818,7 @@ class assImagemapQuestion extends assQuestion implements ilObjQuestionScoringAdj
     {
         $result = [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_SHUFFLE_ANSWER_OPTIONS => $additional_info
                 ->getTrueFalseTagForBool($this->getShuffle()),
@@ -889,7 +856,7 @@ class assImagemapQuestion extends assQuestion implements ilObjQuestionScoringAdj
         return $result;
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
     ): array {
@@ -902,8 +869,35 @@ class assImagemapQuestion extends assQuestion implements ilObjQuestionScoringAdj
                     break;
                 }
             }
-            $parsed_solution["{$answer->getArea()}': '{$answer->getCoords()}"] = $value;
+            $parsed_solution["{$answer->getArea()}: {$answer->getCoords()}"] = $value;
         }
         return $parsed_solution;
+    }
+
+    public function solutionValuesToText(array $solution_values): array
+    {
+        $parsed_solution = [];
+        foreach ($this->getAnswers() as $id => $answer) {
+            $value = $this->lng->txt('unchecked');
+            foreach ($solution_values as $solution) {
+                if ($solution['value1'] == $id) {
+                    $value = $this->lng->txt('checked');
+                    break;
+                }
+            }
+            $parsed_solution[] = "{$answer->getArea()}: {$answer->getCoords()} ({$value})";
+        }
+        return $parsed_solution;
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): array
+    {
+        return array_map(
+            fn(ASS_AnswerImagemap $v): string => "{$v->getArea()}: {$v->getCoords()}"
+                . "({$this->lng->txt('points')} "
+                . "{$this->lng->txt('checked')}: {$v->getPoints()}, "
+                . "{$this->lng->txt('unchecked')}: {$v->getPointsUnchecked()})",
+            $this->getAnswers()
+        );
     }
 }

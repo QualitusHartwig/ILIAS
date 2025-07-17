@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 use ILIAS\TestQuestionPool\Questions\QuestionLMExportable;
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
 
 /**
@@ -187,7 +186,7 @@ class assOrderingHorizontal extends assQuestion implements ilObjQuestionScoringA
 
     protected function getSolutionSubmit(): string
     {
-        return $this->questionpool_request->retrieveStringValueFromPost('orderresult');
+        return $this->questionpool_request->string('orderresult');
     }
 
     public function saveWorkingData(
@@ -195,7 +194,7 @@ class assOrderingHorizontal extends assQuestion implements ilObjQuestionScoringA
         ?int $pass = null,
         bool $authorized = true
     ): bool {
-        if($this->questionpool_request->raw('test_answer_changed') === null) {
+        if ($this->questionpool_request->raw('test_answer_changed') === null) {
             return true;
         }
 
@@ -294,25 +293,6 @@ class assOrderingHorizontal extends assQuestion implements ilObjQuestionScoringA
     {
         $text = parent::getRTETextWithMediaObjects();
         return $text;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $solutionvalue = "";
-        $solutions = $this->getSolutionValues($active_id, $pass);
-        if (array_key_exists(0, $solutions)) {
-            $solutionvalue = str_replace("{::}", " ", $solutions[0]["value1"]);
-        }
-        $i = 1;
-        $worksheet->setCell($startrow + $i, $col + 2, $solutionvalue);
-        $i++;
-
-        return $startrow + $i + 1;
     }
 
     /**
@@ -419,7 +399,7 @@ class assOrderingHorizontal extends assQuestion implements ilObjQuestionScoringA
         $result = [];
         $result['id'] = $this->getId();
         $result['type'] = (string) $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['nr_of_tries'] = $this->getNrOfTries();
         $result['shuffle'] = true;
@@ -529,7 +509,7 @@ class assOrderingHorizontal extends assQuestion implements ilObjQuestionScoringA
      * @param $value
      * @return float
      */
-    protected function calculateReachedPointsForSolution(?array $value): float
+    protected function calculateReachedPointsForSolution(?string $value): float
     {
         $value = $this->splitAndTrimOrderElementText($value ?? "", $this->answer_separator);
         $value = join($this->answer_separator, $value);
@@ -554,7 +534,7 @@ class assOrderingHorizontal extends assQuestion implements ilObjQuestionScoringA
     {
         return [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_TEXTSIZE => ((int) $this->getTextSize()) ? (int) $this->getTextSize() : 100,
             AdditionalInformationGenerator::KEY_QUESTION_CORRECT_ANSWER_OPTIONS => $this->getOrderText(),
@@ -566,7 +546,7 @@ class assOrderingHorizontal extends assQuestion implements ilObjQuestionScoringA
         ];
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
     ): string {
@@ -576,5 +556,20 @@ class assOrderingHorizontal extends assQuestion implements ilObjQuestionScoringA
         }
 
         return str_replace("{::}", " ", $solution_values[0]['value1']);
+    }
+
+    public function solutionValuesToText(array $solution_values): string
+    {
+        if (!array_key_exists(0, $solution_values) ||
+            !array_key_exists('value1', $solution_values[0])) {
+            return '';
+        }
+
+        return str_replace("{::}", " ", $solution_values[0]['value1']);
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): string
+    {
+        return $this->getOrderText();
     }
 }

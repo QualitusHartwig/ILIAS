@@ -20,10 +20,11 @@ declare(strict_types=1);
 
 namespace ILIAS\Test\Scoring\Manual;
 
-use ilCtrlException;
-use ILIAS\Test\Logging\TestScoringInteraction;
+use ILIAS\Test\Presentation\TabsManager;
 use ILIAS\Test\Logging\TestScoringInteractionTypes;
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
+use ilInfoScreenGUI;
+use ilObjTestGUI;
 
 /**
 * Scoring class for tests
@@ -83,7 +84,7 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
     {
         if (!$this->testrequest->isset('active_id') || $this->testrequest->int('active_id') === 0) {
             $this->tpl->setOnScreenMessage('failure', 'no active id given!', true);
-            $this->ctrl->redirectByClass("ilobjtestgui", "infoScreen");
+            $this->ctrl->redirectByClass([\ilRepositoryGUI::class, \ilObjTestGUI::class, \ilInfoScreenGUI::class]);
         }
 
         return $this->testrequest->int('active_id');
@@ -119,13 +120,13 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
             \ilObjTestGUI::accessViolationRedirect();
         }
 
-        if (!\ilObjTestFolder::_mananuallyScoreableQuestionTypesExists()) {
+        if (!$this->object->getGlobalSettings()->isManualScoringEnabled()) {
             // allow only if at least one question type is marked for manual scoring
             $this->tpl->setOnScreenMessage('failure', $this->lng->txt("manscoring_not_allowed"), true);
-            $this->ctrl->redirectByClass("ilobjtestgui", "infoScreen");
+            $this->ctrl->redirectByClass([ilRepositoryGUI::class, ilObjTestGUI::class, ilInfoScreenGUI::class]);
         }
 
-        $this->tabs->activateTab(\ilTestTabsManager::TAB_ID_MANUAL_SCORING);
+        $this->tabs->activateTab(TabsManager::TAB_ID_MANUAL_SCORING);
         $this->buildSubTabs($this->getActiveSubTabId());
 
         $command = $this->ctrl->getCmd($this->getDefaultCommand());
@@ -166,7 +167,7 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
         $this->showManScoringParticipantsTable();
     }
 
-    private function showManScoringParticipantScreen(\ilPropertyFormGUI $form = null): void
+    private function showManScoringParticipantScreen(?\ilPropertyFormGUI $form = null): void
     {
         $active_id = $this->fetchActiveIdParameter();
 
@@ -191,7 +192,7 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
         $content_html .= $table->getHTML() . '<br />';
 
         if ($form === null) {
-            $question_gui_list = $this->service->getManScoringQuestionGuiList($active_id, $pass);
+            $question_gui_list = $this->getManScoringQuestionGuiList($active_id, $pass);
             $form = $this->buildManScoringParticipantForm($question_gui_list, $active_id, $pass, true);
         }
 
@@ -210,7 +211,7 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
 
         $pass = $this->fetchPassParameter($active_id);
 
-        $question_gui_list = $this->service->getManScoringQuestionGuiList($active_id, $pass);
+        $question_gui_list = $this->getManScoringQuestionGuiList($active_id, $pass);
         $form = $this->buildManScoringParticipantForm($question_gui_list, $active_id, $pass, false);
 
         $form->setValuesByPost();
@@ -225,7 +226,7 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
         $max_points_exceeded = false;
         foreach (array_keys($question_gui_list) as $question_id) {
             $reached_points = $form->getItemByPostVar("question__{$question_id}__points")->getValue();
-            $max_points = $this->questionrepository->getForQuestionId($question_id)->getMaximumPoints();
+            $max_points = $this->questionrepository->getForQuestionId($question_id)->getAvailablePoints();
 
             if ($reached_points > $max_points) {
                 $max_points_exceeded = true;
@@ -262,8 +263,7 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
                     $reached_points,
                     $maxPointsByQuestionId[$question_id],
                     $pass,
-                    true,
-                    $this->object->areObligationsEnabled()
+                    true
                 );
             }
 
@@ -278,8 +278,7 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
                 $question_id,
                 $pass,
                 $feedback_text,
-                $finalized,
-                true
+                $finalized
             );
 
             if ($this->logger->isLoggingEnabled()) {
@@ -330,7 +329,7 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
 
         $scorer = new TestScoring($this->object, $this->user, $this->db, $this->lng);
         $scorer->setPreserveManualScores(true);
-        $scorer->recalculateSolutions();
+        $scorer->recalculateSolution($active_id, $pass);
 
         if ($this->object->getAnonymity() == 0) {
             $user_name = \ilObjUser::_lookupName(\ilObjTestAccess::_getParticipantId($active_id));
@@ -345,9 +344,6 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
         return true;
     }
 
-    /**
-     * @throws ilCtrlException
-     */
     private function saveNextManScoringParticipantScreen(): void
     {
         $table = $this->buildManScoringParticipantsTable(true);
@@ -372,9 +368,6 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
         }
     }
 
-    /**
-     * @throws ilCtrlException
-     */
     private function saveReturnManScoringParticipantScreen(): void
     {
         if ($this->saveManScoringParticipantScreen(false)) {
@@ -398,11 +391,14 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
         $form->setTableWidth('100%');
 
         foreach ($question_gui_list as $question_id => $question_gui) {
-            $question_header = sprintf($this->lng->txt('tst_manscoring_question_section_header'), $question_gui->getObject()->getTitle());
+            $question_header = sprintf(
+                $this->lng->txt('tst_manscoring_question_section_header'),
+                $question_gui->getObject()->getTitleForHTMLOutput()
+            );
             $question_solution = $question_gui->getSolutionOutput($active_id, $pass, false, false, true, false, false, true);
             $best_solution = $question_gui->getObject()->getSuggestedSolutionOutput();
 
-            $feedback = $this->object->getSingleManualFeedback($active_id, $question_id, $pass);
+            $feedback = \ilObjTest::getSingleManualFeedback($active_id, $question_id, $pass);
 
             $disabled = false;
             if (isset($feedback['finalized_evaluation']) && $feedback['finalized_evaluation'] == 1) {
@@ -417,18 +413,23 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
             $cust->setHtml($question_solution);
             $form->addItem($cust);
 
-            $text = new \ilTextInputGUI($this->lng->txt('tst_change_points_for_question'), "question__{$question_id}__points");
+            $number_input_gui = new \ilNumberInputGUI(
+                $this->lng->txt('tst_change_points_for_question'),
+                "question__{$question_id}__points"
+            );
+            $number_input_gui->allowDecimals(true);
+
             if ($initValues) {
-                $text->setValue((string) \assQuestion::_getReachedPoints($active_id, $question_id, $pass));
+                $number_input_gui->setValue((string) \assQuestion::_getReachedPoints($active_id, $question_id, $pass));
             }
             if ($disabled) {
-                $text->setDisabled($disabled);
+                $number_input_gui->setDisabled($disabled);
             }
-            $form->addItem($text);
+            $form->addItem($number_input_gui);
 
             $nonedit = new \ilNonEditableValueGUI($this->lng->txt('tst_manscoring_input_max_points_for_question'), "question__{$question_id}__maxpoints");
             if ($initValues) {
-                $nonedit->setValue($this->questionrepository->getForQuestionId($question_id)->getMaximumPoints());
+                $nonedit->setValue($this->questionrepository->getForQuestionId($question_id)->getAvailablePoints());
             }
             $form->addItem($nonedit);
 
@@ -475,28 +476,45 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
         return $form;
     }
 
-    private function sendManScoringParticipantNotification(): void
+    private function getManScoringQuestionGuiList(int $active_id, int $pass): array
     {
+        $test_result_data = $this->object->getTestResult($active_id, $pass);
+
+        $man_scoring_question_gui_list = [];
+
+        foreach ($test_result_data as $question_data) {
+            if (!isset($question_data['qid'])) {
+                continue;
+            }
+
+            if (!isset($question_data['type'])) {
+                throw new ilTestException('no question type given!');
+            }
+
+            $man_scoring_question_gui_list[ $question_data['qid'] ] = $this->object
+                ->createQuestionGUI('', $question_data['qid']);
+        }
+
+        return $man_scoring_question_gui_list;
     }
 
-    private function buildManScoringParticipantsTable(bool $withData = false): TestScoringByParticipantTableGUI
+    private function buildManScoringParticipantsTable(bool $with_data = false): TestScoringByParticipantTableGUI
     {
         $table = new TestScoringByParticipantTableGUI($this);
 
-        if ($withData) {
-            $participantStatusFilterValue = $table->getFilterItemByPostVar('participant_status')->getValue();
-
+        if ($with_data) {
             $participant_list = new \ilTestParticipantList($this->object, $this->user, $this->lng, $this->db);
-
             $participant_list->initializeFromDbRows(
-                $this->object->getTestParticipantsForManualScoring($participantStatusFilterValue)
+                $this->object->getTestParticipantsForManualScoring(
+                    $table->getFilterItemByPostVar('participant_status')->getValue()
+                )
             );
 
-            $filtered_participant_list = $participant_list->getAccessFilteredList(
-                $this->participant_access_filter->getScoreParticipantsUserFilter($this->ref_id)
+            $table->setData(
+                $participant_list->getAccessFilteredList(
+                    $this->participant_access_filter->getScoreParticipantsUserFilter($this->ref_id)
+                )->getScoringTableRows()
             );
-
-            $table->setData($filtered_participant_list->getParticipantsTableRows());
         }
 
         return $table;

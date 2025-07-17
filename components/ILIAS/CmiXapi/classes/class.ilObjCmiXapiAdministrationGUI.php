@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=1);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=1);
 
 /**
  * Class ilObjCmiXapiAdministrationGUI
@@ -120,7 +120,7 @@ class ilObjCmiXapiAdministrationGUI extends ilObjectGUI
         return $toolbar;
     }
 
-    protected function showLrsTypeFormCmd(ilPropertyFormGUI $form = null): void
+    protected function showLrsTypeFormCmd(?ilPropertyFormGUI $form = null): void
     {
         $this->tabs_gui->activateTab(self::TAB_ID_LRS_TYPES);
 
@@ -232,7 +232,7 @@ class ilObjCmiXapiAdministrationGUI extends ilObjectGUI
         $form->addItem($item);
 
         $sectionHeader = new ilFormSectionHeaderGUI();
-        $sectionHeader->setTitle($DIC->language()->txt('sect_privacy_options'));
+        $sectionHeader->setTitle($DIC->language()->txt('privacy_options'));
         $form->addItem($sectionHeader);
 
         $useProxy = new ilCheckboxInputGUI($DIC->language()->txt('conf_use_proxy'), 'use_proxy');

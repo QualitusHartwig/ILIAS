@@ -18,15 +18,19 @@
 
 declare(strict_types=1);
 
-use ILIAS\Cron\Schedule\CronJobScheduleType;
+use ILIAS\Cron\Job\Schedule\JobScheduleType;
+use ILIAS\Test\Results\Data\StatusOfAttempt;
+use ILIAS\Test\Results\Data\Repository as TestResultRepository;
 use ILIAS\Test\TestDIC;
 use ILIAS\Test\Logging\TestLogger;
+use ILIAS\Cron\Job\JobResult;
+use ILIAS\Cron\CronJob;
 
 /**
  * Class ilCronFinishUnfinishedTestPasses
  * @author Guido Vollbach <gvollbach@databay.de>
  */
-class ilCronFinishUnfinishedTestPasses extends ilCronJob
+class ilCronFinishUnfinishedTestPasses extends CronJob
 {
     protected readonly TestLogger $logger;
 
@@ -39,6 +43,7 @@ class ilCronFinishUnfinishedTestPasses extends ilCronJob
     protected array $test_ids;
     protected array $test_ending_times;
     protected ilTestProcessLockerFactory $processLockerFactory;
+    protected TestResultRepository $test_pass_result_repository;
 
     public function __construct()
     {
@@ -60,6 +65,8 @@ class ilCronFinishUnfinishedTestPasses extends ilCronJob
             new ilSetting('assessment'),
             $this->db
         );
+
+        $this->test_pass_result_repository = TestDic::dic()['results.data.test_result_repository'];
     }
 
     public function getId(): string
@@ -77,9 +84,9 @@ class ilCronFinishUnfinishedTestPasses extends ilCronJob
         return $this->lng->txt('finish_unfinished_passes_desc');
     }
 
-    public function getDefaultScheduleType(): CronJobScheduleType
+    public function getDefaultScheduleType(): JobScheduleType
     {
-        return CronJobScheduleType::SCHEDULE_TYPE_DAILY;
+        return JobScheduleType::DAILY;
     }
 
     public function getDefaultScheduleValue(): int
@@ -102,11 +109,11 @@ class ilCronFinishUnfinishedTestPasses extends ilCronJob
         return true;
     }
 
-    public function run(): ilCronJobResult
+    public function run(): JobResult
     {
         $this->logger->info('start inf cronjob...');
 
-        $result = new ilCronJobResult();
+        $result = new JobResult();
 
         $this->gatherUsersWithUnfinishedPasses();
         if (count($this->unfinished_passes) > 0) {
@@ -117,7 +124,7 @@ class ilCronFinishUnfinishedTestPasses extends ilCronJob
             $this->logger->info('No unfinished passes found.');
         }
 
-        $result->setStatus(ilCronJobResult::STATUS_OK);
+        $result->setStatus(JobResult::STATUS_OK);
 
         $this->logger->info(' ...finishing cronjob.');
 
@@ -169,7 +176,6 @@ class ilCronFinishUnfinishedTestPasses extends ilCronJob
             if (!array_key_exists($test_id, $this->test_ending_times)) {
                 continue;
             }
-
             if (!$this->finishPassOnEndingTime($test_id, $data['active_id'])
                 && !$this->finishPassOnProcessingTime(
                     $test_id,
@@ -219,7 +225,7 @@ class ilCronFinishUnfinishedTestPasses extends ilCronJob
         $this->logger->info('Test (' . $test_id . ') has processing time (' . $this->test_ending_times[$test_id]['processing_time'] . ')');
         $obj_id = $this->test_ending_times[$test_id]['obj_fi'];
 
-        if (ilObject::_exists($obj_id)) {
+        if (!ilObject::_exists($obj_id)) {
             $this->logger->info('Test object with id (' . $obj_id . ') does not exist.');
             return false;
         }
@@ -250,19 +256,21 @@ class ilCronFinishUnfinishedTestPasses extends ilCronJob
         $test_session = new ilTestSession($this->db, $this->user);
         $test_session->loadFromDb($active_id);
 
-        if(ilObject::_exists($obj_id)) {
+        if (ilObject::_exists($obj_id)) {
             $test = new ilObjTest($obj_id, false);
 
             $test->updateTestPassResults(
                 $active_id,
                 $test_session->getPass(),
-                $test->areObligationsEnabled(),
                 null,
                 $obj_id
             );
 
-            $pass_finisher = new ilTestPassFinishTasks($test_session, $obj_id);
-            $pass_finisher->performFinishTasks($processLocker);
+            (new ilTestPassFinishTasks(
+                $test_session,
+                $test,
+                $this->test_pass_result_repository
+            ))->performFinishTasks($processLocker, StatusOfAttempt::FINISHED_BY_CRONJOB);
             $this->logger->info('Test session with active id (' . $active_id . ') and obj_id (' . $obj_id . ') is now finished.');
         } else {
             $this->logger->info('Test object with id (' . $obj_id . ') does not exist.');

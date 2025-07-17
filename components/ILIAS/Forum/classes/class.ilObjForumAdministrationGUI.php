@@ -21,6 +21,7 @@ declare(strict_types=1);
 use ILIAS\DI\UIServices;
 use ILIAS\UI\Component\Input\Container\Form\Form;
 use ILIAS\UI\Component\Component;
+use ILIAS\Cron\Job\JobManager;
 
 /**
  * @ilCtrl_Calls      ilObjForumAdministrationGUI: ilPermissionGUI
@@ -28,13 +29,12 @@ use ILIAS\UI\Component\Component;
  */
 class ilObjForumAdministrationGUI extends ilObjectGUI
 {
-    private const PROP_SECTION_DEFAULTS = 'defaults';
-    private const PROP_SECTION_FEATURES = 'features';
-    private const PROP_SECTION_NOTIFICATIONS = 'notifications';
-    private const PROP_SECTION_DRAFTS = 'drafts';
+    private const string PROP_SECTION_DEFAULTS = 'defaults';
+    private const string PROP_SECTION_FEATURES = 'features';
+    private const string PROP_SECTION_NOTIFICATIONS = 'notifications';
+    private const string PROP_SECTION_DRAFTS = 'drafts';
 
-    private readonly \ILIAS\DI\RBACServices $rbac;
-    private readonly ilCronManager $cronManager;
+    private readonly JobManager $cronManager;
     private readonly UIServices $ui;
 
     public function __construct($a_data, int $a_id, bool $a_call_by_reference = true, bool $a_prepare_output = true)
@@ -44,7 +44,6 @@ class ilObjForumAdministrationGUI extends ilObjectGUI
          */
         global $DIC;
 
-        $this->rbac = $DIC->rbac();
         $this->cronManager = $DIC->cron()->manager();
         $this->ui = $DIC->ui();
 
@@ -56,7 +55,7 @@ class ilObjForumAdministrationGUI extends ilObjectGUI
 
     public function executeCommand(): void
     {
-        if (!$this->rbac->system()->checkAccess('visible,read', $this->object->getRefId())) {
+        if (!$this->rbac_system->checkAccess('visible,read', $this->object->getRefId())) {
             $this->error->raiseError($this->lng->txt('no_permission'), $this->error->WARNING);
         }
 
@@ -83,7 +82,7 @@ class ilObjForumAdministrationGUI extends ilObjectGUI
 
     public function getAdminTabs(): void
     {
-        if ($this->rbac->system()->checkAccess('visible,read', $this->object->getRefId())) {
+        if ($this->rbac_system->checkAccess('visible,read', $this->object->getRefId())) {
             $this->tabs_gui->addTarget(
                 'settings',
                 $this->ctrl->getLinkTarget($this, 'editSettings'),
@@ -91,7 +90,7 @@ class ilObjForumAdministrationGUI extends ilObjectGUI
             );
         }
 
-        if ($this->rbac->system()->checkAccess('edit_permission', $this->object->getRefId())) {
+        if ($this->rbac_system->checkAccess('edit_permission', $this->object->getRefId())) {
             $this->tabs_gui->addTarget(
                 'perm_settings',
                 $this->ctrl->getLinkTargetByClass(ilPermissionGUI::class, 'perm'),
@@ -101,7 +100,7 @@ class ilObjForumAdministrationGUI extends ilObjectGUI
         }
     }
 
-    public function editSettings(Form $form = null): void
+    public function editSettings(?Form $form = null): void
     {
         $this->tabs_gui->activateTab('settings');
 
@@ -118,7 +117,9 @@ class ilObjForumAdministrationGUI extends ilObjectGUI
 
     public function saveSettings(): void
     {
-        $this->checkPermission('write');
+        if (!$this->rbac_system->checkAccess('write', $this->object->getRefId())) {
+            $this->error->raiseError($this->lng->txt('no_permission'), $this->error->WARNING);
+        }
 
         $form = $this->settingsForm()->withRequest($this->request);
         $data = $form->getData();
@@ -165,12 +166,14 @@ class ilObjForumAdministrationGUI extends ilObjectGUI
             );
         }
 
-        $this->tpl->setOnScreenMessage('success', $this->lng->txt('settings_saved'));
-        $this->editSettings($form);
+        $this->tpl->setOnScreenMessage('success', $this->lng->txt('settings_saved'), true);
+        $this->ctrl->redirect($this, 'editSettings');
     }
 
     protected function settingsForm(): Form
     {
+        $may_write = $this->rbac_system->checkAccess('write', $this->object->getRefId());
+
         $field = $this->ui->factory()->input()->field();
 
         $section = fn(string $label, array $inputs): \ILIAS\UI\Component\Input\Field\Section => $field->section(
@@ -201,7 +204,7 @@ class ilObjForumAdministrationGUI extends ilObjectGUI
             $f ??= static fn($x) => $x;
             return $f($checkbox($label ?? $name)->withValue((bool) $this->settings->get($name)));
         };
-        $disable_if_no_permission = $this->checkPermissionBool('write') ? static fn(
+        $disable_if_no_permission = $may_write ? static fn(
             array $fields
         ): array => $fields : static fn(
             array $fields
@@ -210,8 +213,13 @@ class ilObjForumAdministrationGUI extends ilObjectGUI
             $fields
         );
 
-        return $this->ui->factory()->input()->container()->form()->standard(
-            $this->ctrl->getFormAction($this, 'saveSettings'),
+        $action = $this->ctrl->getFormAction($this, 'saveSettings');
+        if (!$may_write) {
+            $action = $this->ctrl->getFormAction($this, 'editSettings');
+        }
+
+        $form = $this->ui->factory()->input()->container()->form()->standard(
+            $action,
             [
                 self::PROP_SECTION_DEFAULTS => $section('frm_adm_sec_default_settings', $disable_if_no_permission([
                     'forum_default_view' => $radio_with_options($field->radio($this->lng->txt('frm_default_view')), [
@@ -260,7 +268,7 @@ class ilObjForumAdministrationGUI extends ilObjectGUI
                 self::PROP_SECTION_NOTIFICATIONS => $section('frm_adm_sec_notifications', $disable_if_no_permission([
                     'forum_notification' => $checkbox_with_func(
                         'forum_notification',
-                        'cron_forum_notification',
+                        'forums_forum_notification',
                         fn($field) => (
                             $field
                             ->withDisabled($this->forumJobActive())
@@ -293,9 +301,15 @@ class ilObjForumAdministrationGUI extends ilObjectGUI
                             )
                         ] : null
                     )
-                ])),
+                ]))
             ]
         );
+
+        if (!$may_write) {
+            $form = $form->withSubmitLabel($this->lng->txt('refresh'));
+        }
+
+        return $form;
     }
 
     public function addToExternalSettingsForm(int $a_form_id): array

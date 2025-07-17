@@ -23,7 +23,7 @@ use ILIAS\Container\Content\ViewManager;
 use ILIAS\HTTP\GlobalHttpState;
 use ILIAS\Refinery\Factory;
 use ILIAS\Object\ImplementsCreationCallback;
-use ILIAS\Object\CreationCallbackTrait;
+use ILIAS\ILIASObject\Creation\CreationCallbackTrait;
 
 /**
 * Class ilSearchBaseGUI
@@ -426,7 +426,6 @@ class ilSearchBaseGUI implements ilDesktopItemHandling, ilAdministrationCommandH
 
     protected function renderSearch(string $term, int $root_node = 0)
     {
-        ilOverlayGUI::initJavascript();
         $this->tpl->addJavascript("assets/js/Search.js");
 
         $this->tpl->setVariable("FORM_ACTION", $this->ctrl->getFormAction($this, "performSearch"));

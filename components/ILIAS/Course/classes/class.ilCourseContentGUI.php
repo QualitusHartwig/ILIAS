@@ -312,7 +312,7 @@ class ilCourseContentGUI
         $this->tabs->clearSubTabs();
         $failed = array();
 
-        $post_item = (array) ($this->http->request()->getParsedBody()['item']) ?? [];
+        $post_item = (array) ($this->http->request()->getParsedBody()['item'] ?? []);
         foreach ($post_item as $ref_id => $data) {
             $sug_start_dt = ilCalendarUtil::parseIncomingDate($data['sug_start']);
             $sug_end_dt = ilCalendarUtil::parseIncomingDate($data['sug_end']);

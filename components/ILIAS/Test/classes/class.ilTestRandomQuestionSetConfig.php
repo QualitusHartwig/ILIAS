@@ -325,18 +325,14 @@ class ilTestRandomQuestionSetConfig extends ilTestQuestionSetConfig
 
     private function buildSourcePoolDefinitionList(ilObjTest $test_obj): ilTestRandomQuestionSetSourcePoolDefinitionList
     {
-        $sourcePoolDefinitionFactory = new ilTestRandomQuestionSetSourcePoolDefinitionFactory(
-            $this->db,
-            $test_obj
-        );
-
-        $sourcePoolDefinitionList = new ilTestRandomQuestionSetSourcePoolDefinitionList(
+        return new ilTestRandomQuestionSetSourcePoolDefinitionList(
             $this->db,
             $test_obj,
-            $sourcePoolDefinitionFactory
+            new ilTestRandomQuestionSetSourcePoolDefinitionFactory(
+                $this->db,
+                $test_obj
+            )
         );
-
-        return $sourcePoolDefinitionList;
     }
 
     private function buildStagingPoolBuilder(ilObjTest $test_obj): ilTestRandomQuestionSetStagingPoolBuilder
@@ -378,48 +374,6 @@ class ilTestRandomQuestionSetConfig extends ilTestQuestionSetConfig
     public function doesSelectableQuestionPoolsExist(): bool
     {
         return (bool) count($this->getSelectableQuestionPools());
-    }
-
-    public function areDepenciesBroken(): bool
-    {
-        return $this->test_obj->isTestFinalBroken();
-    }
-
-    public function getDepenciesBrokenMessage(ilLanguage $lng): string
-    {
-        return $lng->txt('tst_old_style_rnd_quest_set_broken');
-    }
-
-    public function isValidRequestOnBrokenQuestionSetDepencies(string $next_class, string $cmd): bool
-    {
-        switch ($next_class) {
-            case 'ilobjectmetadatagui':
-            case 'ilpermissiongui':
-
-                return true;
-
-            case 'ilobjtestgui':
-            case '':
-
-                $cmds = [
-                    'infoScreen', 'participants', 'npSetFilter', 'npResetFilter',
-                ];
-
-                if (in_array($cmd, $cmds)) {
-                    return true;
-                }
-
-                break;
-        }
-
-        return false;
-    }
-
-    public function getHiddenTabsOnBrokenDepencies(): array
-    {
-        return [
-            'assQuestions', 'settings', 'manscoring', 'scoringadjust', 'statistics', 'history', 'export'
-        ];
     }
 
     public function getCommaSeparatedSourceQuestionPoolLinks(): string

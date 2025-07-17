@@ -50,6 +50,7 @@ class MarkSchemaTable implements DataRetrieval
         $f = $this->ui_factory->table();
 
         $table = $f->data(
+            $this,
             $this->lng->txt('mark_schema'),
             [
                 'name' => $f->column()->text($this->lng->txt('tst_mark_short_form')),
@@ -69,23 +70,26 @@ class MarkSchemaTable implements DataRetrieval
                     )
                 )
             ],
-            $this
-        )->withActions(
+        );
+
+        if (!$this->marks_editable) {
+            return $table;
+        }
+
+        return $table->withActions(
             [
                 self::EDIT_ACTION_NAME => $f->action()->single(
                     $this->lng->txt('edit'),
                     $this->url_builder->withParameter($this->action_parameter_token, self::EDIT_ACTION_NAME),
                     $this->row_id_token
                 )->withAsync(),
-                self::DELETE_ACTION_NAME => $f->action()->standard(
+                self::DELETE_ACTION_NAME => $f->action()->single(
                     $this->lng->txt('delete'),
                     $this->url_builder->withParameter($this->action_parameter_token, self::DELETE_ACTION_NAME),
                     $this->row_id_token
                 )->withAsync()
             ]
         );
-
-        return $table;
     }
 
     public function getRows(
@@ -106,7 +110,12 @@ class MarkSchemaTable implements DataRetrieval
                     'passed' => $mark->getPassed()
                 ]
             )->withDisabledAction('edit', !$this->marks_editable)
-            ->withDisabledAction('delete', !$this->marks_editable);
+            ->withDisabledAction(
+                'delete',
+                !$this->marks_editable
+                || $mark->getMinimumLevel() === 0.0 && $this->mark_schema->hasSingleZeroPercentageMark()
+                || $mark->getPassed() && $this->mark_schema->hasSinglePassedMark()
+            );
         }
     }
 

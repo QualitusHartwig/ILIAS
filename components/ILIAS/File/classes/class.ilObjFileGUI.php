@@ -16,6 +16,10 @@
  *
  *********************************************************************/
 
+use ILIAS\HTTP\Wrapper\WrapperFactory;
+use ILIAS\UI\Renderer;
+use Psr\Http\Message\ServerRequestInterface;
+use ILIAS\Filesystem\Exception\FileNotFoundException;
 use ILIAS\DI\UIServices;
 use ILIAS\UI\Component\Input\Field\UploadHandler;
 use ILIAS\ResourceStorage\Services;
@@ -23,15 +27,17 @@ use ILIAS\ResourceStorage\Stakeholder\ResourceStakeholder;
 use ILIAS\UI\Component\Input\Container\Form\Standard;
 use ILIAS\File\Icon\IconDatabaseRepository;
 use ILIAS\components\File\Settings\General;
-use ILIAS\UI\Implementation\Component\Input\UploadLimitResolver;
-use ILIAS\Data\DataSize;
 use ILIAS\Refinery\String\Group;
 use ILIAS\Data\Factory;
 use ILIAS\components\WOPI\Discovery\ActionDBRepository;
 use ILIAS\components\WOPI\Embed\EmbeddedApplication;
 use ILIAS\Data\URI;
-use ILIAS\components\WOPI\Discovery\ActionTarget;
 use ILIAS\MetaData\Services\ServicesInterface as LOMServices;
+use ILIAS\File\Capabilities\Capabilities;
+use ILIAS\File\Capabilities\CapabilityBuilder;
+use ILIAS\File\Capabilities\CapabilityCollection;
+use ILIAS\File\Capabilities\Context;
+use ILIAS\ILIASObject\Properties\CoreProperties\TitleAndDescription;
 
 /**
  * GUI class for file objects.
@@ -59,11 +65,12 @@ class ilObjFileGUI extends ilObject2GUI
     public const UPLOAD_ORIGIN_STANDARD = 'standard';
     public const UPLOAD_ORIGIN_DROPZONE = 'dropzone';
 
-    public const CMD_EDIT = "edit";
-    public const CMD_VERSIONS = "versions";
+    public const CMD_EDIT = Capabilities::EDIT_SETTINGS->value;
+    public const CMD_VERSIONS = Capabilities::MANAGE_VERSIONS->value;
     public const CMD_UPLOAD_FILES = "uploadFiles";
 
-    public const CMD_SEND_FILE = "sendFile";
+    public const CMD_SEND_FILE = Capabilities::DOWNLOAD->value;
+    private CapabilityCollection $capabilities;
 
     /**
      * @var \ilObjFile|null $object
@@ -77,15 +84,13 @@ class ilObjFileGUI extends ilObject2GUI
     protected ?ilLogger $log = null;
     protected ilObjectService $obj_service;
     protected \ILIAS\Refinery\Factory $refinery;
-    protected \ILIAS\HTTP\Wrapper\WrapperFactory $http;
     protected General $general_settings;
     protected ilFileServicesSettings $file_service_settings;
     protected IconDatabaseRepository $icon_repo;
-    private UploadLimitResolver $upload_limit;
     protected \ILIAS\UI\Component\Input\Factory $inputs;
-    protected \ILIAS\UI\Renderer $renderer;
-    protected \Psr\Http\Message\ServerRequestInterface $request;
-    protected \ILIAS\Data\Factory $data_factory;
+    protected Renderer $renderer;
+    protected ServerRequestInterface $request;
+    protected Factory $data_factory;
     private ActionDBRepository $action_repo;
     protected LOMServices $lom_services;
 
@@ -95,8 +100,6 @@ class ilObjFileGUI extends ilObject2GUI
     public function __construct(int $a_id = 0, int $a_id_type = self::REPOSITORY_NODE_ID, int $a_parent_node_id = 0)
     {
         global $DIC;
-        $this->http = $DIC->http()->wrapper();
-        $this->request = $DIC->http()->request();
         $this->refinery = $DIC->refinery();
         $this->file_service_settings = $DIC->fileServiceSettings();
         $this->user = $DIC->user();
@@ -111,13 +114,42 @@ class ilObjFileGUI extends ilObject2GUI
         $this->obj_service = $DIC->object();
         $this->lng->loadLanguageModule(ilObjFile::OBJECT_TYPE);
         $this->icon_repo = new IconDatabaseRepository();
-        $this->upload_limit = $DIC['ui.upload_limit_resolver'];
         $this->inputs = $DIC->ui()->factory()->input();
         $this->renderer = $DIC->ui()->renderer();
         $this->request = $DIC->http()->request();
         $this->data_factory = new Factory();
         $this->action_repo = new ActionDBRepository($DIC->database());
         $this->lom_services = $DIC->learningObjectMetadata();
+
+        $capability_builder = new CapabilityBuilder(
+            new ilObjFileInfoRepository(),
+            $this->access,
+            $this->ctrl,
+            $this->action_repo,
+            $DIC->http(),
+            $DIC['static_url.uri_builder']
+        );
+
+        $capability_context = new Context(
+            $this->object_id,
+            $this->ref_id,
+            ($a_id_type === self::WORKSPACE_NODE_ID) ? Context::CONTEXT_WORKSPACE : Context::CONTEXT_REPO
+        );
+
+        $this->capabilities = $capability_builder->get($capability_context);
+    }
+
+    protected function updateLearningProgress(): void
+    {
+        if ($this->object->getLPMode() === ilLPObjSettings::LP_MODE_CONTENT_VISITED) {
+            ilLPStatusWrapper::_updateStatus(
+                $this->object->getId(),
+                $this->user->getId(),
+                null,
+                false,
+                true
+            );
+        }
     }
 
     public function getType(): string
@@ -130,6 +162,7 @@ class ilObjFileGUI extends ilObject2GUI
         return $this->parent_id;
     }
 
+    #[\Override]
     public function executeCommand(): void
     {
         global $DIC;
@@ -142,15 +175,16 @@ class ilObjFileGUI extends ilObject2GUI
         $next_class = $this->ctrl->getNextClass($this);
         $cmd = $this->ctrl->getCmd();
 
-        if (!$this->getCreationMode() && ($this->id_type == self::REPOSITORY_NODE_ID
-                && $this->checkPermissionBool("read"))) {
-            $ilCtrl->setParameterByClass("ilrepositorygui", "ref_id", $this->node_id);
-            $link = $ilCtrl->getLinkTargetByClass("ilrepositorygui", "infoScreen");
-            $ilCtrl->setParameterByClass("ilrepositorygui", "ref_id", $this->ref_id);
+        if (
+            !$this->getCreationMode()
+            && (
+                $this->id_type == self::REPOSITORY_NODE_ID
+                && $this->capabilities->get(Capabilities::DOWNLOAD)->isUnlocked()
+            )) {
             // add entry to navigation history
             $ilNavigationHistory->addItem(
                 $this->node_id,
-                $link,
+                (string) $this->capabilities->get(Capabilities::INFO_PAGE)->getUri(),
                 ilObjFile::OBJECT_TYPE
             );
         }
@@ -164,12 +198,12 @@ class ilObjFileGUI extends ilObject2GUI
         $this->tpl->setTitleIcon($path_file_icon);
 
         switch ($next_class) {
-            case "ilinfoscreengui":
+            case strtolower(ilInfoScreenGUI::class):
                 $this->infoScreenForward();    // forwards command
                 break;
 
             case 'ilobjectmetadatagui':
-                if (!$this->checkPermissionBool("write")) {
+                if (!$this->capabilities->get(Capabilities::EDIT_SETTINGS)->isUnlocked()) {
                     $ilErr->raiseError($this->lng->txt('permission_denied'), $ilErr->WARNING);
                 }
 
@@ -193,7 +227,7 @@ class ilObjFileGUI extends ilObject2GUI
             case "ilexportgui":
                 $ilTabs->activateTab("export");
                 $exp_gui = new ilExportGUI($this);
-                $exp_gui->addFormat("xml");
+                $exp_gui->addFormat();
                 $this->ctrl->forwardCommand($exp_gui);
                 break;
 
@@ -217,8 +251,8 @@ class ilObjFileGUI extends ilObject2GUI
 
             case "illearningprogressgui":
                 $ilTabs->activateTab('learning_progress');
-                $user_id = $this->http->query()->has('user_id')
-                    ? $this->http->query()->retrieve('user_id', $this->refinery->kindlyTo()->int())
+                $user_id = $this->request_wrapper->has('user_id')
+                    ? $this->request_wrapper->retrieve('user_id', $this->refinery->kindlyTo()->int())
                     : $ilUser->getId();
                 $new_gui = new ilLearningProgressGUI(
                     ilLearningProgressGUI::LP_CONTEXT_REPOSITORY,
@@ -231,7 +265,7 @@ class ilObjFileGUI extends ilObject2GUI
             case strtolower(ilFileVersionsGUI::class):
                 $this->tabs_gui->activateTab("id_versions");
 
-                if (!$this->checkPermissionBool("write")) {
+                if (!$this->capabilities->get(Capabilities::MANAGE_VERSIONS)->isUnlocked()) {
                     $this->error->raiseError($this->lng->txt("permission_denied"), $this->error->MESSAGE);
                 }
                 /** @var ilObjFile $obj */
@@ -242,25 +276,42 @@ class ilObjFileGUI extends ilObject2GUI
                 $this->ctrl->forwardCommand(new ilObjFileUploadHandlerGUI());
                 break;
             case strtolower(ilWOPIEmbeddedApplicationGUI::class):
-                if (!$this->checkPermissionBool("edit_file")) {
+                $capability = match($cmd) {
+                    ilWOPIEmbeddedApplicationGUI::CMD_VIEW => $this->capabilities->get(Capabilities::VIEW_EXTERNAL),
+                    ilWOPIEmbeddedApplicationGUI::CMD_EDIT => $this->capabilities->get(Capabilities::EDIT_EXTERNAL),
+                    ilWOPIEmbeddedApplicationGUI::CMD_RETURN => $this->capabilities->get(Capabilities::INFO_PAGE),
+                    default => null
+                };
+
+                if ($capability === null || !$capability->isUnlocked()) {
                     $this->error->raiseError($this->lng->txt("permission_denied"), $this->error->MESSAGE);
                     return;
                 }
-                $action = $this->action_repo->getEditActionForSuffix(
-                    $this->object->getFileExtension()
-                );
-                if (null === $action) {
-                    $this->error->raiseError($this->lng->txt("no_action_avaliable"), $this->error->MESSAGE);
-                    return;
+                $action = match ($capability->getCapability()) {
+                    Capabilities::VIEW_EXTERNAL => $this->action_repo->getViewActionForSuffix($suffix),
+                    Capabilities::EDIT_EXTERNAL => $this->action_repo->getEditActionForSuffix($suffix),
+                    default => null
+                };
+
+                $this->tabs_gui->activateTab('content');
+                $this->updateLearningProgress();
+
+                if ($this->id_type === Context::CONTEXT_WORKSPACE) {
+                    $goto_link = ilWorkspaceAccessHandler::getGotoLink(
+                        $this->object->getRefId(),
+                        $this->object->getId()
+                    );
+                } else {
+                    $goto_link = ilLink::_getLink($this->object->getRefId());
                 }
 
                 $embeded_application = new EmbeddedApplication(
                     $this->storage->manage()->find($this->object->getResourceId()),
                     $action,
                     $this->stakeholder,
-                    new URI(ilLink::_getLink($this->object->getRefId()))
+                    new URI($goto_link),
+                    $capability->getCapability() === Capabilities::VIEW_EXTERNAL
                 );
-
 
                 $this->ctrl->forwardCommand(
                     new ilWOPIEmbeddedApplicationGUI(
@@ -287,19 +338,19 @@ class ilObjFileGUI extends ilObject2GUI
                 // in personal workspace use object2gui
                 if ($this->id_type === self::WORKSPACE_NODE_ID) {
                     $this->addHeaderAction();
-
-                    // coming from goto we need default command
-                    if (empty($cmd)) {
-                        $ilCtrl->setCmd("infoScreen");
-                    }
                     $ilTabs->clearTargets();
 
-                    parent::executeCommand();
+                    if (empty($cmd) || $cmd === 'render') {
+                        $cmd = Capabilities::INFO_PAGE->value;
+                        $this->$cmd();
+                    } else {
+                        parent::executeCommand();
+                    }
                     break; // otherwise subtabs are duplicated
                 }
 
                 if (empty($cmd) || $cmd === 'render') {
-                    $cmd = "infoScreen";
+                    $cmd = Capabilities::INFO_PAGE->value;
                 }
 
                 $this->$cmd();
@@ -309,14 +360,6 @@ class ilObjFileGUI extends ilObject2GUI
         $this->addHeaderAction();
     }
 
-    /**
-     * This Method is needed if called from personal resources
-     * @see executeCommand() line 162
-     */
-    protected function render(): void
-    {
-        $this->infoScreen();
-    }
 
     protected function addUIFormToAccordion(
         ilAccordionGUI $accordion,
@@ -360,11 +403,13 @@ class ilObjFileGUI extends ilObject2GUI
     /**
      * @return array
      */
+    #[\Override]
     protected function initCreateForm(string $new_type): Standard
     {
         return $this->initUploadForm();
     }
 
+    #[\Override]
     protected function getCreationFormTitle(): string
     {
         return $this->lng->txt('upload_files');
@@ -382,19 +427,10 @@ class ilObjFileGUI extends ilObject2GUI
             self::UPLOAD_ORIGIN_STANDARD
         );
 
-        // add file input
-        $size = new DataSize(
-            $this->upload_limit->getBestPossibleUploadLimitInBytes($this->upload_handler),
-            DataSize::MB
-        );
 
         $inputs[self::PARAM_FILES] = $this->ui->factory()->input()->field()->file(
             $this->upload_handler,
             $this->lng->txt('upload_files'),
-            sprintf(
-                $this->lng->txt('upload_files_limit'),
-                (string) $size
-            ),
             $this->ui->factory()->input()->field()->group([
                 self::PARAM_TITLE => $this->ui->factory()->input()->field()->text(
                     $this->lng->txt('title')
@@ -411,7 +447,6 @@ class ilObjFileGUI extends ilObject2GUI
             self::UPLOAD_MAX_FILES
         )->withRequired(true);
 
-        // add input for copyright selection if enabled in the metadata settings
         if ($this->lom_services->copyrightHelper()->isCopyrightSelectionActive()) {
             $inputs[self::PARAM_COPYRIGHT_ID] = $this->getCopyrightSelectionInput('set_license_for_all_files');
         }
@@ -427,8 +462,8 @@ class ilObjFileGUI extends ilObject2GUI
      */
     protected function uploadFiles(): void
     {
-        $origin = ($this->http->query()->has(self::PARAM_UPLOAD_ORIGIN)) ?
-            $this->http->query()->retrieve(
+        $origin = ($this->request_wrapper->has(self::PARAM_UPLOAD_ORIGIN)) ?
+            $this->request_wrapper->retrieve(
                 self::PARAM_UPLOAD_ORIGIN,
                 $this->refinery->kindlyTo()->string()
             ) : self::UPLOAD_ORIGIN_STANDARD;
@@ -503,7 +538,8 @@ class ilObjFileGUI extends ilObject2GUI
         $this->ctrl->redirectToURL($link);
     }
 
-    public function putObjectInTree(ilObject $obj, int $parent_node_id = null): void
+    #[\Override]
+    public function putObjectInTree(ilObject $obj, ?int $parent_node_id = null): void
     {
         // this is needed to support multi fileuploads in personal and shared resources
         $backup_node_id = $this->node_id;
@@ -514,6 +550,7 @@ class ilObjFileGUI extends ilObject2GUI
     /**
      * updates object entry in object_data
      */
+    #[\Override]
     public function update(): void
     {
         $data = [];
@@ -522,14 +559,14 @@ class ilObjFileGUI extends ilObject2GUI
         $inputs = $form->getData();
 
         /**
-         * @var $title_and_description ilObjectPropertyTitleAndDescription
+         * @var ILIAS\ILIASObject\Properties\CoreProperties\TitleAndDescription $title_and_description
          */
         $title_and_description = $inputs['file_info']['title_and_description'];
 
         $title = $title_and_description->getTitle();
         // bugfix mantis 26045:
         $filename = $this->object->getFileName();
-        if (trim($title) === '') {
+        if (trim((string) $title) === '') {
             $title = $filename;
         }
         $title = $this->object->appendSuffixToTitle($title, $filename);
@@ -539,7 +576,7 @@ class ilObjFileGUI extends ilObject2GUI
         $description = $title_and_description->getLongDescription();
         $this->object->setDescription($description);
 
-        $updated_title_and_description = new ilObjectPropertyTitleAndDescription($title, $description);
+        $updated_title_and_description = new TitleAndDescription($title, $description);
         $this->object->getObjectProperties()->storePropertyTitleAndDescription($updated_title_and_description);
 
         $this->object->setImportantInfo($inputs['file_info']['important_info']);
@@ -570,12 +607,13 @@ class ilObjFileGUI extends ilObject2GUI
         $this->ctrl->redirectByClass(self::class, self::CMD_EDIT);
     }
 
+    #[\Override]
     public function edit(): void
     {
         global $DIC;
         $ilErr = $DIC['ilErr'];
 
-        if (!$this->checkPermissionBool("write")) {
+        if (!$this->capabilities->get(Capabilities::EDIT_SETTINGS)->isUnlocked()) {
             $ilErr->raiseError($this->lng->txt("msg_no_perm_write"));
         }
 
@@ -589,7 +627,7 @@ class ilObjFileGUI extends ilObject2GUI
         $this->tpl->setContent($this->renderer->render($form));
     }
 
-    protected function initPropertiesForm(): \ILIAS\UI\Component\Input\Container\Form\Standard
+    protected function initPropertiesForm(): Standard
     {
         $title_and_description = $this->object->getObjectProperties()->getPropertyTitleAndDescription()->toForm(
             $this->lng,
@@ -609,10 +647,12 @@ class ilObjFileGUI extends ilObject2GUI
             $this->lng->txt('on_click_action')
         )->withOption(
             (string) ilObjFile::CLICK_MODE_DOWNLOAD,
-            $this->lng->txt('action_download')
+            $this->lng->txt('file_action_download'),
+            $this->lng->txt('file_action_download_info'),
         )->withOption(
             (string) ilObjFile::CLICK_MODE_INFOPAGE,
-            $this->lng->txt('action_show')
+            $this->lng->txt('file_action_show'),
+            $this->lng->txt('file_action_show_info'),
         )->withValue(
             (string) $this->object->getOnClickMode()
         );
@@ -621,13 +661,12 @@ class ilObjFileGUI extends ilObject2GUI
             "title_and_description" => $title_and_description,
             "important_info" => $important_info,
             "on_click_action" => $on_click_action
-        ], static fn($input) => null !== $input);
+        ], static fn($input): bool => null !== $input);
 
         $file_info_section = $this->inputs->field()->section(
             $input_groups,
             $this->lng->txt('file_info')
         );
-
 
         $online_status = $this->object->getObjectProperties()->getPropertyIsOnline()->toForm(
             $this->lng,
@@ -668,13 +707,12 @@ class ilObjFileGUI extends ilObject2GUI
             );
         }
 
-
         $inputs = array_filter([
             "file_info" => $file_info_section,
             "availability" => $availability_section,
             "presentation" => $presentation_section,
             "obj_features" => $additional_features_section
-        ], static fn($input) => null !== $input);
+        ], static fn($input): bool => null !== $input);
 
         return $this->inputs->container()->form()->standard(
             $this->ctrl->getLinkTargetByClass(self::class, 'update'),
@@ -684,15 +722,15 @@ class ilObjFileGUI extends ilObject2GUI
 
     public function sendFile(): bool
     {
-        $hist_entry_id = $this->http->query()->has('hist_id')
-            ? $this->http->query()->retrieve('hist_id', $this->refinery->kindlyTo()->int())
+        $hist_entry_id = $this->request_wrapper->has('hist_id')
+            ? $this->request_wrapper->retrieve('hist_id', $this->refinery->kindlyTo()->int())
             : null;
         try {
-            if (ANONYMOUS_USER_ID === $this->user->getId() && $this->http->query()->has('transaction')) {
+            if (ANONYMOUS_USER_ID === $this->user->getId() && $this->request_wrapper->has('transaction')) {
                 $this->object->sendFile($hist_entry_id);
             }
 
-            if ($this->checkPermissionBool("read")) {
+            if ($this->capabilities->get(Capabilities::DOWNLOAD)->isUnlocked()) {
                 // Record read event and catchup with write events
                 ilChangeEvent::_recordReadEvent(
                     $this->object->getType(),
@@ -700,21 +738,13 @@ class ilObjFileGUI extends ilObject2GUI
                     $this->object->getId(),
                     $this->user->getId()
                 );
-                if ($this->object->getLPMode() === ilLPObjSettings::LP_MODE_CONTENT_VISITED) {
-                    ilLPStatusWrapper::_updateStatus(
-                        $this->object->getId(),
-                        $this->user->getId(),
-                        null,
-                        false,
-                        true
-                    );
-                }
+                $this->updateLearningProgress();
 
                 $this->object->sendFile($hist_entry_id);
             } else {
                 $this->error->raiseError($this->lng->txt("permission_denied"), $this->error->MESSAGE);
             }
-        } catch (\ILIAS\Filesystem\Exception\FileNotFoundException $e) {
+        } catch (FileNotFoundException $e) {
             $this->error->raiseError($e->getMessage(), $this->error->MESSAGE);
         }
 
@@ -722,34 +752,46 @@ class ilObjFileGUI extends ilObject2GUI
     }
 
     /**
-     * @deprecated
+     * @deprecated PROXY COMMAND
      */
+    public function showSummary(): void
+    {
+        $this->ctrl->redirectToURL(
+            (string) $this->capabilities->get(Capabilities::INFO_PAGE)->getUri()
+        );
+    }
+    public function showSummaryForced(): void
+    {
+        $this->ctrl->redirectToURL(
+            (string) $this->capabilities->get(Capabilities::FORCED_INFO_PAGE)->getUri()
+        );
+    }
+
     public function versions(): void
     {
-        $this->ctrl->redirectByClass(ilFileVersionsGUI::class);
+        $this->ctrl->redirectToURL(
+            (string) $this->capabilities->get(Capabilities::MANAGE_VERSIONS)->getUri()
+        );
     }
 
     public function unzipCurrentRevision(): void
     {
-        $this->ctrl->redirectByClass(ilFileVersionsGUI::class, ilFileVersionsGUI::CMD_UNZIP_CURRENT_REVISION);
+        $this->ctrl->redirectToURL(
+            (string) $this->capabilities->get(Capabilities::UNZIP)->getUri()
+        );
     }
 
     protected function editExternal(): void
     {
-        $this->ctrl->redirectByClass(ilWOPIEmbeddedApplicationGUI::class, ilWOPIEmbeddedApplicationGUI::CMD_EDIT);
+        $this->ctrl->redirectToURL(
+            (string) $this->capabilities->get(Capabilities::EDIT_EXTERNAL)->getUri()
+        );
     }
-
-    /**
-     * this one is called from the info button in the repository
-     * not very nice to set cmdClass/Cmd manually, if everything
-     * works through ilCtrl in the future this may be changed
-     */
-    public function infoScreen(): void
+    protected function viewExternal(): void
     {
-        // @todo: removed deprecated ilCtrl methods, this needs inspection by a maintainer.
-        // $this->ctrl->setCmd("showSummary");
-        // $this->ctrl->setCmdClass("ilinfoscreengui");
-        $this->infoScreenForward();
+        $this->ctrl->redirectToURL(
+            (string) $this->capabilities->get(Capabilities::VIEW_EXTERNAL)->getUri()
+        );
     }
 
     /**
@@ -759,8 +801,11 @@ class ilObjFileGUI extends ilObject2GUI
     {
         $this->tabs_gui->activateTab("id_info");
 
-        if (!$this->checkPermissionBool("visible") && !$this->checkPermissionBool("read")) {
-            $GLOBALS['DIC']['ilErr']->raiseError($this->lng->txt("msg_no_perm_read"), 2); // TODO remove magic number and old ilErr call
+        if (!$this->capabilities->get(Capabilities::INFO_PAGE)->isUnlocked()) {
+            $GLOBALS['DIC']['ilErr']->raiseError(
+                $this->lng->txt("msg_no_perm_read"),
+                2
+            ); // TODO remove magic number and old ilErr call
         }
 
         // add set completed button, if LP mode is active
@@ -779,12 +824,7 @@ class ilObjFileGUI extends ilObject2GUI
         }
 
         // Add WOPI editor Button
-        if (
-            $this->checkPermissionBool("edit_file")
-            && $this->action_repo->hasActionForSuffix(
-                $this->object->getFileExtension(),
-                ActionTarget::EDIT
-            )) {
+        if ($this->capabilities->get(Capabilities::EDIT_EXTERNAL)->isUnlocked()) {
             $external_editor = $this->ui->factory()
                                         ->button()
                                         ->standard(
@@ -796,7 +836,6 @@ class ilObjFileGUI extends ilObject2GUI
                                         );
             $this->toolbar->addComponent($external_editor);
         }
-
 
         $info = $this->buildInfoScreen(false);
         $this->ctrl->forwardCommand($info);
@@ -818,23 +857,23 @@ class ilObjFileGUI extends ilObject2GUI
         ilLPStatusWrapper::_updateStatus($this->obj_id, $this->user->getId());
 
         $this->tpl->setOnScreenMessage('success', $this->lng->txt('msg_obj_modified'), true);
-        $this->ctrl->redirect($this, 'infoScreen');
+        $this->ctrl->redirect($this, Capabilities::INFO_PAGE->value);
     }
 
     public function buildInfoScreen(bool $kiosk_mode): ilInfoScreenGUI
     {
         $info = new ilInfoScreenGUI($this);
 
-        if(!$kiosk_mode) { // in kiosk mode we don't want to show the following sections
+        if (!$kiosk_mode) { // in kiosk mode we don't want to show the following sections
             $info->enablePrivateNotes();
 
-            if ($this->checkPermissionBool("read")) {
+            if ($this->capabilities->get(Capabilities::DOWNLOAD)->isUnlocked()) {
                 $info->enableNews();
             }
 
             // no news editing for files, just notifications
             $info->enableNewsEditing(false);
-            if ($this->checkPermissionBool("write")) {
+            if ($this->capabilities->get(Capabilities::MANAGE_VERSIONS)->isUnlocked()) {
                 $news_set = new ilSetting("news");
                 $enable_internal_rss = $news_set->get("enable_rss_for_internal");
 
@@ -869,7 +908,7 @@ class ilObjFileGUI extends ilObject2GUI
         }
 
         // Download Launcher
-        if ($this->checkPermissionBool("read", self::CMD_SEND_FILE)) {
+        if ($this->capabilities->get(Capabilities::DOWNLOAD)->isUnlocked()) {
             // get permanent download link for repository
             if ($this->id_type === self::REPOSITORY_NODE_ID) {
                 $download_target = ilObjFileAccess::_getPermanentDownloadLink($this->node_id);
@@ -893,31 +932,30 @@ class ilObjFileGUI extends ilObject2GUI
         // standard meta data
         $info->addMetaDataSections($this->object->getId(), 0, $this->object->getType());
 
-        if (!$kiosk_mode) { // in kiosk mode we don't want to show the following sections
-            // links to resource
-            if ($this->access->checkAccess("write", "", $this->ref_id) ||
-                $this->access->checkAccess("edit_permissions", "", $this->ref_id)) {
-                $rs = ilObject::_getAllReferences($this->obj_id);
-                $refs = [];
-                foreach ($rs as $r) {
-                    if ($this->tree->isInTree($r)) {
-                        $refs[] = $r;
-                    }
+        // in kiosk mode we don't want to show the following sections
+        // links to resource
+        if (!$kiosk_mode && ($this->access->checkAccess("write", "", $this->ref_id) ||
+            $this->access->checkAccess("edit_permissions", "", $this->ref_id))) {
+            $rs = ilObject::_getAllReferences($this->obj_id);
+            $refs = [];
+            foreach ($rs as $r) {
+                if ($this->tree->isInTree($r)) {
+                    $refs[] = $r;
                 }
-                if (count($refs) > 1) {
-                    $links = $sep = "";
-                    foreach ($refs as $r) {
-                        $cont_loc = new ilLocatorGUI();
-                        $cont_loc->addContextItems($r, true);
-                        $links .= $sep . $cont_loc->getHTML();
-                        $sep = "<br />";
-                    }
+            }
+            if (count($refs) > 1) {
+                $links = $sep = "";
+                foreach ($refs as $r) {
+                    $cont_loc = new ilLocatorGUI();
+                    $cont_loc->addContextItems($r, true);
+                    $links .= $sep . $cont_loc->getHTML();
+                    $sep = "<br />";
+                }
 
-                    $info->addProperty(
-                        $this->lng->txt("res_links"),
-                        '<div class="small">' . $links . '</div>'
-                    );
-                }
+                $info->addProperty(
+                    $this->lng->txt("res_links"),
+                    '<div class="small">' . $links . '</div>'
+                );
             }
         }
 
@@ -947,6 +985,7 @@ class ilObjFileGUI extends ilObject2GUI
     }
 
     // get tabs
+    #[\Override]
     protected function setTabs(): void
     {
         global $DIC;
@@ -955,7 +994,15 @@ class ilObjFileGUI extends ilObject2GUI
 
         $this->ctrl->setParameter($this, "ref_id", $this->node_id);
 
-        if ($this->checkPermissionBool("write")) {
+        if (($c = $this->capabilities->get(Capabilities::VIEW_EXTERNAL)) && $c->isUnlocked()) {
+            $this->tabs_gui->addTab(
+                "content",
+                $this->lng->txt("content"),
+                $c->getURI()
+            );
+        }
+
+        if (($c = $this->capabilities->get(Capabilities::MANAGE_VERSIONS)) && $c->isUnlocked()) {
             $this->tabs_gui->addTab(
                 "id_versions",
                 $this->lng->txt(self::CMD_VERSIONS),
@@ -963,7 +1010,7 @@ class ilObjFileGUI extends ilObject2GUI
             );
         }
 
-        if ($this->checkPermissionBool("visible") || $this->checkPermissionBool("read")) {
+        if (($c = $this->capabilities->get(Capabilities::INFO_PAGE)) && $c->isUnlocked()) {
             $this->tabs_gui->addTab(
                 "id_info",
                 $this->lng->txt("info_short"),
@@ -971,7 +1018,7 @@ class ilObjFileGUI extends ilObject2GUI
             );
         }
 
-        if ($this->checkPermissionBool("write")) {
+        if (($c = $this->capabilities->get(Capabilities::EDIT_SETTINGS)) && $c->isUnlocked()) {
             $this->tabs_gui->addTab(
                 "settings",
                 $this->lng->txt("settings"),
@@ -988,7 +1035,7 @@ class ilObjFileGUI extends ilObject2GUI
         }
 
         // meta data
-        if ($this->checkPermissionBool("write")) {
+        if (($c = $this->capabilities->get(Capabilities::EDIT_SETTINGS)) && $c->isUnlocked()) {
             $mdgui = new ilObjectMetaDataGUI($this->object, null, null, $this->call_by_reference);
             $mdtab = $mdgui->getTab();
             if ($mdtab) {
@@ -1001,7 +1048,7 @@ class ilObjFileGUI extends ilObject2GUI
         }
 
         // export
-        if ($this->checkPermissionBool("write")) {
+        if (($c = $this->capabilities->get(Capabilities::EDIT_SETTINGS)) && $c->isUnlocked()) {
             $this->tabs_gui->addTab(
                 "export",
                 $this->lng->txt("export"),
@@ -1041,12 +1088,12 @@ class ilObjFileGUI extends ilObject2GUI
         $lng = $DIC['lng'];
         $ilAccess = $DIC['ilAccess'];
 
-        if ($a_additional && str_ends_with($a_additional, "wsp")) {
+        if ($a_additional && str_ends_with((string) $a_additional, "wsp")) {
             ilObjectGUI::_gotoSharedWorkspaceNode((int) $a_target);
         }
 
         // added support for direct download goto links
-        if ($a_additional && str_ends_with($a_additional, "download")) {
+        if ($a_additional && str_ends_with((string) $a_additional, "download")) {
             ilObjectGUI::_gotoRepositoryNode($a_target, "sendfile");
         }
 
@@ -1054,7 +1101,7 @@ class ilObjFileGUI extends ilObject2GUI
 
         if ($ilAccess->checkAccess("visible", "", $a_target)
             || $ilAccess->checkAccess("read", "", $a_target)) {
-            ilObjectGUI::_gotoRepositoryNode($a_target, "infoScreen");
+            ilObjectGUI::_gotoRepositoryNode($a_target, Capabilities::INFO_PAGE->value);
         } elseif ($ilAccess->checkAccess("read", "", ROOT_FOLDER_ID)) {
             $main_tpl->setOnScreenMessage(
                 'failure',
@@ -1083,6 +1130,7 @@ class ilObjFileGUI extends ilObject2GUI
         }
     }
 
+    #[\Override]
     protected function initHeaderAction(?string $a_sub_type = null, ?int $a_sub_id = null): ?\ilObjectListGUI
     {
         $lg = parent::initHeaderAction($a_sub_type, $a_sub_id);

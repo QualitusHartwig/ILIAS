@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=1);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=1);
 
 namespace ILIAS\Glossary\Flashcard;
 
@@ -276,19 +276,6 @@ class FlashcardManager
         $entry = $this->term_db_repo->getEntry($term_id, $this->user_id, $this->glo_id);
 
         return $entry?->getBoxNr();
-    }
-
-    public function getBoxProgress(
-        array $current_terms,
-        array $all_terms
-    ): int {
-        if (count($all_terms) === 0) {
-            return 0;
-        }
-        $shown_terms_cnt = count($all_terms) - count($current_terms);
-        $progress = (int) round((($shown_terms_cnt + 1) / count($all_terms)) * 100);
-
-        return $progress;
     }
 
     public function createOrUpdateBoxAccessEntry(

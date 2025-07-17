@@ -70,9 +70,7 @@ class Renderer extends AbstractComponentRenderer
         foreach ($component->getLabelledActions() as $label => $action) {
             $tpl->setCurrentBlock("view_control");
 
-            //At this point we don't have a specific text for the button aria label.
-            // component->getAriaLabel gets the main view control aria label.
-            $button = $f->button()->standard($label, $action)->withAriaLabel($label);
+            $button = $f->button()->standard($label, $action);
             if ($activate_first_item) {
                 $button = $button->withEngagedState(true);
                 $activate_first_item = false;
@@ -133,26 +131,48 @@ class Renderer extends AbstractComponentRenderer
         $f = $this->getUIFactory();
 
         $tpl = $this->getTemplate("tpl.sortation.html", true, true);
+        $label_prefix = $component->getLabelPrefix() ?? $this->txt('vc_sort');
 
         $component = $component->withResetSignals();
         $triggeredSignals = $component->getTriggeredSignals();
         if ($triggeredSignals) {
             $internal_signal = $component->getSelectSignal();
+            $internal_signal->addOption('label_prefix', $label_prefix);
             $signal = $triggeredSignals[0]->getSignal();
-
-            $component = $component->withAdditionalOnLoadCode(fn($id) => "$(document).on('$internal_signal', function(event, signalData) {
-                            il.UI.viewcontrol.sortation.onInternalSelect(event, signalData, '$signal', '$id');
-                            return false;
-                        })");
+            $component = $component
+                ->withAdditionalOnLoadCode(
+                    fn($id) => "$(document).on('$internal_signal', function(event, signalData) {
+                        il.UI.viewcontrol.sortation.get('$id').onInternalSelect(event, signalData, '$signal');
+                        return false;
+                    })"
+                );
         }
 
-        $this->renderId($component, $tpl, "id", "ID");
+        $component = $component
+            ->withAdditionalOnLoadCode(
+                fn($id) => "il.UI.viewcontrol.sortation.init('$id');"
+            )
+            ->withAdditionalOnLoadCode(
+                fn($id) =>
+                "il.UI.dropdown.init(document.getElementById('{$id}'));"
+            );
 
-        //setup entries
+        $id = $this->bindJavaScript($component);
+        $tpl->setVariable("ID", $id);
+        $tpl->setVariable("ID_MENU", $id . '_ctrl');
+
         $options = $component->getOptions();
-        $init_label = $component->getLabel();
-        $items = array();
+        $items = [];
+
+        $selected = $component->getSelected();
         foreach ($options as $val => $label) {
+            $tpl->setCurrentBlock('option');
+
+            if ($val === $selected) {
+                $tpl->touchBlock('selected');
+                $tpl->setCurrentBlock('option');
+            }
+
             if ($triggeredSignals) {
                 $shy = $f->button()->shy($label, $val)->withOnClick($internal_signal);
             } else {
@@ -162,12 +182,12 @@ class Renderer extends AbstractComponentRenderer
                 $shy = $f->button()->shy($label, $url);
             }
             $items[] = $shy;
+            $tpl->setVariable('OPTION', $default_renderer->render($shy));
+            $tpl->parseCurrentBlock();
         }
 
-        $dd = $f->dropdown()->standard($items)
-            ->withAriaLabel($init_label);
-
-        $tpl->setVariable('SORTATION_DROPDOWN', $default_renderer->render($dd));
+        $tpl->setVariable('LABEL', $label_prefix . ' ' . $options[$selected] . ' ');
+        $tpl->setVariable("ARIA_LABEL", $this->txt("sortation"));
         return $tpl->get();
     }
 
@@ -177,7 +197,7 @@ class Renderer extends AbstractComponentRenderer
     ): string {
         $range = $this->getPaginationRange($component);
 
-        if($component->getNumberOfPages() < 2) {
+        if ($component->getNumberOfPages() < 2) {
             return '';
         }
 
@@ -187,12 +207,16 @@ class Renderer extends AbstractComponentRenderer
         if ($triggeredSignals) {
             $internal_signal = $component->getInternalSignal();
             $signal = $triggeredSignals[0]->getSignal();
-            $component = $component->withOnLoadCode(
-                fn($id) => "$(document).on('$internal_signal', function(event, signalData) {
-                            il.UI.viewcontrol.pagination.onInternalSelect(event, signalData, '$signal', '$id');
-                            return false;
-                        })"
-            );
+            $component = $component
+                ->withAdditionalOnLoadCode(
+                    fn($id) => "il.UI.viewcontrol.pagination.init('$id');"
+                )
+                ->withAdditionalOnLoadCode(
+                    fn($id) => "$(document).on('$internal_signal', function(event, signalData) {
+                        il.UI.viewcontrol.pagination.get('$id').onInternalSelect(event, signalData, '$signal');
+                        return false;
+                    })"
+                );
             $id = $this->bindJavaScript($component);
             $tpl->setVariable('ID', $id);
         }
@@ -309,9 +333,12 @@ class Renderer extends AbstractComponentRenderer
 
         $f = $this->getUIFactory();
 
+        $back_btn = $f->button()->standard("", "");
+        $forward_btn = $f->button()->standard("", "");
+
         if ($component->getTriggeredSignals()) {
-            $back = $f->symbol()->glyph()->back('')->withOnClick($component->getInternalSignal());
-            $forward = $f->symbol()->glyph()->next('')->withOnClick($component->getInternalSignal());
+            $back_btn = $back_btn->withOnClick($component->getInternalSignal());
+            $forward_btn = $forward_btn->withOnClick($component->getInternalSignal());
         } else {
             $url = $component->getTargetURL() ?? '';
             if (strpos($url, '?') === false) {
@@ -328,19 +355,25 @@ class Renderer extends AbstractComponentRenderer
                 $url_next = $base . http_build_query($params);
             }
 
-            $back = $f->symbol()->glyph()->back($url_prev);
-            $forward = $f->symbol()->glyph()->next($url_next);
+            $back_btn = $f->button()->standard("", $url_prev);
+            $forward_btn = $f->button()->standard("", $url_next);
         }
 
         if ($component->getCurrentPage() === 0) {
-            $back = $back->withUnavailableAction();
+            $back_btn = $back_btn->withUnavailableAction();
         }
         if ($component->getCurrentPage() >= $component->getNumberOfPages() - 1) {
-            $forward = $forward->withUnavailableAction();
+            $forward_btn = $forward_btn->withUnavailableAction();
         }
 
-        $tpl->setVariable('PREVIOUS', $default_renderer->render($back));
-        $tpl->setVariable('NEXT', $default_renderer->render($forward));
+        $back_glyph = $f->symbol()->glyph()->back();
+        $forward_glyph = $f->symbol()->glyph()->next();
+
+        $back_btn = $back_btn->withSymbol($back_glyph);
+        $forward_btn = $forward_btn->withSymbol($forward_glyph);
+
+        $tpl->setVariable('PREVIOUS', $default_renderer->render($back_btn));
+        $tpl->setVariable('NEXT', $default_renderer->render($forward_btn));
     }
 
     /**
@@ -372,6 +405,7 @@ class Renderer extends AbstractComponentRenderer
     {
         parent::registerResources($registry);
         $registry->register('assets/js/viewcontrols.min.js');
+        $registry->register('assets/js/dropdown.js');
     }
 
     protected function renderId(

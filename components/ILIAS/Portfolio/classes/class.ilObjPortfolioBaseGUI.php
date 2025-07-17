@@ -39,7 +39,6 @@ abstract class ilObjPortfolioBaseGUI extends ilObject2GUI
     protected int $requested_user_page;
     protected string $requested_back_url = "";
     protected \ILIAS\DI\UIServices $ui;
-    protected \ILIAS\HTTP\Services $http;
     protected \ILIAS\Style\Content\GUIService $content_style_gui;
     protected \ILIAS\Style\Content\Object\ObjectFacade $content_style_domain;
 
@@ -64,8 +63,6 @@ abstract class ilObjPortfolioBaseGUI extends ilObject2GUI
             ->internal()
             ->gui()
             ->standardRequest();
-
-        $this->http = $DIC->http();
 
         parent::__construct($a_id, $a_id_type, $a_parent_node_id);
 
@@ -844,9 +841,8 @@ abstract class ilObjPortfolioBaseGUI extends ilObject2GUI
     ): void {
         $port_export = new \ILIAS\Portfolio\Export\PortfolioHtmlExport($this);
         $port_export->includeComments($a_with_comments);
-        $zip = $port_export->exportHtml();
-
-        ilFileDelivery::deliverFileLegacy($zip, $this->object->getTitle() . ".zip", '', false, true);
+        $port_export->exportHtml();
+        $port_export->deliver($this->object->getTitle() . ".zip", true);
     }
 
     public function exportWithComments(): void
@@ -858,7 +854,7 @@ abstract class ilObjPortfolioBaseGUI extends ilObject2GUI
      * Select target portfolio for page(s) copy
      */
     public function copyPageForm(
-        ilPropertyFormGUI $a_form = null
+        ?ilPropertyFormGUI $a_form = null
     ): void {
         $prtf_pages = $this->port_request->getPortfolioPageIds();
 
@@ -939,7 +935,7 @@ abstract class ilObjPortfolioBaseGUI extends ilObject2GUI
     ////
 
     public function setContentStyleSheet(
-        ilGlobalTemplateInterface $a_tpl = null
+        ?ilGlobalTemplateInterface $a_tpl = null
     ): void {
         $tpl = $this->tpl;
 

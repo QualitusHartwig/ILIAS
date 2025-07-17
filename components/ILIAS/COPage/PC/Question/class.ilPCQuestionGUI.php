@@ -16,6 +16,8 @@
  *
  *********************************************************************/
 
+use ILIAS\Test\Settings\GlobalSettings\Repository as TestSettingsRepository;
+
 /**
  * Class ilPCQuestionGUI
  * Adapter User Interface class for assessment questions
@@ -32,6 +34,7 @@ class ilPCQuestionGUI extends ilPageContentGUI
     protected ilObjUser $user;
     protected ilTree $tree;
     protected ilToolbarGUI $toolbar;
+    protected bool $ipe_for_questions_enabled;
 
     public function __construct(
         ilPageObject $a_pg_obj,
@@ -52,6 +55,7 @@ class ilPCQuestionGUI extends ilPageContentGUI
         $ilCtrl = $DIC->ctrl();
         $this->scormlmid = $a_pg_obj->parent_id;
         $this->questioninfo = $DIC->testQuestion();
+        $this->ipe_for_questions_enabled = (bool) $DIC['ilSetting']->get('enable_tst_page_edit', false);
         parent::__construct($a_pg_obj, $a_content_obj, $a_hier_id, $a_pc_id);
         $ilCtrl->saveParameter($this, array("qpool_ref_id"));
     }
@@ -158,14 +162,14 @@ class ilPCQuestionGUI extends ilPageContentGUI
 
         // additional content editor
         // assessment
-        if (ilObjTestFolder::isAdditionalQuestionContentEditingModePageObjectEnabled()) {
+        if ($this->ipe_for_questions_enabled) {
             $ri = new ilRadioGroupInputGUI($this->lng->txt("tst_add_quest_cont_edit_mode"), "add_quest_cont_edit_mode");
 
             $option_rte = new ilRadioOption(
-                $this->lng->txt('tst_add_quest_cont_edit_mode_RTE'),
+                $this->lng->txt('tst_add_quest_cont_edit_mode_plain'),
                 assQuestion::ADDITIONAL_CONTENT_EDITING_MODE_RTE
             );
-            $option_rte->setInfo($this->lng->txt('tst_add_quest_cont_edit_mode_RTE_info'));
+            $option_rte->setInfo($this->lng->txt('tst_add_quest_cont_edit_mode_plain_info'));
             $ri->addOption($option_rte);
 
             $option_ipe = new ilRadioOption(
@@ -279,7 +283,7 @@ class ilPCQuestionGUI extends ilPageContentGUI
 
                 // feedback editing mode
                 $add_quest_cont_edit_mode = $this->request->getString("add_quest_cont_edit_mode");
-                if (ilObjTestFolder::isAdditionalQuestionContentEditingModePageObjectEnabled()
+                if ($this->ipe_for_questions_enabled
                     && $add_quest_cont_edit_mode != "") {
                     $addContEditMode = $add_quest_cont_edit_mode;
                 } else {
@@ -297,11 +301,8 @@ class ilPCQuestionGUI extends ilPageContentGUI
             $ilCtrl->setParameterByClass("ilQuestionEditGUI", "q_id", $q_id);
             $ilCtrl->redirectByClass(array(get_class($this->pg_obj) . "GUI", "ilQuestionEditGUI"), "editQuestion");
         } else {	// behaviour in question pool
-            $q_gui = assQuestionGUI::_getQuestionGUI(
-                "",
-                $this->request->getInt("q_id")
-            );
-            $this->ctrl->redirectByClass(array("ilobjquestionpoolgui", get_class($q_gui)), "editQuestion");
+            $q_gui = assQuestionGUI::_getQuestionGUI('', $this->request->getInt('q_id'));
+            $this->ctrl->redirectByClass($q_gui::class, 'editQuestion');
         }
     }
 
@@ -326,9 +327,6 @@ class ilPCQuestionGUI extends ilPageContentGUI
             }
         }
 
-        // @todo: removed deprecated ilCtrl methods, this needs inspection by a maintainer.
-        // $ilCtrl->setCmdClass("ilquestioneditgui");
-        // $ilCtrl->setCmd("feedback");
         $edit_gui = new ilQuestionEditGUI();
         if ($q_id > 0) {
             $edit_gui->setQuestionId($q_id);

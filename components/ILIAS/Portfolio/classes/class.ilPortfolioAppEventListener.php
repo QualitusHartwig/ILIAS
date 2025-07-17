@@ -28,13 +28,6 @@ class ilPortfolioAppEventListener
         array $parameter
     ): void {
         switch ($component) {
-            case "components/ILIAS/Object":
-                switch ($event) {
-                    case "beforeDeletion":
-                        self::beforeDeletion($parameter);
-                        break;
-                }
-                break;
             case "components/ILIAS/User":
                 switch ($event) {
                     case "firstLogin":

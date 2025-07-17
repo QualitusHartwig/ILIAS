@@ -35,7 +35,6 @@ class ilObjSessionGUI extends ilObjectGUI implements ilDesktopItemHandling
     protected ilAppEventHandler $event;
     protected \ILIAS\FileUpload\FileUpload $upload;
     protected ilHelpGUI $help;
-    protected \ILIAS\HTTP\Services $http;
     protected \ILIAS\Refinery\Factory $refinery;
 
     public ilLanguage $lng;
@@ -87,7 +86,6 @@ class ilObjSessionGUI extends ilObjectGUI implements ilDesktopItemHandling
         $this->event = $DIC->event();
         $this->upload = $DIC->upload();
         $this->help = $DIC->help();
-        $this->http = $DIC->http();
         $this->refinery = $DIC->refinery();
 
         $this->type = "sess";
@@ -275,11 +273,6 @@ class ilObjSessionGUI extends ilObjectGUI implements ilDesktopItemHandling
         }
 
         $this->addHeaderAction();
-    }
-
-    protected function renderObject(): void
-    {
-        $this->infoScreenObject();
     }
 
     protected function membersObject(): void
@@ -493,10 +486,10 @@ class ilObjSessionGUI extends ilObjectGUI implements ilDesktopItemHandling
     */
     public function infoScreenObject(): void
     {
-        // @todo: removed deprecated ilCtrl methods, this needs inspection by a maintainer.
-        // $this->ctrl->setCmd("showSummary");
-        // $this->ctrl->setCmdClass("ilinfoscreengui");
-        $this->infoScreen();
+        $this->ctrl->redirectByClass(
+            [self::class, ilInfoScreenGUI::class],
+            'showSummary'
+        );
     }
 
     public function modifyItemGUI(ilObjectListGUI $a_item_list_gui, array $a_item_data, bool $a_show_path): void
@@ -1115,6 +1108,7 @@ class ilObjSessionGUI extends ilObjectGUI implements ilDesktopItemHandling
         $parent_ref_id = $this->tree->getParentId($this->object->getRefId());
         $parent_type = ilObject::_lookupType($parent_ref_id, true);
         $parent_gui_class = 'ilObj' . $this->obj_definition->getClassName($parent_type) . 'GUI';
+        $this->ctrl->setParameterByClass($parent_gui_class, 'ref_id', $parent_ref_id);
         $gui = new ILIAS\ILIASObject\Creation\AddNewItemGUI(
             $this->buildAddNewItemElements(
                 $this->getCreatableObjectTypes(),
@@ -1123,6 +1117,7 @@ class ilObjSessionGUI extends ilObjectGUI implements ilDesktopItemHandling
             )
         );
         $gui->render();
+        $this->ctrl->clearParameterByClass($parent_gui_class, 'ref_id');
 
         $this->event_items = new ilEventItems($this->object->getId());
 

@@ -51,9 +51,9 @@ class FilterInputsTestNoUIFactories extends NoUIFactory
         return $this->popover_factory;
     }
 
-    public function legacy($content): I\Legacy\Legacy
+    public function legacy(): I\Legacy\Factory
     {
-        return $this->legacy_factory->legacy("");
+        return $this->legacy_factory;
     }
 }
 
@@ -76,6 +76,7 @@ class FilterInputTest extends ILIAS_UI_TestBase
         $df = new Data\Factory();
         $language = $this->createMock(ILIAS\Language\Language::class);
         return new I\Input\Field\Factory(
+            $this->createMock(\ILIAS\UI\Implementation\Component\Input\Field\Node\Factory::class),
             $this->createMock(\ILIAS\UI\Implementation\Component\Input\UploadLimitResolver::class),
             new I\SignalGenerator(),
             $df,
@@ -100,7 +101,11 @@ class FilterInputTest extends ILIAS_UI_TestBase
 
     protected function buildLegacyFactory(): I\Legacy\Factory
     {
-        return new I\Legacy\Factory(new I\SignalGenerator());
+        $mock = $this->createMock(I\Legacy\Factory::class);
+        $mock->method('content')->willReturn(
+            new I\Legacy\Content('', new I\SignalGenerator())
+        );
+        return $mock;
     }
 
     public function getUIFactory(): FilterInputsTestNoUIFactories
@@ -205,10 +210,10 @@ class FilterInputTest extends ILIAS_UI_TestBase
         <div class="col-md-6 col-lg-4 il-popover-container">
             <div class="input-group">
                 <label class="input-group-addon leftaddon">label</label>
-                <span role="button" tabindex="0" class="form-control il-filter-field" id="id_4" data-placement="bottom"></span>
-                <div class="il-standard-popover-content" style="display:none;" id="id_2"></div>
+                <span role="button" tabindex="0" class="form-control il-filter-field" id="id_3" data-placement="bottom"></span>
+                <div class="il-standard-popover-content" style="display:none;" id="id_1"></div>
                 <span class="input-group-addon rightaddon">
-                    <a class="glyph" href="" aria-label="remove" id="id_5">
+                    <a class="glyph" href="" aria-label="remove" id="id_4">
                         <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                     </a>
                 </span>

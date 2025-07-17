@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -18,7 +19,6 @@
 declare(strict_types=1);
 
 use ILIAS\AccessControl\Log\Table;
-
 use ILIAS\HTTP\GlobalHttpState;
 use ILIAS\Refinery\Factory;
 use ILIAS\UI\Factory as UIFactory;
@@ -188,19 +188,7 @@ class ilPermissionGUI
         return $this->gui_obj->getObject();
     }
 
-    /**
-     * Called after toolbar action applyTemplateSwitch
-     */
-    public function confirmTemplateSwitch(): void
-    {
-        $this->ctrl->setReturn($this, 'perm');
-        // @todo: removed deprecated ilCtrl methods, this needs inspection by a maintainer.
-        // $this->ctrl->setCmdClass('ildidactictemplategui');
-        $dtpl_gui = new ilDidacticTemplateGUI($this->gui_obj);
-        $this->ctrl->forwardCommand($dtpl_gui);
-    }
-
-    public function perm(ilTable2GUI $table = null): void
+    public function perm(?ilTable2GUI $table = null): void
     {
         $dtpl = new ilDidacticTemplateGUI($this->gui_obj);
         if ($dtpl->appendToolbarSwitch(
@@ -213,7 +201,7 @@ class ilPermissionGUI
 
         if ($this->object_definition->hasLocalRoles($this->getCurrentObject()->getType()) && !$this->isAdministrationObject()
         ) {
-            $this->toolbar->setFormAction($this->ctrl->getFormAction($this));
+            $this->toolbar->setFormAction($this->ctrl->getFormActionByClass(ilDidacticTemplateGUI::class));
 
             if (!$this->isAdminRoleFolder()) {
                 $this->toolbar->addComponent(
@@ -598,7 +586,7 @@ class ilPermissionGUI
         return $objDefinition->isContainer($a_type) && $a_type != 'root' && $a_type != 'adm' && $a_type != 'rolf';
     }
 
-    private function displayImportRoleForm(ilPropertyFormGUI $form = null): void
+    private function displayImportRoleForm(?ilPropertyFormGUI $form = null): void
     {
         $this->tabs->clearTargets();
 
@@ -866,8 +854,7 @@ class ilPermissionGUI
         $positions = $this->getPositionRepo()->getArray(null, 'id');
         $ref_id = $this->getCurrentObject()->getRefId();
 
-        // handle local sets
-        $local_post = $this->http->wrapper()->post()->has('local')
+        $positions_with_local_perms_from_post = $this->http->wrapper()->post()->has('local')
             ? $this->http->wrapper()->post()->retrieve(
                 'local',
                 $this->refinery->kindlyTo()->dictOf($this->refinery->kindlyTo()->int())
@@ -875,7 +862,7 @@ class ilPermissionGUI
             : [];
 
         foreach ($positions as $position_id) {
-            if (isset($local_post[$position_id])) {
+            if (isset($positions_with_local_perms_from_post[$position_id])) {
                 $this->getPermissionRepo()->get($ref_id, $position_id);
             } else {
                 $this->getPermissionRepo()->delete($ref_id, $position_id);
@@ -893,22 +880,32 @@ class ilPermissionGUI
             )
             : [];
 
-        if ($position_perm_post) { // TODO: saving an empty (enabled) set is not working, as the POST variable is empty for that set
-            foreach ($position_perm_post as $position_id => $ops) {
-                if (!isset($local_post[$position_id])) {
-                    continue;
+        foreach ($position_perm_post as $position_id => $ops) {
+            if (!isset($positions_with_local_perms_from_post[$position_id])) {
+                continue;
+            }
+            $org_unit_permissions = $this->getPermissionRepo()->getLocalorDefault($ref_id, $position_id);
+            if (!$org_unit_permissions->isTemplate()) {
+                $new_ops = [];
+                foreach ($ops as $op_id => $op) {
+                    $new_ops[] = $this->getOperationRepo()->getById($op_id);
                 }
-                $ilOrgUnitPermission = $this->getPermissionRepo()->getLocalorDefault($ref_id, $position_id);
-                if (!$ilOrgUnitPermission->isTemplate()) {
-                    $new_ops = [];
-                    foreach ($ops as $op_id => $op) {
-                        $new_ops[] = $this->getOperationRepo()->getById($op_id);
-                    }
-                    $ilOrgUnitPermission = $ilOrgUnitPermission->withOperations($new_ops);
-                    $ilOrgUnitPermission = $this->getPermissionRepo()->store($ilOrgUnitPermission);
-                }
+                $org_unit_permissions = $this->getPermissionRepo()->store(
+                    $org_unit_permissions->withOperations($new_ops)
+                );
             }
         }
+
+        foreach (array_keys($positions_with_local_perms_from_post) as $position_id_from_post) {
+            if (array_key_exists($position_id_from_post, $position_perm_post)) {
+                continue;
+            }
+            $org_unit_permissions = $this->getPermissionRepo()->find($ref_id, $position_id_from_post);
+            if ($org_unit_permissions !== null && !$org_unit_permissions->isTemplate()) {
+                $this->getPermissionRepo()->store($org_unit_permissions->withOperations([]));
+            }
+        }
+
         $this->tpl->setOnScreenMessage('success', $this->lng->txt('settings_saved'), true);
         $this->ctrl->redirect($this, self::CMD_PERM_POSITIONS);
     }

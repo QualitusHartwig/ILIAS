@@ -1,6 +1,5 @@
 <?php
 
-declare(strict_types=1);
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +16,7 @@ declare(strict_types=1);
  *
  *********************************************************************/
 
+declare(strict_types=1);
 use ILIAS\HTTP\GlobalHttpState;
 use ILIAS\Refinery\Factory;
 
@@ -124,7 +124,7 @@ class ilGroupMembershipGUI extends ilMembershipGUI
         if ($assigned) {
             $this->tpl->setOnScreenMessage('success', $this->lng->txt("grp_msg_member_assigned"), true);
         } else {
-            $this->tpl->setOnScreenMessage('success', $this->lng->txt('grp_users_already_assigned'), true);
+            $this->tpl->setOnScreenMessage('info', $this->lng->txt('grp_users_already_assigned'), true);
         }
         $this->ctrl->redirect($this, 'participants');
         return true;

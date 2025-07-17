@@ -22,7 +22,7 @@ namespace ILIAS\Test\Scoring\Marks;
 
 use ILIAS\Test\Logging\TestLogger;
 use ILIAS\Test\Logging\TestAdministrationInteractionTypes;
-
+use ILIAS\Test\ResponseHandler;
 use ILIAS\HTTP\Wrapper\RequestWrapper;
 use GuzzleHttp\Psr7\Request;
 use ILIAS\Refinery\Factory as Refinery;
@@ -54,10 +54,10 @@ class MarkSchemaGUI
         private \ilCtrlInterface $ctrl,
         private \ilGlobalTemplateInterface $tpl,
         private \ilToolbarGUI $toolbar,
-        private \ilTabsGUI $tabs,
         private TestLogger $logger,
         private RequestWrapper $post_wrapper,
         private RequestWrapper $request_wrapper,
+        private ResponseHandler $response_handler,
         private Request $request,
         private Refinery $refinery,
         private UIFactory $ui_factory,
@@ -65,7 +65,7 @@ class MarkSchemaGUI
     ) {
         $this->mark_schema = $test->getMarkSchema();
         $this->editable = $test->marksEditable();
-        $uri = ILIAS_HTTP_PATH . '/' . $this->ctrl->getLinkTargetByClass([\ilObjTestGUI::class, self::class], self::DEFAULT_CMD);
+        $uri = ILIAS_HTTP_PATH . '/' . $this->ctrl->getLinkTargetByClass([\ilRepositoryGUI::class, \ilObjTestGUI::class, self::class], self::DEFAULT_CMD);
         $url_builder = new URLBuilder(
             (new DataFactory())->uri($uri)
         );
@@ -83,7 +83,6 @@ class MarkSchemaGUI
 
     public function executeCommand(): void
     {
-        $this->tabs->activateSubTab(\ilTestTabsManager::SETTINGS_SUBTAB_ID_MARK_SCHEMA);
         $cmd = $this->ctrl->getCmd(self::DEFAULT_CMD);
         $this->$cmd();
     }
@@ -92,6 +91,12 @@ class MarkSchemaGUI
     {
         if (!$this->editable) {
             $this->tpl->setOnScreenMessage('info', $this->lng->txt('cannot_edit_marks'));
+        }
+
+        $this->runTableCommand();
+
+        if ($add_mark_modal === null) {
+            $add_mark_modal = $this->buildMarkModal();
         }
 
         $mark_schema_table = new MarkSchemaTable(
@@ -104,11 +109,7 @@ class MarkSchemaGUI
             $this->ui_factory
         );
 
-        $confirmation_modal = $this->buildConfirmationModal();
-
-        if ($add_mark_modal === null) {
-            $add_mark_modal = $this->buildAddMarkModal();
-        }
+        $confirmation_modal = $this->buildResetConfirmationModal();
 
         $this->populateToolbar($confirmation_modal, $add_mark_modal);
 
@@ -125,7 +126,7 @@ class MarkSchemaGUI
     {
         $this->redirectOnMarkSchemaNotEditable();
 
-        $modal = $this->buildAddMarkModal()->withRequest($this->request);
+        $modal = $this->buildMarkModal()->withRequest($this->request);
         $data = $modal->getData();
         if ($data === null) {
             $this->showMarkSchema($modal->withOnLoad($modal->getShowSignal()));
@@ -134,8 +135,13 @@ class MarkSchemaGUI
 
         $mark_steps = $this->mark_schema->getMarkSteps();
         $mark_steps[$data['index']] = $data['mark'];
-        $this->mark_schema = $this->mark_schema->withMarkSteps($mark_steps);
-
+        $new_schema = $this->checkSchemaForErrors($this->mark_schema->withMarkSteps($mark_steps));
+        if (is_string($new_schema)) {
+            $this->tpl->setOnScreenMessage('failure', $new_schema);
+            $this->showMarkSchema();
+            return;
+        }
+        $this->mark_schema = $new_schema;
         $this->test->storeMarkSchema(
             $this->mark_schema
         );
@@ -198,9 +204,9 @@ class MarkSchemaGUI
             $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->int())
         );
 
-        $new_schema = $this->buildAndCheckNewSchema($marks_to_be_deleted);
-
-        if ($new_schema === null) {
+        $new_schema = $this->removeMarksAndCheckNewSchema($marks_to_be_deleted);
+        if (is_string($new_schema)) {
+            $this->tpl->setOnScreenMessage('failure', $new_schema);
             $this->showMarkSchema();
             return;
         }
@@ -222,7 +228,7 @@ class MarkSchemaGUI
         $this->showMarkSchema();
     }
 
-    private function buildConfirmationModal(): InterruptiveModal
+    private function buildResetConfirmationModal(): InterruptiveModal
     {
         return $this->ui_factory->modal()->interruptive(
             $this->lng->txt('tst_mark_reset_to_simple_mark_schema'),
@@ -231,14 +237,16 @@ class MarkSchemaGUI
         )->withActionButtonLabel($this->lng->txt('tst_mark_reset_to_simple_mark_schema'));
     }
 
-    private function buildAddMarkModal(Mark $mark = null, int $mark_index = -1): RoundTripModal
+    private function buildMarkModal(?Mark $mark = null, int $mark_index = -1): RoundTripModal
     {
+        $title_lng_var = 'edit';
         if ($mark === null) {
+            $title_lng_var = 'create';
             $mark = new Mark();
         }
         return $this->ui_factory->modal()->roundtrip(
-            $this->lng->txt('edit'),
-            null,
+            $this->lng->txt($title_lng_var),
+            [],
             [
                 'mark' => $mark->toForm(
                     $this->lng,
@@ -259,13 +267,18 @@ class MarkSchemaGUI
 
         $affected_mark = current($affected_marks);
         $mark_steps = $this->mark_schema->getMarkSteps();
-        $edit_modal = $this->buildAddMarkModal($mark_steps[$affected_mark], $affected_mark);
-        echo $this->ui_renderer->renderAsync($edit_modal);
-        exit;
+        $this->response_handler->sendAsync(
+            $this->ui_renderer->renderAsync(
+                $this->buildMarkModal($mark_steps[$affected_mark], $affected_mark)
+            )
+        );
     }
 
     private function populateToolbar(InterruptiveModal $confirmation_modal, RoundTripModal $add_mark_modal): void
     {
+        if (!$this->editable) {
+            return;
+        }
         $create_simple_schema_button = $this->ui_factory->button()->standard(
             $this->lng->txt('tst_mark_reset_to_simple_mark_schema'),
             $confirmation_modal->getShowSignal()
@@ -282,20 +295,20 @@ class MarkSchemaGUI
     public function runTableCommand(): void
     {
         $action = $this->getTableActionQueryString();
-        if ($action === null) {
+        if (!$this->editable || $action === null) {
             return;
         }
 
         $affected_marks = $this->getTableAffectedItemsFromQuery();
-
         if ($affected_marks === null) {
-            echo $this->ui_renderer->render(
-                $this->ui_factory->modal()->roundtrip(
-                    $this->lng->txt('error'),
-                    $this->ui_factory->messageBox()->failure($this->lng->txt('tst_delete_missing_mark'))
+            $this->response_handler->sendAsync(
+                $this->ui_renderer->renderAsync(
+                    $this->ui_factory->modal()->roundtrip(
+                        $this->lng->txt('error'),
+                        $this->ui_factory->messageBox()->failure($this->lng->txt('tst_delete_missing_mark'))
+                    )
                 )
             );
-            exit;
         }
 
         switch ($action) {
@@ -309,20 +322,21 @@ class MarkSchemaGUI
         }
     }
 
-    private function confirmMarkDeletion(array $affected_marks): void
+    private function confirmMarkDeletion(array $marks_to_delete): void
     {
         $this->exitOnMarkSchemaNotEditable();
-        $this->exitOnSchemaError($affected_marks);
+        $this->exitOnSchemaError($this->removeMarksAndCheckNewSchema($marks_to_delete));
 
         $confirm_delete_modal = $this->ui_factory->modal()->interruptive(
             $this->lng->txt('confirm'),
-            $this->lng->txt('tst_mark_reset_to_simple_mark_schema_confirmation'),
+            $this->lng->txt('delete_mark_confirmation'),
             $this->ctrl->getFormActionByClass(MarkSchemaGUI::class, 'deleteMarkSteps')
         )->withActionButtonLabel($this->lng->txt('delete'))
-        ->withAffectedItems($this->buildInteruptiveItems($affected_marks));
+        ->withAffectedItems($this->buildInteruptiveItems($marks_to_delete));
 
-        echo $this->ui_renderer->renderAsync($confirm_delete_modal);
-        exit;
+        $this->response_handler->sendAsync(
+            $this->ui_renderer->renderAsync($confirm_delete_modal)
+        );
     }
 
     private function buildInteruptiveItems(array $affected_marks): array
@@ -387,57 +401,56 @@ class MarkSchemaGUI
             return;
         }
 
-        echo $this->ui_renderer->renderAsync(
-            $this->ui_factory->modal()->roundtrip(
-                $this->lng->txt('error'),
-                $this->ui_factory->messageBox()->failure($this->lng->txt('permission_denied'))
+        $this->response_handler->sendAsync(
+            $this->ui_renderer->renderAsync(
+                $this->ui_factory->modal()->roundtrip(
+                    $this->lng->txt('error'),
+                    $this->ui_factory->messageBox()->failure($this->lng->txt('permission_denied'))
+                )
             )
         );
         exit;
     }
 
-    private function buildAndCheckNewSchema(array $affected_marks): ?MarkSchema
-    {
-        $message = $this->checkSchemaForErrors($affected_marks);
-
-        if (!is_string($message)) {
-            return $message;
-        }
-
-        $this->tpl->setOnScreenMessage('failure', $message);
-        return null;
-    }
-
-    private function exitOnSchemaError(array $affected_marks): void
-    {
-        $message = $this->checkSchemaForErrors($affected_marks);
-
-        if (!is_string($message)) {
-            return;
-        }
-
-        echo $this->ui_renderer->render(
-            $this->ui_factory->modal()->roundtrip(
-                $this->lng->txt('error'),
-                $this->ui_factory->messageBox()->failure($message)
-            )
-        );
-        exit;
-    }
-
-    private function checkSchemaForErrors(array $affected_marks): MarkSchema|string
+    private function removeMarksAndCheckNewSchema(array $marks_to_delete): MarkSchema|String
     {
         $new_marks = $this->mark_schema->getMarkSteps();
-        foreach($affected_marks as $mark) {
+        foreach ($marks_to_delete as $mark) {
             unset($new_marks[$mark]);
         }
-        $local_schema = $this->mark_schema->withMarkSteps(array_values($new_marks));
+
+        return $this->checkSchemaForErrors(
+            $this->mark_schema->withMarkSteps(array_values($new_marks))
+        );
+    }
+
+    private function exitOnSchemaError(MarkSchema|string $checked_value): MarkSchema
+    {
+        if (!is_string($checked_value)) {
+            return $checked_value;
+        }
+
+        $this->response_handler->sendAsync(
+            $this->ui_renderer->render(
+                $this->ui_factory->modal()->roundtrip(
+                    $this->lng->txt('error'),
+                    $this->ui_factory->messageBox()->failure($checked_value)
+                )
+            )
+        );
+    }
+
+    private function checkSchemaForErrors(MarkSchema $new_schema): MarkSchema|string
+    {
         $messages = [];
-        if ($local_schema->checkForMissingPassed()) {
+        if ($new_schema->checkForMissingPassed()) {
             $messages[] = $this->lng->txt('no_passed_mark');
         }
-        if ($local_schema->checkForMissingZeroPercentage()) {
+        if ($new_schema->checkForMissingZeroPercentage()) {
             $messages[] = $this->lng->txt('min_percentage_ne_0');
+        }
+        if ($new_schema->checkForFailedAfterPassed()) {
+            $messages[] = $this->lng->txt('no_passed_after_failed');
         }
 
         if (isset($messages[1])) {
@@ -445,7 +458,7 @@ class MarkSchemaGUI
         }
 
         if ($messages === []) {
-            return $local_schema;
+            return $new_schema;
         }
 
         return $messages[0];

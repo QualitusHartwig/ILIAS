@@ -1,19 +1,22 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
+ *
  * ILIAS is licensed with the GPL-3.0,
  * see https://www.gnu.org/licenses/gpl-3.0.en.html
  * You should have received a copy of said license along with the
  * source code, too.
+ *
  * If this is not the case or you just want to try ILIAS, you'll find
  * us at:
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
- */
+ *
+ *********************************************************************/
+
+declare(strict_types=1);
 
 namespace ILIAS\Container\Content;
 
@@ -28,6 +31,7 @@ class ItemSetManager
     public const FLAT = 0;
     public const TREE = 1;
     public const SINGLE = 2;
+    protected bool $force_session_order_by_date;
     protected bool $admin_mode;
     protected bool $hiddenfilesfound = false;
     protected string $parent_type;
@@ -53,12 +57,14 @@ class ItemSetManager
         int $parent_ref_id,
         ?\ilContainerUserFilter $user_filter = null,
         int $single_ref_id = 0,
-        bool $admin_mode = false
+        bool $admin_mode = false,
+        bool $force_session_order_by_date = true
     ) {
         $this->parent_ref_id = $parent_ref_id;
         $this->parent_obj_id = \ilObject::_lookupObjId($this->parent_ref_id);
         $this->parent_type = \ilObject::_lookupType($this->parent_obj_id);
         $this->user_filter = $user_filter;
+        $this->force_session_order_by_date = $force_session_order_by_date;
 
         $this->single_ref_id = $single_ref_id;
         $this->domain = $domain;
@@ -203,6 +209,9 @@ class ItemSetManager
 
     protected function sortSessions(): void
     {
+        if (!$this->force_session_order_by_date) {
+            return;
+        }
         if (isset($this->raw_by_type["sess"]) && count($this->raw_by_type["sess"]) > 0) {
             $this->raw_by_type["sess"] = \ilArrayUtil::sortArray($this->raw_by_type["sess"], 'start', 'ASC', true, true);
         }

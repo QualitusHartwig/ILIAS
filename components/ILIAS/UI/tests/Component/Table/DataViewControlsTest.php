@@ -63,7 +63,7 @@ class DataViewControlsTest extends TableTestBase
     protected function getTable(int $total_count, array $columns): array
     {
         $factory = $this->getTableFactory();
-        $table = $factory->data('Table', $columns, $this->getDataRetrieval($total_count));
+        $table = $factory->data($this->getDataRetrieval($total_count), 'Table', $columns);
         return $table->applyViewControls([], []);
     }
 
@@ -145,7 +145,7 @@ class DataViewControlsTest extends TableTestBase
             array_keys($inputs)
         );
         $this->assertInstanceOf(
-            I\Input\ViewControl\NullControl::class,
+            I\Input\ViewControl\Group::class,
             $inputs[C\Table\Data::VIEWCONTROL_KEY_ORDERING]
         );
     }
@@ -173,7 +173,7 @@ class DataViewControlsTest extends TableTestBase
             array_keys($inputs)
         );
         $this->assertInstanceOf(
-            I\Input\ViewControl\NullControl::class,
+            I\Input\ViewControl\Group::class,
             $inputs[C\Table\Data::VIEWCONTROL_KEY_ORDERING]
         );
     }

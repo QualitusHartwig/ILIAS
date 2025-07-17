@@ -411,22 +411,11 @@ class ilLPTableBaseGUI extends ilTable2GUI
         if ($this->filter["hide"]) {
             // create options from current value
             $types = $this->getCurrentFilter(true);
-            $type = $types["type"];
-            $options = array();
-            if ($type == 'lres') {
-                $type = array('lm', 'sahs', 'htlm');
-            } else {
-                $type = array($type);
-            }
+            $options = [];
             foreach ($this->filter["hide"] as $obj_id) {
-                if (in_array(
-                    $this->ilObjDataCache->lookupType((int) $obj_id),
-                    $type
-                )) {
-                    $options[$obj_id] = $this->ilObjDataCache->lookupTitle(
-                        (int) $obj_id
-                    );
-                }
+                $options[$obj_id] = $this->ilObjDataCache->lookupTitle(
+                    (int) $obj_id
+                );
             }
             $msi->setOptions($options);
         }
@@ -531,6 +520,7 @@ class ilLPTableBaseGUI extends ilTable2GUI
         $options['cmix'] = $this->lng->txt('objs_cmix');
         $options['lti'] = $this->lng->txt('objs_lti');
         $options['lso'] = $this->lng->txt('objs_lso');
+        $options['dcl'] = $this->lng->txt('objs_dcl');
 
         if ($a_allow_undefined_lp) {
             $options['root'] = $this->lng->txt('obj_reps');
@@ -758,19 +748,21 @@ class ilLPTableBaseGUI extends ilTable2GUI
         $mode = $olp->getCurrentMode();
         if (in_array(
             $mode,
-            array(ilLPObjSettings::LP_MODE_TLT,
-                         ilLPObjSettings::LP_MODE_VISITS,
-                         ilLPObjSettings::LP_MODE_SCORM,
-                         ilLPObjSettings::LP_MODE_LTI_OUTCOME,
-                         ilLPObjSettings::LP_MODE_CMIX_COMPLETED,
-                         ilLPObjSettings::LP_MODE_CMIX_COMPL_WITH_FAILED,
-                         ilLPObjSettings::LP_MODE_CMIX_PASSED,
-                         ilLPObjSettings::LP_MODE_CMIX_PASSED_WITH_FAILED,
-                         ilLPObjSettings::LP_MODE_CMIX_COMPLETED_OR_PASSED,
-                         ilLPObjSettings::LP_MODE_CMIX_COMPL_OR_PASSED_WITH_FAILED,
-                         ilLPObjSettings::LP_MODE_VISITED_PAGES,
-                         ilLPObjSettings::LP_MODE_TEST_PASSED
-        )
+            [
+                ilLPObjSettings::LP_MODE_TLT,
+                ilLPObjSettings::LP_MODE_VISITS,
+                ilLPObjSettings::LP_MODE_SCORM,
+                ilLPObjSettings::LP_MODE_LTI_OUTCOME,
+                ilLPObjSettings::LP_MODE_CMIX_COMPLETED,
+                ilLPObjSettings::LP_MODE_CMIX_COMPL_WITH_FAILED,
+                ilLPObjSettings::LP_MODE_CMIX_PASSED,
+                ilLPObjSettings::LP_MODE_CMIX_PASSED_WITH_FAILED,
+                ilLPObjSettings::LP_MODE_CMIX_COMPLETED_OR_PASSED,
+                ilLPObjSettings::LP_MODE_CMIX_COMPL_OR_PASSED_WITH_FAILED,
+                ilLPObjSettings::LP_MODE_VISITED_PAGES,
+                ilLPObjSettings::LP_MODE_TEST_PASSED,
+                ilLPObjSettings::LP_MODE_COLLECTION
+            ]
         )) {
             return true;
         }

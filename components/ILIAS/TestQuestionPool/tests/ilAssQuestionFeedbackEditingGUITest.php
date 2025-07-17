@@ -46,6 +46,7 @@ class ilAssQuestionFeedbackEditingGUITest extends assBaseTestCase
         $lng = $this->createMock(ilLanguage::class);
         $help = $this->createMock(ilHelpGUI::class);
         $questionrepository = $this->createMock(ILIAS\TestQuestionPool\RequestDataCollector::class);
+        $content_style = $this->createMock(ILIAS\Style\Content\Service::class);
 
 
         $this->object = new ilAssQuestionFeedbackEditingGUI(
@@ -56,7 +57,8 @@ class ilAssQuestionFeedbackEditingGUITest extends assBaseTestCase
             $tabs,
             $lng,
             $help,
-            $questionrepository
+            $questionrepository,
+            $content_style
         );
     }
 

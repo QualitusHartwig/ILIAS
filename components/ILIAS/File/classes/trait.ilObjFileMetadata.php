@@ -73,7 +73,7 @@ trait ilObjFileMetadata
         }
     }
 
-    public function setNoMetaDataCreation(bool $a_status)
+    public function setNoMetaDataCreation(bool $a_status): void
     {
         $this->no_meta_data_creation = $a_status;
     }
@@ -96,11 +96,14 @@ trait ilObjFileMetadata
         global $DIC;
 
         // add file size and format to LOM
-        $DIC->learningObjectMetadata()->manipulate($this->getId(), 0, $this->getType())
-                                      ->prepareCreateOrUpdate($this->getPathToSize(), (string) $this->getFileSize())
-                                      ->prepareCreateOrUpdate($this->getPathToFirstFormat(), $this->getFileType())
-                                      ->prepareCreateOrUpdate($this->getPathToVersion(), (string) $this->getVersion())
-                                      ->execute();
+        $manipulator = $DIC->learningObjectMetadata()
+                           ->manipulate($this->getId(), 0, $this->getType())
+                           ->prepareCreateOrUpdate($this->getPathToSize(), (string) $this->getFileSize())
+                           ->prepareCreateOrUpdate($this->getPathToVersion(), (string) $this->getVersion());
+        if ($this->getFileType() !== '') {
+            $manipulator = $manipulator->prepareCreateOrUpdate($this->getPathToFirstFormat(), $this->getFileType());
+        }
+        $manipulator->execute();
     }
 
     protected function beforeMDUpdateListener(string $a_element): bool
@@ -157,16 +160,16 @@ trait ilObjFileMetadata
     {
         global $DIC;
 
-        $DIC->learningObjectMetadata()->manipulate($this->getId(), 0, $this->getType())
-                                      ->prepareCreateOrUpdate($this->getPathToSize(), (string) $this->getFileSize())
-                                      ->prepareCreateOrUpdate($this->getPathToFirstFormat(), $this->getFileType())
-                                      ->prepareCreateOrUpdate($this->getPathToVersion(), (string) $this->getVersion())
-                                      ->execute();
+        $manipulator = $DIC->learningObjectMetadata()
+                           ->manipulate($this->getId(), 0, $this->getType())
+                           ->prepareCreateOrUpdate($this->getPathToSize(), (string) $this->getFileSize())
+                           ->prepareCreateOrUpdate($this->getPathToVersion(), (string) $this->getVersion());
+        if ($this->getFileType() !== '') {
+            $manipulator = $manipulator->prepareCreateOrUpdate($this->getPathToFirstFormat(), $this->getFileType());
+        }
+        $manipulator->execute();
     }
 
-    /**
-     * update copyright meta data
-     */
     protected function updateCopyright(): void
     {
         global $DIC;

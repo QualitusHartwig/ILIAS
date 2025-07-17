@@ -36,10 +36,11 @@ class Consumer implements ConsumerInterface
     private readonly Container $container;
 
     public const ID = 'tos';
+    public const GOTO_NAME = 'agreement';
 
     public function __construct(?Container $container = null)
     {
-        $this->container = $container ?? $GLOBALS['DIC'];
+        $this->container = $container ?? $GLOBALS['DIC'] ?? new Container();
     }
 
     public function id(): string
@@ -62,21 +63,21 @@ class Consumer implements ConsumerInterface
                      ->hasPublicApi($public_api);
 
         if (!$is_active) {
-            return $slot;
+            return $slot->hasPublicPage($blocks->notAvailable(...), self::GOTO_NAME);
         }
 
         $user = $build_user($this->container->user());
         $constraint = $this->container->refinery()->custom()->constraint(...);
 
         return $slot->canWithdraw($blocks->slot()->withdrawProcess($user, $global_settings, $this->userHasWithdrawn(...)))
-                    ->hasAgreement($blocks->slot()->agreement($user), 'agreement')
-                    ->showInFooter($blocks->slot()->modifyFooter($user))
+                    ->hasAgreement($blocks->slot()->agreement($user), self::GOTO_NAME)
+                    ->showInFooter($blocks->slot()->modifyFooter($user, self::GOTO_NAME))
                     ->showOnLoginPage($blocks->slot()->showOnLoginPage())
                     ->onSelfRegistration($blocks->slot()->selfRegistration($user, $build_user))
                     ->hasOnlineStatusFilter($blocks->slot()->onlineStatusFilter($this->usersWhoDidntAgree($this->container->database())))
                     ->hasUserManagementFields($blocks->userManagementAgreeDateField($build_user, 'tos_agree_date', 'tos'))
                     ->canReadInternalMails($blocks->slot()->canReadInternalMails($build_user))
-                    ->canUseSoapApi($constraint($public_api->agreed(...), 'TOS not accepted.'));
+                    ->canUseSoapApi($constraint(fn($u) => !$public_api->needsToAgree($u), 'TOS not accepted.'));
     }
 
     private function userHasWithdrawn(): void

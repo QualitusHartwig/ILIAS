@@ -19,7 +19,6 @@
 declare(strict_types=1);
 
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
 
 /**
@@ -147,8 +146,6 @@ class assNumeric extends assQuestion implements ilObjQuestionScoringAdjustable, 
             $points = $this->getPoints();
         }
 
-        $reachedPoints = $this->deductHintPointsFromReachedPoints($previewSession, $points);
-
         return $this->ensureNonNegativePoints($reachedPoints);
     }
 
@@ -189,7 +186,7 @@ class assNumeric extends assQuestion implements ilObjQuestionScoringAdjustable, 
     {
         $eval = new EvalMath();
         $eval->suppress_errors = true;
-        $result = $eval->e($value);
+        $result = $eval->e((string) $value);
         if (($result === false) || ($result === true)) {
             return false;
         }
@@ -212,7 +209,7 @@ class assNumeric extends assQuestion implements ilObjQuestionScoringAdjustable, 
 
     protected function getSolutionSubmit(): ?float
     {
-        return $this->questionpool_request->retrieveFloatValueFromPost('numeric_result');
+        return $this->questionpool_request->float('numeric_result') ?? null;
     }
 
     public function isValidSolutionSubmit($numeric_solution): bool
@@ -358,30 +355,6 @@ class assNumeric extends assQuestion implements ilObjQuestionScoringAdjustable, 
         return parent::getRTETextWithMediaObjects();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $solutions = $this->getSolutionValues($active_id, $pass);
-
-        $i = 1;
-        $worksheet->setCell($startrow + $i, $col, $this->lng->txt("result"));
-        $worksheet->setBold($worksheet->getColumnCoord($col) . ($startrow + $i));
-
-        $worksheet->setBold($worksheet->getColumnCoord($col) . ($startrow + $i));
-        if (array_key_exists(0, $solutions) &&
-            array_key_exists('value1', $solutions[0]) &&
-            strlen($solutions[0]["value1"])) {
-            $worksheet->setCell($startrow + $i, $col + 2, $solutions[0]["value1"]);
-        }
-        $i++;
-
-        return $startrow + $i + 1;
-    }
-
     public function getOperators(string $expression): array
     {
         return ilOperatorsExpressionMapping::getOperatorsByExpression($expression);
@@ -429,7 +402,7 @@ class assNumeric extends assQuestion implements ilObjQuestionScoringAdjustable, 
         return $result;
     }
 
-    public function getAvailableAnswerOptions(int $index = null): array
+    public function getAvailableAnswerOptions(?int $index = null): array
     {
         return [
             "lower" => $this->getLowerLimit(),
@@ -446,7 +419,7 @@ class assNumeric extends assQuestion implements ilObjQuestionScoringAdjustable, 
     {
         return [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_SHUFFLE_ANSWER_OPTIONS => $additional_info
                 ->getTrueFalseTagForBool($this->getShuffle()),
@@ -461,7 +434,7 @@ class assNumeric extends assQuestion implements ilObjQuestionScoringAdjustable, 
         ];
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
     ): string {
@@ -470,5 +443,19 @@ class assNumeric extends assQuestion implements ilObjQuestionScoringAdjustable, 
             return '';
         }
         return $solution_values[0]['value1'];
+    }
+
+    public function solutionValuesToText(array $solution_values): string
+    {
+        if (!array_key_exists(0, $solution_values) ||
+            !array_key_exists('value1', $solution_values[0])) {
+            return '';
+        }
+        return $solution_values[0]['value1'];
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): string
+    {
+        return "{$this->getLowerLimit()}-{$this->getUpperLimit()}";
     }
 }

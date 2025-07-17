@@ -27,6 +27,8 @@ class ilGlossaryExport
     protected string $filename = "";
     protected string $subdir = "";
     protected string $mode;
+    protected ilSetting $settings;
+    protected ilDBInterface $db;
     public ilObjGlossary $glo_obj;
     public int $inst_id;
 
@@ -63,7 +65,7 @@ class ilGlossaryExport
     /**
      * build html export file
      */
-    public function buildExportFileHTML(): string
+    public function buildExportFileHTML(): void
     {
         // create directories
         $this->glo_obj->createExportDirectory("html");
@@ -74,6 +76,6 @@ class ilGlossaryExport
             $this->export_dir,
             $this->subdir
         );
-        return $exp->exportHTML();
+        $exp->exportHTML();
     }
 }

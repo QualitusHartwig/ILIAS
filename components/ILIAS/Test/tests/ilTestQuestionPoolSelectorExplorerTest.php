@@ -34,7 +34,6 @@ class ilTestQuestionPoolSelectorExplorerTest extends ilTestBaseTestCase
 
         $this->addGlobal_ilSetting();
         $this->addGlobal_ilAccess();
-        $this->addGlobal_ilCtrl();
         $this->addGlobal_ilLog();
 
         $this->testObj = new ilTestQuestionPoolSelectorExplorer(
@@ -50,9 +49,7 @@ class ilTestQuestionPoolSelectorExplorerTest extends ilTestBaseTestCase
         $this->assertInstanceOf(ilRepositorySelectorExplorerGUI::class, $this->testObj);
     }
 
-    /**
-     * @dataProvider getAndSetAvailableQuestionPoolsDataProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getAndSetAvailableQuestionPoolsDataProvider')]
     public function testGetAndSetAvailableQuestionPools(array $IO): void
     {
         $this->assertEquals([], $this->testObj->getAvailableQuestionPools());

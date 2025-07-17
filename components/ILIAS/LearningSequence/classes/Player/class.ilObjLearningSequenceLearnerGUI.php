@@ -129,9 +129,9 @@ class ilObjLearningSequenceLearnerGUI
     {
         array_unshift(
             $components,
-            $this->ui_factory->legacy('<div class="ilLSOLearnerView">')
+            $this->ui_factory->legacy()->content('<div class="ilLSOLearnerView">')
         );
-        $components[] = $this->ui_factory->legacy('</div>');
+        $components[] = $this->ui_factory->legacy()->content('</div>');
 
         return $this->renderer->render($components);
     }
@@ -143,25 +143,25 @@ class ilObjLearningSequenceLearnerGUI
 
         if ($cmd === self::CMD_STANDARD) {
             if ($this->intro === '') {
-                $contents[] = $this->ui_factory->legacy($this->settings->getAbstract());
+                $contents[] = $this->ui_factory->legacy()->content($this->settings->getAbstract());
                 $img = $this->settings->getAbstractImage();
                 if ($img) {
                     $contents[] = $this->ui_factory->image()->responsive($img, '');
                 }
             } else {
-                $contents[] = $this->ui_factory->legacy($this->intro);
+                $contents[] = $this->ui_factory->legacy()->content($this->intro);
             }
         }
 
         if ($cmd === self::CMD_EXTRO) {
             if ($this->extro === '') {
-                $contents[] = $this->ui_factory->legacy($this->settings->getExtro());
+                $contents[] = $this->ui_factory->legacy()->content($this->settings->getExtro());
                 $img = $this->settings->getExtroImage();
                 if ($img) {
                     $contents[] = $this->ui_factory->image()->responsive($img, '');
                 }
             } else {
-                $contents[] = $this->ui_factory->legacy($this->extro);
+                $contents[] = $this->ui_factory->legacy()->content($this->extro);
             }
         }
         return $contents;
@@ -174,7 +174,7 @@ class ilObjLearningSequenceLearnerGUI
         switch ($response) {
             case null:
                 //render the page
-                $this->tpl->setContent('THIS SHOULD NOT SHOW');
+                $this->tpl->setContent($this->lng->txt('lso_player_noitems'));
                 return;
 
             case 'EXIT::' . $this->player::LSO_CMD_FINISH:

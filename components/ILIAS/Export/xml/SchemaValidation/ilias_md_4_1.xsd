@@ -176,7 +176,7 @@
    <xs:sequence>
     <xs:element ref='Identifier' maxOccurs='unbounded'/>
     <xs:element ref='Title'/>
-    <xs:element ref='Language' maxOccurs='unbounded'/>
+    <xs:element ref='Language' minOccurs="0" maxOccurs='unbounded'/>
     <xs:element ref='Description' maxOccurs='unbounded'/>
     <xs:element ref='Keyword' maxOccurs='unbounded'/>
     <xs:element ref='Coverage' minOccurs='0' maxOccurs='1'/>
@@ -700,7 +700,7 @@
  <xs:element name='Taxon'>
   <xs:complexType mixed='true'>
    <xs:attribute name='Language' type='LanguageCode' use='required'/>
-   <xs:attribute name='Id' type='xs:ID' use='optional'/>
+   <xs:attribute name='Id' type='xs:string' use='optional'/>
   </xs:complexType>
  </xs:element>
 

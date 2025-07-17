@@ -346,6 +346,7 @@ class ilSurveyEvaluationGUI
 
         // parse answer data in evaluation results
         $ov_row = 2;
+        $question_index = 1;
         foreach ($this->object->getSurveyQuestions() as $qdata) {
             $q_eval = SurveyQuestion::_instanciateQuestionEvaluation($qdata["question_id"], $finished_ids);
             $q_res = $q_eval->getResults();
@@ -372,7 +373,7 @@ class ilSurveyEvaluationGUI
             if ($details) {
                 switch ($this->request->getExportFormat()) {
                     case self::TYPE_XLS:
-                        $this->exportResultsDetailsExcel($excel, $q_eval, $q_res, $do_title, $do_label);
+                        $this->exportResultsDetailsExcel($excel, $q_eval, $q_res, $do_title, $do_label, $question_index++);
                         break;
                 }
             }
@@ -415,7 +416,8 @@ class ilSurveyEvaluationGUI
         SurveyQuestionEvaluation $a_eval,
         $a_results,
         bool $a_do_title,
-        bool $a_do_label
+        bool $a_do_label,
+        int $question_index
     ): void {
         $question_res = $a_results;
         $matrix = false;
@@ -425,7 +427,7 @@ class ilSurveyEvaluationGUI
         }
         $question = $question_res->getQuestion();
 
-        $a_excel->addSheet($question->getTitle());
+        $a_excel->addSheet($question_index . "_" . $question->getTitle());
 
 
         // question "overview"
@@ -535,8 +537,8 @@ class ilSurveyEvaluationGUI
         ilExcel $a_excel,
         ilSurveyEvaluationResults $a_results,
         int &$a_excel_row,
-        array $a_grid = null,
-        array $a_text_answers = null,
+        ?array $a_grid = null,
+        ?array $a_text_answers = null,
         bool $a_include_mode = true
     ): void {
         $kv = array();
@@ -570,7 +572,7 @@ class ilSurveyEvaluationGUI
         if ($a_grid) {
             // header
             $a_excel->setColors("B" . $a_excel_row . ":E" . $a_excel_row, self::EXCEL_SUBTITLE);
-            $a_excel->setCell($a_excel_row, 0, $this->lng->txt("categories"));
+            $a_excel->setCell($a_excel_row, 0, $this->lng->txt("svy_categories"));
             foreach ($a_grid["cols"] as $col_idx => $col) {
                 $a_excel->setCell($a_excel_row, $col_idx + 1, $col);
             }
@@ -863,12 +865,12 @@ class ilSurveyEvaluationGUI
                         $qblock = ilObjSurvey::_getQuestionblock($qdata["questionblock_id"]);
                         if ($qblock["show_blocktitle"]) {
                             $listing->node(
-                                $this->ui->factory()->legacy($qdata["questionblock_title"]),
+                                $this->ui->factory()->legacy()->content($qdata["questionblock_title"]),
                                 "q" . $qdata["questionblock_id"]
                             );
                         } else {
                             $listing->node(
-                                $this->ui->factory()->legacy(""),
+                                $this->ui->factory()->legacy()->content(""),
                                 "q" . $qdata["questionblock_id"]
                             );
                         }
@@ -887,7 +889,7 @@ class ilSurveyEvaluationGUI
                 $toc_tpl->setVariable("LIST", $listing->render());
 
                 //TABLE OF CONTENTS
-                $panel_toc = $ui_factory->panel()->standard("", $ui_factory->legacy($toc_tpl->get()));
+                $panel_toc = $ui_factory->panel()->standard("", $ui_factory->legacy()->content($toc_tpl->get()));
                 $render_toc = $ui_renderer->render($panel_toc);
                 $dtmpl->setVariable("PANEL_TOC", $render_toc);
 
@@ -1257,12 +1259,15 @@ class ilSurveyEvaluationGUI
         $ilToolbar->addFormButton($lng->txt("select"), "competenceEval");
 
         $pskills_gui = new ilPersonalSkillsGUI();
-        $rater = $this->evaluation_manager->getCurrentRater();
+        $rater = $this->evaluation_manager->getCurrentRater(
+            $this->object->getMode() === ilObjSurvey::MODE_IND_FEEDB
+        );
         if ($rater !== "") {
             if (strpos($rater ?? "", "u") === 0) {
                 $rater = substr($rater, 1);
             }
-            $pskills_gui->setTriggerUserFilter([$rater]);
+            $pskills_gui->setTriggerUserFilter($rater);
+            $pskills_gui->setHistoryView(true);
         }
 
         if (strpos($comp_eval_mode ?? "", "gap_") === 0) {

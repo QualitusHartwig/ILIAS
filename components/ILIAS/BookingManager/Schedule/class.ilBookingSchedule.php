@@ -36,7 +36,7 @@ class ilBookingSchedule
     protected ?ilDateTime $av_to = null;
 
     public function __construct(
-        int $a_id = null
+        ?int $a_id = null
     ) {
         global $DIC;
 
@@ -202,12 +202,12 @@ class ilBookingSchedule
         }
     }
 
-    public function save(): bool
+    public function save(): ?int
     {
         $ilDB = $this->db;
 
         if ($this->id) {
-            return false;
+            return null;
         }
 
         $this->id = $ilDB->nextId('booking_schedule');
@@ -264,7 +264,7 @@ class ilBookingSchedule
         return true;
     }
 
-    public function doClone(int $a_pool_id): bool
+    public function doClone(int $a_pool_id): int
     {
         $new_obj = new self();
         $new_obj->setPoolId($a_pool_id);

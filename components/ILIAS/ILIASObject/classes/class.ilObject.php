@@ -18,9 +18,12 @@
 
 declare(strict_types=1);
 
-use ILIAS\Object\ilObjectDIC;
-use ILIAS\Object\Properties\ObjectReferenceProperties\ObjectReferenceProperties;
+use ILIAS\ILIASObject\LocalDIC;
 use ILIAS\MetaData\Services\ServicesInterface as LOMServices;
+use ILIAS\ILIASObject\Properties\Properties;
+use ILIAS\ILIASObject\Properties\Translations\Translations;
+use ILIAS\ILIASObject\Properties\Translations\CachedRepository as TranslationsRepository;
+use ILIAS\ILIASObject\Properties\Aggregator;
 
 /**
  * Class ilObject
@@ -37,7 +40,7 @@ class ilObject
     public const LONG_DESC_LENGTH = 4000; // long description column max length in db
     public const TABLE_OBJECT_DATA = "object_data";
 
-    private ?ilObjectProperties $object_properties = null;
+    private ?Properties $object_properties = null;
 
     protected ilLogger $obj_log;
     protected ?ILIAS $ilias;
@@ -52,7 +55,8 @@ class ilObject
     protected ilObjUser $user;
     protected ilLanguage $lng;
     protected LOMServices $lom_services;
-    private ilObjectDIC $object_dic;
+    private Aggregator $properties_aggregator;
+    private TranslationsRepository $translations_repository;
 
     protected bool $call_by_reference;
     protected int $max_title = self::TITLE_LENGTH;
@@ -102,7 +106,9 @@ class ilObject
         $this->tree = $DIC["tree"];
         $this->app_event_handler = $DIC["ilAppEventHandler"];
         $this->lom_services = $DIC->learningObjectMetadata();
-        $this->object_dic = ilObjectDIC::dic();
+        $object_dic = LocalDIC::dic();
+        $this->properties_aggregator = $object_dic['properties.aggregator'];
+        $this->translations_repository = $object_dic['properties.translations.repository'];
 
         $this->call_by_reference = $this->referenced;
 
@@ -137,10 +143,10 @@ class ilObject
         }
     }
 
-    public function getObjectProperties(): ilObjectProperties
+    public function getObjectProperties(): Properties
     {
         if ($this->object_properties === null) {
-            $this->object_properties = $this->object_dic['object_properties_agregator']->getFor($this->id, $this->type);
+            $this->object_properties = $this->properties_aggregator->getFor($this->id, $this->type);
         }
         return $this->object_properties;
     }
@@ -261,6 +267,7 @@ class ilObject
 
             $res = $this->db->query($sql);
 
+            $this->long_desc = '';
             while ($row = $res->fetchRow(ilDBConstants::FETCHMODE_OBJECT)) {
                 if (($row->description ?? '') !== '') {
                     $this->setDescription($row->description);
@@ -719,7 +726,7 @@ class ilObject
             $paths = $this->lom_services->paths();
 
             $manipulator = $this->lom_services->manipulate($this->getId(), 0, $this->getType())
-                                              ->prepareCreateOrUpdate($paths->title(), $this->getTitle());
+                ->prepareCreateOrUpdate($paths->title(), $this->getTitle());
 
             if ($this->getDescription() !== '') {
                 $manipulator = $manipulator->prepareCreateOrUpdate(
@@ -991,7 +998,7 @@ class ilObject
         $result = $db->query($sql);
         $row = $db->fetchAssoc($result);
 
-        return $row["deleted"];
+        return $row["deleted"] ?? null;
     }
 
     /**
@@ -1299,6 +1306,8 @@ class ilObject
 
             $this->app_event_handler->raise('components/ILIAS/ILIASObject', 'beforeDeletion', ['object' => $this]);
 
+            $this->getObjectProperties()->deletePropertyTranslations();
+
             $sql =
                 "DELETE FROM " . self::TABLE_OBJECT_DATA . PHP_EOL
                 . "WHERE obj_id = " . $this->db->quote($this->getId(), "integer") . PHP_EOL
@@ -1469,7 +1478,7 @@ class ilObject
         return false;
     }
 
-    final public static function _getObjectsByType(string $obj_type = "", int $owner = null): array
+    final public static function _getObjectsByType(string $obj_type = "", ?int $owner = null): array
     {
         global $DIC;
         $db = $DIC->database();
@@ -1572,25 +1581,28 @@ class ilObject
 
         $options = ilCopyWizardOptions::_getInstance($copy_id);
 
-        $title = $this->getTitle();
-        $this->obj_log->debug($title);
+        $this->obj_log->debug($this->getTitle());
         $this->obj_log->debug("isTreeCopyDisabled: " . $options->isTreeCopyDisabled());
         $this->obj_log->debug("omit_tree: " . $omit_tree);
-        if (!$options->isTreeCopyDisabled() && !$omit_tree) {
-            $title = $this->appendCopyInfo($target_id, $copy_id);
-            $this->obj_log->debug("title incl. copy info: " . $title);
-        }
 
         /** @var ilObject $new_obj */
         $new_obj = new $class_name(0, false);
         $new_obj->setOwner($ilUser->getId());
-        $new_obj->title = $title;
+        $new_obj->title = $this->getTitle();
         $new_obj->long_desc = $this->getLongDescription();
         $new_obj->desc = $this->getDescription();
         $new_obj->type = $this->getType();
 
         // Choose upload mode to avoid creation of additional settings, db entries ...
         $new_obj->create(true);
+
+        if (!$options->isTreeCopyDisabled() && !$omit_tree) {
+            $title_with_suffix = $this->appendCopyInfo($target_id, $copy_id, $new_obj->getId());
+            $title = mb_strlen($title_with_suffix) < self::TITLE_LENGTH ? $title_with_suffix : $title;
+            $this->obj_log->debug("title incl. copy info: " . $title);
+            $new_obj->setTitle($title);
+            $new_obj->update();
+        }
 
         if ($this->supportsOfflineHandling()) {
             if ($options->isRootNode($this->getRefId())) {
@@ -1636,8 +1648,12 @@ class ilObject
         $customIcon = $customIconFactory->getByObjId($this->getId(), $this->getType());
         $customIcon->copy($new_obj->getId());
 
-        $tile_image = $this->getObjectProperties()->getPropertyTileImage()->getTileImage();
-        $tile_image->cloneFor($new_obj->getId());
+        $new_obj->getObjectProperties()->storePropertyTileImage(
+            $new_obj->getObjectProperties()->getPropertyTileImage()->withTileImage(
+                $this->getObjectProperties()->getPropertyTileImage()
+                    ->getTileImage()->cloneFor($new_obj->getId())
+            )
+        );
 
         $this->app_event_handler->raise(
             'components/ILIAS/ILIASObject',
@@ -1654,14 +1670,17 @@ class ilObject
     /**
      * Prepend Copy info if object with same name exists in that container
      */
-    final public function appendCopyInfo(int $target_id, int $copy_id): string
-    {
+    final public function appendCopyInfo(
+        int $target_id,
+        int $copy_id,
+        int $new_obj_id
+    ): string {
         $cp_options = ilCopyWizardOptions::_getInstance($copy_id);
         if (!$cp_options->isRootNode($this->getRefId())) {
             return $this->getTitle();
         }
 
-        $obj_translations = ilObjectTranslation::getInstance($this->getId());
+        $obj_translations = $this->getObjectProperties()->clonePropertyTranslations($new_obj_id);
 
         $other_children_of_same_type = $this->tree->getChildsByType($target_id, $this->type);
 
@@ -1683,12 +1702,12 @@ class ilObject
     }
 
     private function appendCopyInfoToTranslations(
-        ilObjectTranslation $obj_translations,
+        Translations $obj_translations,
         array $other_children_of_same_type
     ): string {
         $nodes_translations = array_map(
-            fn(array $child): ilObjectTranslation =>
-                ilObjectTranslation::getInstance($child['obj_id']),
+            fn(array $child): Translations =>
+                $this->translations_repository->getFor($child['obj_id']),
             $other_children_of_same_type
         );
 
@@ -1700,32 +1719,36 @@ class ilObject
 
         $new_languages = [];
         $installed_langs = $this->lng->getInstalledLanguages();
-        foreach($obj_translations->getLanguages() as $language) {
+        foreach ($obj_translations->getLanguages() as $language) {
             $lang_code = $language->getLanguageCode();
             $suffix_lang = $lang_code;
             if (!in_array($suffix_lang, $installed_langs)) {
                 $suffix_lang = $this->lng->getDefaultLanguage();
             }
-            $language->setTitle(
+            $obj_translations->addLanguage(
+                $language->getLanguageCode(),
                 $this->appendNumberOfCopiesToTitle(
                     $this->lng->txtlng('common', 'copy_of_suffix', $suffix_lang),
                     $this->lng->txtlng('common', 'copy_n_of_suffix', $suffix_lang),
                     $language->getTitle(),
                     $title_translations_per_lang[$lang_code] ?? []
-                )
+                ),
+                $language->getDescription(),
+                $language->isDefault,
+                true
             );
-            $new_languages[$lang_code] = $language;
         }
-        $obj_translations->setLanguages($new_languages);
+
+        $this->translations_repository->store($obj_translations);
 
         return $obj_translations->getDefaultTitle();
     }
 
     private function getCallbackForTitlesPerLanguageTransformation(): callable
     {
-        return function (array $npl, ?ilObjectTranslation $nt): array {
+        return function (array $npl, ?Translations $nt): array {
             $langs = $nt->getLanguages();
-            foreach($langs as $lang) {
+            foreach ($langs as $lang) {
                 if (!array_key_exists($lang->getLanguageCode(), $npl)) {
                     $npl[$lang->getLanguageCode()] = [];
                 }
@@ -1839,33 +1862,36 @@ class ilObject
         string $type = "",
         bool $offline = false
     ): string {
+        /** @var ILIAS\DI\Container $DIC */
         global $DIC;
-
-        $ilSetting = $DIC->settings();
-        $objDefinition = $DIC["objDefinition"];
+        $icon_factory = $DIC['ui.factory']->symbol()->icon();
+        $irss = $DIC['resource_storage'];
 
         if ($obj_id == "" && $type == "") {
             return "";
         }
 
-        if ($type == "") {
+        if ($type === "") {
             $type = ilObject::_lookupType($obj_id);
         }
 
-        if ($size == "") {
+        if ($size === "") {
             $size = "big";
         }
 
-        if ($obj_id && $ilSetting->get('custom_icons')) {
-            $customIconFactory = $DIC['object.customicons.factory'];
-            $customIcon = $customIconFactory->getPresenterByObjId($obj_id, $type);
-            if ($customIcon->exists()) {
-                $filename = $customIcon->getFullPath();
-                return $filename . '?tmp=' . filemtime($filename);
-            }
-        }
-
         if ($obj_id) {
+            /** @var ILIAS\ILIASObject\Properties\AdditionalProperties\Icon\Icon $property_icon */
+            $property_icon = LocalDIC::dic()['properties.additional.repository']->getFor($obj_id)->getPropertyIcon();
+            $custom_icon = $property_icon->getCustomIcon();
+            if ($custom_icon?->exists()) {
+                return $custom_icon->getFullPath() . '?tmp=' . filemtime($custom_icon->getFullPath());
+            }
+
+            $file_type_specific_icon = $property_icon->getObjectTypeSpecificIcon($obj_id, $icon_factory, $irss);
+            if ($file_type_specific_icon !== null) {
+                return $file_type_specific_icon->getIconPath();
+            }
+
             $dtpl_icon_factory = ilDidacticTemplateIconFactory::getInstance();
             if ($ref_id) {
                 $path = $dtpl_icon_factory->getIconPathForReference($ref_id);
@@ -1878,21 +1904,27 @@ class ilObject
         }
 
         if (!$offline) {
-            if ($objDefinition->isPluginTypeName($type)) {
-                if ($objDefinition->getClassName($type) != "") {
-                    $class_name = "il" . $objDefinition->getClassName($type) . 'Plugin';
-                    $location = $objDefinition->getLocation($type);
-                    if (is_file($location . "/class." . $class_name . ".php")) {
-                        return call_user_func([$class_name, "_getIcon"], $type, $size, $obj_id);
-                    }
-                }
-                return ilUtil::getImagePath("standard/icon_cmps.svg");
-            }
-
-            return ilUtil::getImagePath("standard/icon_" . $type . ".svg");
-        } else {
-            return "./images/standard/icon_" . $type . ".svg";
+            return self::getIconForType($type);
         }
+        return "./images/standard/icon_{$type}.svg";
+    }
+
+    public static function getIconForType(string $type): string
+    {
+        global $DIC;
+        $objDefinition = $DIC['objDefinition'];
+        if (!$objDefinition->isPluginTypeName($type)) {
+            return ilUtil::getImagePath("standard/icon_{$type}.svg");
+        }
+
+        if ($objDefinition->getClassName($type) !== '') {
+            $class_name = "il{$objDefinition->getClassName($type)}Plugin";
+            $location = $objDefinition->getLocation($type);
+            if (is_file($location . "/class.{$class_name}.php")) {
+                return call_user_func([$class_name, '_getIcon'], $type);
+            }
+        }
+        return ilUtil::getImagePath('standard/icon_cmps.svg');
     }
 
     /**
@@ -2147,7 +2179,7 @@ class ilObject
         return $this->obj_definition->getSubObjects($this->type, $filter);
     }
 
-    public static function _getObjectTypeIdByTitle(string $type, \ilDBInterface $ilDB = null): ?int
+    public static function _getObjectTypeIdByTitle(string $type, ?\ilDBInterface $ilDB = null): ?int
     {
         if (!$ilDB) {
             global $DIC;

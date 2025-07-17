@@ -13,7 +13,8 @@
  * us at:
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
- */
+ *
+ *********************************************************************/
 
 declare(strict_types=1);
 
@@ -155,15 +156,10 @@ abstract class ilRemoteObjectBaseGUI extends ilObject2GUI
 
     /**
     * this one is called from the info button in the repository
-    * not very nice to set cmdClass/Cmd manually, if everything
-    * works through ilCtrl in the future this may be changed
     */
     public function infoScreenObject(): void
     {
-        // @todo: removed deprecated ilCtrl methods, this needs inspection by a maintainer.
-        // $this->ctrl->setCmd("showSummary");
-        // $this->ctrl->setCmdClass("ilinfoscreengui");
-        $this->infoScreen();
+        $this->ctrl->redirectByClass(ilInfoScreenGUI::class, "showSummary");
     }
 
     /**
@@ -228,7 +224,7 @@ abstract class ilRemoteObjectBaseGUI extends ilObject2GUI
     /**
      * Edit settings
      */
-    public function editObject(ilPropertyFormGUI $form = null): void
+    public function editObject(?ilPropertyFormGUI $form = null): void
     {
         if (!$this->access->checkAccess("write", "", $this->object->getRefId())) {
             $this->error->raiseError($this->lng->txt('msg_no_perm_read'), $this->error->MESSAGE);

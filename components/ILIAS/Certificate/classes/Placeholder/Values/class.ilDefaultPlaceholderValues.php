@@ -54,7 +54,7 @@ class ilDefaultPlaceholderValues implements ilCertificatePlaceholderValues
         require_once __DIR__ . '/../../../../Calendar/classes/class.ilDateTime.php'; // Required because of global contant IL_CAL_DATE
 
         $this->dateFormat = $dateFormat ?? IL_CAL_UNIX;
-        $this->birthdayDateFormat = $birthdayDateFormat ?? IL_CAL_UNIX;
+        $this->birthdayDateFormat = $birthdayDateFormat ?? IL_CAL_DATE;
 
         if (null === $language) {
             global $DIC;

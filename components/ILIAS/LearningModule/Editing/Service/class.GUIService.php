@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -18,25 +16,24 @@ declare(strict_types=1);
  *
  *********************************************************************/
 
+declare(strict_types=1);
+
 namespace ILIAS\LearningModule\Editing;
 
 use ILIAS\LearningModule\InternalGUIService;
 use ILIAS\LearningModule\InternalDomainService;
 
-/**
- * @author Alexander Killing <killing@leifos.de>
- */
 class GUIService
 {
-    protected InternalGUIService $gui_service;
-    protected InternalDomainService $domain_service;
+    protected array $page_layouts;
 
     public function __construct(
-        InternalDomainService $domain_service,
-        InternalGUIService $gui_service
+        protected InternalDomainService $domain,
+        protected InternalGUIService $gui
     ) {
-        $this->gui_service = $gui_service;
-        $this->domain_service = $domain_service;
+        $this->page_layouts = \ilPageLayout::activeLayouts(
+            \ilPageLayout::MODULE_LM
+        );
     }
 
     public function request(
@@ -44,10 +41,42 @@ class GUIService
         ?array $passed_post_data = null
     ): EditingGUIRequest {
         return new EditingGUIRequest(
-            $this->gui_service->http(),
-            $this->domain_service->refinery(),
+            $this->gui->http(),
+            $this->domain->refinery(),
             $passed_query_params,
             $passed_post_data
+        );
+    }
+
+    public function editSubObjectsGUI(
+        string $sub_type,
+        \ilObjLearningModule $lm,
+        string $table_title
+    ): EditSubObjectsGUI {
+        return new EditSubObjectsGUI(
+            $this->domain,
+            $this->gui,
+            $sub_type,
+            $lm,
+            $table_title
+        );
+    }
+
+    public function subObjectTableBuilder(
+        string $title,
+        int $lm_id,
+        string $type,
+        object $parent_gui,
+        string $parent_cmd
+    ): SubObjectTableBuilder {
+        return new SubObjectTableBuilder(
+            $this->domain,
+            $this->gui,
+            $title,
+            $lm_id,
+            $type,
+            $parent_gui,
+            $parent_cmd
         );
     }
 }

@@ -80,7 +80,7 @@ class RadioInputTest extends ILIAS_UI_TestBase
         $expected = $this->getFormWrappedHtml(
             'radio-field-input',
             $label,
-            '<div id="id_1" class="c-field-radio">' . $expected_options . '</div>',
+            '<div class="c-field-radio">' . $expected_options . '</div>',
             $byline,
             null
         );
@@ -113,7 +113,7 @@ class RadioInputTest extends ILIAS_UI_TestBase
         $expected = $this->getFormWrappedHtml(
             'radio-field-input',
             $label,
-            '<div id="id_1" class="c-field-radio">' . $expected_options . '</div>',
+            '<div class="c-field-radio">' . $expected_options . '</div>',
             $byline,
             null
         );
@@ -129,6 +129,30 @@ class RadioInputTest extends ILIAS_UI_TestBase
         $this->testWithNoByline($radio);
         $this->testWithRequired($radio);
         $this->testWithDisabled($radio);
+        $this->testWithAdditionalOnloadCodeRendersId($radio);
     }
 
+    public function testRadioValueOK(): void
+    {
+        $radio = $this->buildRadio()->withValue('value0');
+        $this->assertEquals('value0', $radio->getValue());
+    }
+
+    public function testRadioValueNotOK(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $radio = $this->buildRadio()->withValue('something not in options');
+    }
+
+    public function testRadioValueNotOKType(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $radio = $this->buildRadio()->withValue('');
+    }
+
+    public function testRadioValueOKForNull(): void
+    {
+        $radio = $this->buildRadio()->withValue(null);
+        $this->assertNull($radio->getValue());
+    }
 }

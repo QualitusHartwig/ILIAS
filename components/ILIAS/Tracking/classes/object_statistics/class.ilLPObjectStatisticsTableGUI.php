@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=0);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -17,6 +15,8 @@ declare(strict_types=0);
  * https://github.com/ILIAS-eLearning
  *
  *********************************************************************/
+
+declare(strict_types=0);
 
 /**
  * TableGUI class for learning progress
@@ -113,7 +113,7 @@ class ilLPObjectStatisticsTableGUI extends ilLPTableBaseGUI
             'txt' => $this->lng->txt('trac_reference_ids_column'),
             'default' => false,
             'optional' => true,
-            'sortable' => true,
+            'sortable' => false,
             'width' => '5%'
         ];
         $columns['paths'] = [

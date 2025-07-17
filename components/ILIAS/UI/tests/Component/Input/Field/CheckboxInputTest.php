@@ -23,7 +23,7 @@ require_once(__DIR__ . "/../../../Base.php");
 require_once(__DIR__ . "/InputTest.php");
 require_once(__DIR__ . "/CommonFieldRendering.php");
 
-use ILIAS\UI\Implementation\Component\Input\InputData;
+use ILIAS\UI\Component\Input\InputData;
 use ILIAS\UI\Component\Input\Field;
 use ILIAS\Refinery\Factory as Refinery;
 use ILIAS\Data;
@@ -61,7 +61,8 @@ class CheckboxInputTest extends ILIAS_UI_TestBase
             'checkbox-field-input',
             $label,
             '<input type="checkbox" id="id_1" value="checked" name="name_0" class="c-field-checkbox" />',
-            $byline
+            $byline,
+            'id_1'
         );
         $this->assertEquals($expected, $this->render($checkbox));
     }
@@ -100,6 +101,7 @@ class CheckboxInputTest extends ILIAS_UI_TestBase
         $this->testWithNoByline($checkbox);
         $this->testWithRequired($checkbox);
         $this->testWithDisabled($checkbox);
+        $this->testWithAdditionalOnloadCodeRendersId($checkbox);
     }
 
     public function testTrueContent(): void

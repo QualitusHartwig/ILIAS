@@ -68,7 +68,7 @@ trait TestQuestionsImportTrait
     private function buildResultsFilePath(string $importdir, string $subdir): string
     {
         return $importdir . DIRECTORY_SEPARATOR
-                . str_replace('tst', 'results', $subdir) . 'xml';
+                . str_replace('tst', 'results', $subdir) . '.xml';
     }
 
     private function getImportTempDirectory(): string
@@ -103,7 +103,7 @@ trait TestQuestionsImportTrait
         string $form_cmd,
         string $importdir,
         string $qtifile,
-        string $path_to_uploaded_file_in_temp_dir = null
+        ?string $path_to_uploaded_file_in_temp_dir = null
     ): ?StandardForm {
         $qtiParser = new \ilQTIParser(
             $importdir,

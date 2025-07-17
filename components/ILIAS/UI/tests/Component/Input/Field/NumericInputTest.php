@@ -62,7 +62,8 @@ class NumericInputTest extends ILIAS_UI_TestBase
             'numeric-field-input',
             $label,
             '<input id="id_1" type="number" name="name_0" class="c-field-number" />',
-            $byline
+            $byline,
+            'id_1'
         );
         $this->assertEquals($expected, $this->render($numeric));
     }
@@ -77,6 +78,7 @@ class NumericInputTest extends ILIAS_UI_TestBase
         $this->testWithNoByline($numeric);
         $this->testWithRequired($numeric);
         $this->testWithDisabled($numeric);
+        $this->testWithAdditionalOnloadCodeRendersId($numeric);
     }
 
     public function testRenderValue(): void
@@ -90,7 +92,8 @@ class NumericInputTest extends ILIAS_UI_TestBase
             'numeric-field-input',
             $label,
             '<input id="id_1" type="number" value="10" name="name_0" class="c-field-number" />',
-            null
+            null,
+            'id_1'
         );
         $this->assertEquals($expected, $this->render($numeric));
     }
@@ -111,9 +114,7 @@ class NumericInputTest extends ILIAS_UI_TestBase
         return $field;
     }
 
-    /**
-     * @depends testNullValue
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testNullValue')]
     public function testEmptyValue(\ILIAS\UI\Component\Input\Container\Form\FormInput $field): void
     {
         $post_data = new DefInputData(['name_0' => '']);
@@ -128,9 +129,7 @@ class NumericInputTest extends ILIAS_UI_TestBase
         $this->assertTrue($value->isError());
     }
 
-    /**
-     * @depends testNullValue
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testNullValue')]
     public function testZeroIsValidValue(\ILIAS\UI\Component\Input\Container\Form\FormInput $field): void
     {
         $post_data = new DefInputData(['name_0' => 0]);
@@ -145,9 +144,7 @@ class NumericInputTest extends ILIAS_UI_TestBase
         $this->assertEquals(0, $value->value());
     }
 
-    /**
-     * @depends testNullValue
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testNullValue')]
     public function testConstraintForRequirementForFloat(\ILIAS\UI\Component\Input\Container\Form\FormInput $field): void
     {
         $post_data = new DefInputData(['name_0' => 1.1]);

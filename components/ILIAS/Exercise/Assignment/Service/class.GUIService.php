@@ -23,7 +23,7 @@ namespace ILIAS\Exercise\Assignment;
 use ILIAS\Exercise\InternalDomainService;
 use ILIAS\Exercise\InternalGUIService;
 use ILIAS\Exercise\Assignment\Mandatory\MandatoryAssignmentsManager;
-use ILIAS\Exercise\IRSS\CollectionWrapperGUI;
+use ILIAS\Repository\IRSS\CollectionWrapperGUI;
 
 class GUIService
 {
@@ -94,7 +94,7 @@ class GUIService
         );
     }
 
-    public function getRandomAssignmentGUI(\ilObjExercise $exc = null): \ilExcRandomAssignmentGUI
+    public function getRandomAssignmentGUI(?\ilObjExercise $exc = null): \ilExcRandomAssignmentGUI
     {
         if ($exc === null) {
             $exc = $this->gui_service->request()->getExercise();
@@ -135,7 +135,7 @@ class GUIService
         $lng = $this->domain_service->lng();
         $lng->loadLanguageModule("exc");
 
-        $write = $this->domain_service->access()->checkAccess('write', '', $ref_id);
+        $write = $this->domain_service->access()->checkAccess('edit_submissions_grades', '', $ref_id);
 
         return $this->irss_wrapper_gui->getResourceCollectionGUI(
             $feedback_file_manager->getStakeholder(),

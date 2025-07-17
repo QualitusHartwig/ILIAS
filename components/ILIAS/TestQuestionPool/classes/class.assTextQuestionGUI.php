@@ -124,7 +124,7 @@ class assTextQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringA
         // TODO - BEGIN: what exactly is done here? cant we use the parent method?
         $rtestring = ilRTE::_getRTEClassname();
         $rte = new $rtestring();
-        $rte->addUserTextEditor('textinput');
+        $rte->addUserTextEditor('textarea.textinput');
 
         // TODO - END: what exactly is done here? cant we use the parent method?
     }
@@ -142,16 +142,46 @@ class assTextQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringA
         bool $show_inline_feedback = true
     ): string {
         if (($active_id > 0) && (!$show_correct_solution)) {
-            $user_solution = $this->getUserAnswer($active_id, $pass);
-            $solution = $user_solution;
+            $solution = $this->getUserAnswer($active_id, $pass);
         } else {
             $solution = $this->getBestAnswer($this->renderPurposeSupportsFormHtml());
         }
 
+        return $this->renderSolutionOutput(
+            $solution,
+            $active_id,
+            $pass,
+            $graphical_output,
+            $result_output,
+            $show_question_only,
+            $show_feedback,
+            $show_correct_solution,
+            $show_manual_scoring,
+            $show_question_text,
+            false,
+            false,
+        );
+    }
+
+    public function renderSolutionOutput(
+        mixed $user_solutions,
+        int $active_id,
+        ?int $pass,
+        bool $graphical_output = false,
+        bool $result_output = false,
+        bool $show_question_only = true,
+        bool $show_feedback = false,
+        bool $show_correct_solution = false,
+        bool $show_manual_scoring = false,
+        bool $show_question_text = true,
+        bool $show_autosave_title = false,
+        bool $show_inline_feedback = false,
+    ): ?string {
+
         $template = new ilTemplate("tpl.il_as_qpl_text_question_output_solution.html", true, true, "components/ILIAS/TestQuestionPool");
         $solutiontemplate = new ilTemplate("tpl.il_as_tst_solution_output.html", true, true, "components/ILIAS/TestQuestionPool");
 
-        $solution = $this->object->getHtmlUserSolutionPurifier()->purify($solution);
+        $solution = $this->object->getHtmlUserSolutionPurifier()->purify($user_solutions);
         if ($this->renderPurposeSupportsFormHtml()) {
             $template->setCurrentBlock('essay_div');
             $template->setVariable("DIV_ESSAY", ilLegacyFormElementsUtil::prepareTextareaOutput($solution, true));
@@ -238,7 +268,8 @@ class assTextQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringA
         bool $show_correct_solution = false,
         bool $show_manual_scoring = false,
         bool $show_question_text = true,
-        bool $show_autosave_title = false
+        bool $show_autosave_title = false,
+        bool $show_inline_feedback = false,
     ): string {
         $user_solution = $this->getUserAnswer($active_id, $pass);
 
@@ -453,7 +484,7 @@ class assTextQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringA
                 $user_solution = htmlentities($user_solution);
             }
 
-            $user_solution = str_replace(['{', '}', '\\'], ['&#123', '&#125', '&#92'], $user_solution);
+            $user_solution = str_replace(['{', '}', '\\'], ['&#123;', '&#125;', '&#92;'], $user_solution);
         }
 
         $template = new ilTemplate("tpl.il_as_qpl_text_question_output.html", true, true, "components/ILIAS/TestQuestionPool");
@@ -486,7 +517,6 @@ class assTextQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringA
         $questionoutput .= $this->getJsCode();
 
         $pageoutput = $this->outQuestionPage("", $is_question_postponed, $active_id, $questionoutput);
-        ilYuiUtil::initDomEvent();
         return $pageoutput;
     }
 
@@ -520,17 +550,18 @@ class assTextQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringA
 
     public function addSuggestedSolution(): void
     {
-        ilSession::set("subquestion_index", 0);
-        if ($_POST["cmd"]["addSuggestedSolution"]) {
-            if ($this->writePostData()) {
-                $this->tpl->setOnScreenMessage('info', $this->getErrorMessage());
-                $this->editQuestion();
-                return;
-            }
+        $this->setAdditionalContentEditingModeFromPost();
+        ilSession::set('subquestion_index', 0);
+        $cmd = $this->request_data_collector->rawArray('cmd');
+
+        if ($cmd['addSuggestedSolution'] && $this->writePostData()) {
+            $this->tpl->setOnScreenMessage('info', $this->getErrorMessage());
+            $this->editQuestion();
+            return;
         }
         $this->object->saveToDb();
-        $this->ctrl->setParameter($this, "q_id", $this->object->getId());
-        $this->tpl->setVariable("HEADER", $this->object->getTitle());
+        $this->ctrl->setParameter($this, 'q_id', $this->object->getId());
+        $this->tpl->setVariable('HEADER', $this->object->getTitleForHTMLOutput());
         $this->getQuestionTemplate();
     }
 
@@ -541,10 +572,10 @@ class assTextQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringA
 
     public function writeQuestionSpecificPostData(ilPropertyFormGUI $form): void
     {
-        $this->object->setWordCounterEnabled(isset($_POST['wordcounter']) && $_POST['wordcounter']);
-        $this->object->setMaxNumOfChars((int) ($_POST["maxchars"] ?? 0));
-        $this->object->setTextRating($_POST["text_rating"]);
-        $this->object->setKeywordRelation($_POST['scoring_mode']);
+        $this->object->setWordCounterEnabled($this->request_data_collector->bool('wordcounter') ?? false);
+        $this->object->setMaxNumOfChars($this->request_data_collector->int('maxchars'));
+        $this->object->setTextRating($this->request_data_collector->string('text_rating'));
+        $this->object->setKeywordRelation($this->request_data_collector->string('scoring_mode'));
     }
 
     public function writeAnswerSpecificPostData(ilPropertyFormGUI $form): void
@@ -553,19 +584,19 @@ class assTextQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringA
         switch ($this->object->getKeywordRelation()) {
             case assTextQuestion::SCORING_MODE_KEYWORD_RELATION_NONE:
                 $this->object->setAnswers([]);
-                $points = str_replace(',', '.', $this->request->raw('non_keyword_points') ?? '');
+                $points = $this->request_data_collector->float('non_keyword_points');
                 break;
             case assTextQuestion::SCORING_MODE_KEYWORD_RELATION_ANY:
-                $this->object->setAnswers($this->request->raw('any_keyword'));
+                $this->object->setAnswers($this->request_data_collector->raw('any_keyword'));
                 $points = $this->object->getMaximumPoints();
                 break;
             case assTextQuestion::SCORING_MODE_KEYWORD_RELATION_ALL:
-                $this->object->setAnswers($this->request->raw('all_keyword'));
-                $points = str_replace(',', '.', $this->request->raw('all_keyword_points') ?? '');
+                $this->object->setAnswers($this->request_data_collector->raw('all_keyword'));
+                $points = $this->request_data_collector->float('all_keyword_points');
                 break;
             case assTextQuestion::SCORING_MODE_KEYWORD_RELATION_ONE:
-                $this->object->setAnswers($this->request->raw('one_keyword'));
-                $points = (float) str_replace(',', '.', $this->request->raw('one_keyword_points') ?? '');
+                $this->object->setAnswers($this->request_data_collector->raw('one_keyword'));
+                $points = $this->request_data_collector->float('one_keyword_points');
                 break;
         }
         $this->object->setPoints((float) $points);
@@ -678,6 +709,7 @@ class assTextQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringA
         //$allKeyword->setQuestionObject($this->object);
         //$allKeyword->setSingleline(TRUE);
         $allKeyword->setValues(self::buildAnswerTextOnlyArray($this->object->getAnswers()));
+        $allKeyword->setMaxLength($anyKeyword->getMaxLength());
         $scoringOptionAllKeyword->addSubItem($allKeyword);
         $allKeywordPoints = new ilNumberInputGUI($this->lng->txt("points"), "all_keyword_points");
         $allKeywordPoints->allowDecimals(true);
@@ -694,6 +726,7 @@ class assTextQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringA
         //$oneKeyword->setQuestionObject($this->object);
         //$oneKeyword->setSingleline(TRUE);
         $oneKeyword->setValues(self::buildAnswerTextOnlyArray($this->object->getAnswers()));
+        $oneKeyword->setMaxLength($anyKeyword->getMaxLength());
         $scoringOptionOneKeyword->addSubItem($oneKeyword);
         $oneKeywordPoints = new ilNumberInputGUI($this->lng->txt("points"), "one_keyword_points");
         $oneKeywordPoints->allowDecimals(true);
@@ -734,17 +767,6 @@ class assTextQuestionGUI extends assQuestionGUI implements ilGuiQuestionScoringA
     public function getAfterParticipationSuppressionQuestionPostVars(): array
     {
         return [];
-    }
-
-    /**
-     * Returns an html string containing a question specific representation of the answers so far
-     * given in the test for use in the right column in the scoring adjustment user interface.
-     * @param array $relevant_answers
-     * @return string
-     */
-    public function getAggregatedAnswersView(array $relevant_answers): string
-    {
-        return ''; //print_r($relevant_answers,true);
     }
 
     public function isAnswerFreuqencyStatisticSupported(): bool

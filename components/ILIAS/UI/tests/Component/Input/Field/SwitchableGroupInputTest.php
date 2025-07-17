@@ -26,7 +26,7 @@ use ILIAS\UI\Implementation\Component as I;
 use ILIAS\UI\Implementation\Component\Input\Field\SwitchableGroup;
 use ILIAS\UI\Implementation\Component\Input\Field\Group;
 use ILIAS\UI\Implementation\Component\Input\NameSource;
-use ILIAS\UI\Implementation\Component\Input\InputData;
+use ILIAS\UI\Component\Input\InputData;
 use ILIAS\Data;
 use ILIAS\UI\Implementation\Component\SignalGenerator;
 use ILIAS\Refinery\Factory as Refinery;
@@ -115,6 +115,7 @@ class SwitchableGroupInputTest extends ILIAS_UI_TestBase
     protected function buildFactory(): I\Input\Field\Factory
     {
         return new I\Input\Field\Factory(
+            $this->createMock(\ILIAS\UI\Implementation\Component\Input\Field\Node\Factory::class),
             $this->createMock(\ILIAS\UI\Implementation\Component\Input\UploadLimitResolver::class),
             new SignalGenerator(),
             $this->data_factory,
@@ -428,31 +429,31 @@ class SwitchableGroupInputTest extends ILIAS_UI_TestBase
         );
 
         $expected = <<<EOT
-<fieldset class="c-input" data-il-ui-component="switchable-group-field-input" data-il-ui-input-name="">
+<fieldset class="c-input" data-il-ui-component="switchable-group-field-input" data-il-ui-input-name="" tabindex="0">
     <label>label</label>
     <div class="c-input__field">
         <fieldset class="c-input" data-il-ui-component="group-field-input" data-il-ui-input-name="">
-            <label>
-                <input type="radio" value="g1" />
+            <label for="id_1">
+                <input type="radio" id="id_1" value="g1" />
                 <span></span>
             </label>
             <div class="c-input__field">
                 <fieldset class="c-input" data-il-ui-component="text-field-input" data-il-ui-input-name=""><label
-                        for="id_1">f</label>
-                    <div class="c-input__field"><input id="id_1" type="text" class="c-field-text" /></div>
+                        for="id_2">f</label>
+                    <div class="c-input__field"><input id="id_2" type="text" class="c-field-text" /></div>
                     <div class="c-input__help-byline">some field</div>
                 </fieldset>
             </div>
         </fieldset>
         <fieldset class="c-input" data-il-ui-component="group-field-input" data-il-ui-input-name="">
-            <label>
-                <input type="radio" value="g2" />
+            <label for="id_3">
+                <input type="radio" id="id_3" value="g2" />
                 <span></span>
             </label>
             <div class="c-input__field">
                 <fieldset class="c-input" data-il-ui-component="text-field-input" data-il-ui-input-name=""><label
-                        for="id_2">f2</label>
-                    <div class="c-input__field"><input id="id_2" type="text" class="c-field-text" /></div>
+                        for="id_4">f2</label>
+                    <div class="c-input__field"><input id="id_4" type="text" class="c-field-text" /></div>
                     <div class="c-input__help-byline">some other field</div>
                 </fieldset>
             </div>
@@ -468,14 +469,12 @@ EOT;
         return $sg;
     }
 
-    /**
-     * @depends testRender
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testRender')]
     public function testRenderWithValue(SG $sg): void
     {
         $r = $this->getDefaultRenderer();
         $html = $this->render($sg->withValue('g2'));
-        $expected = '<label><input type="radio" value="g2" checked="checked" />';
+        $expected = '<label for="id_3"><input type="radio" id="id_3" value="g2" checked="checked" />';
         $this->assertStringContainsString($expected, $this->render($sg->withValue('g2')));
     }
 
@@ -497,7 +496,34 @@ EOT;
 
         $sg = $f->switchableGroup([$group1, $group2, $group3], $label, $byline);
 
-        $expected = '<label><input type="radio" value="1" checked="checked" />';
+        $expected = '<label for="id_3"><input type="radio" id="id_3" value="1" checked="checked" />';
         $this->assertStringContainsString($expected, $this->render($sg->withValue('1')));
+    }
+
+    public function testCommonRendering(): void
+    {
+        $f = $this->getFieldFactory();
+        $label = "label";
+
+        $group1 = $f->group([
+            "field_1" => $f->text("f")
+        ]);
+        $group2 = $f->group([
+            "field_2" => $f->text("f2")
+        ]);
+
+        $sg = $f->switchableGroup(
+            [
+                "g1" => $group1,
+                "g2" => $group2
+            ],
+            $label
+        )->withNameFrom((new DefNamesource()));
+
+        $this->testWithError($sg);
+        $this->testWithNoByline($sg);
+        $this->testWithRequired($sg);
+        $this->testWithDisabled($sg);
+        $this->testWithAdditionalOnloadCodeRendersId($sg);
     }
 }

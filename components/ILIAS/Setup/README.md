@@ -95,6 +95,11 @@ not have any preconditions. These can be achieved, which prepares the environmen
 for other objectives to be achievable, until all objectives are achieved and the
 setup is completed.
 
+[`DBUpdateSteps`](components/ILIAS/Database/interfaces/Setup/interface.ilDatabaseUpdateSteps.php)
+are a special type of `Objective`. Their purpose is to change the database **structure**
+to a desired state, i.e. adding fields or changing field types. To change database
+**contents**, you can use `Migrations`.
+
 
 ### On Migration
 
@@ -102,7 +107,8 @@ Sometimes an update of an installation requires more work than simply downloadin
 fresh code and updating the database schema. When, e.g., the certificates where
 moved to a new persistant storage model, a lot of data needed to be shuffled around.
 This operation would potentially take a lot of time and thus was offloaded to be
-triggered by single users.
+triggered by single users. A `Migration` is the right tool for this case, as its
+purpose is to change the database **contents** to a desired state.
 
 The setup offers functionality for components to encapsulate these kind of operations
 to allow administrators to monitor and also run them in a principled way. `Agent`s
@@ -114,6 +120,13 @@ steps which can be executed even if the installation is online after update agai
 These steps can then be triggered via the CLI and also be monitored there. It is well
 possible, that there are also other means to trigger the steps, such as an interaction
 by the user. The first user of the migrations is the [`FileObject`](components/ILIAS/File/classes/Setup/class.ilFileObjectToStorageMigration.php).
+
+Please keep in mind that a `Migration` should only have to be executed **once** to
+change existing data, which means that in parallel the code should be adapted so
+that any new content is already stored in the "new" state. Besides that, the code
+should also be able to handle date in the "old" state, as the `Migration` might
+still be running while the system is already active. These code parts can then
+safely be removed alongside the `Migration` itself with the next major version.
 
 
 ### On Artifact

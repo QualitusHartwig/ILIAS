@@ -21,8 +21,8 @@ declare(strict_types=1);
 namespace ILIAS\Test\Presentation;
 
 use ILIAS\Test\Access\ParticipantAccess;
+use ILIAS\Test\Presentation\TabsManager;
 use ILIAS\Test\Settings\MainSettings\MainSettings;
-
 use ILIAS\Data\Factory as DataFactory;
 use ILIAS\Data\Link;
 use ILIAS\Data\Result;
@@ -35,6 +35,7 @@ use ILIAS\UI\Renderer as UIRenderer;
 use ILIAS\HTTP\Services as HTTPServices;
 use ILIAS\Refinery\Factory as Refinery;
 use ILIAS\Test\Logging\TestParticipantInteractionTypes;
+use ILIAS\Style\Content\Service as ContentStyle;
 
 /**
  * Class TestScreenGUI
@@ -61,8 +62,9 @@ class TestScreenGUI
         private readonly Refinery $refinery,
         private readonly \ilCtrlInterface $ctrl,
         private readonly \ilGlobalTemplateInterface $tpl,
+        private readonly ContentStyle $content_style,
         private readonly HTTPServices $http,
-        private readonly \ilTabsGUI $tabs,
+        private readonly TabsManager $tabs_manager,
         private readonly \ilAccessHandler $access,
         private readonly \ilTestAccess $test_access,
         private readonly \ilDBInterface $database,
@@ -87,8 +89,10 @@ class TestScreenGUI
             return;
         }
 
+        $this->tabs_manager->activateTab(TabsManager::TAB_ID_TEST);
+
         if (!$this->object->getMainSettings()->getAdditionalSettings()->getHideInfoTab()) {
-            $this->ctrl->redirectByClass(\ilObjTestGUI::class, 'infoScreen');
+            $this->ctrl->redirectByClass([\ilRepositoryGUI::class, \ilObjTestGUI::class, \ilInfoScreenGUI::class]);
         }
 
         $this->tpl->setOnScreenMessage('failure', sprintf(
@@ -101,7 +105,7 @@ class TestScreenGUI
 
     public function testScreen(): void
     {
-        $this->tabs->activateTab(\ilTestTabsManager::TAB_ID_TEST);
+        $this->tabs_manager->activateTab(TabsManager::TAB_ID_TEST);
         $this->tpl->setPermanentLink($this->object->getType(), $this->ref_id);
 
         $elements = [];
@@ -136,8 +140,11 @@ class TestScreenGUI
             $message_box_message_elements[] = $this->lng->txt('tst_launcher_status_message_password');
         }
 
-        if ($test_behaviour_settings->getProcessingTimeEnabled()) {
-            $message_box_message_elements[] = sprintf($this->lng->txt('tst_time_limit_message'), $test_behaviour_settings->getProcessingTimeAsMinutes());
+        if ($test_behaviour_settings->getProcessingTimeEnabled() && !$this->isUserOutOfProcessingTime()) {
+            $message_box_message_elements[] = sprintf(
+                $this->lng->txt('tst_time_limit_message'),
+                $test_behaviour_settings->getProcessingTimeAsMinutes()
+            );
         }
 
         $nr_of_tries = $this->object->getNrOfTries();
@@ -179,9 +186,10 @@ class TestScreenGUI
             $this->main_settings->getIntroductionSettings()->getIntroductionEnabled() &&
             !empty($introduction)
         ) {
+            $this->content_style->gui()->addCss($this->tpl, $this->ref_id);
             $elements[] = $this->ui_factory->panel()->standard(
                 $this->lng->txt('tst_introduction'),
-                $this->ui_factory->legacy($introduction),
+                $this->ui_factory->legacy()->content($introduction),
             );
         }
 
@@ -190,25 +198,16 @@ class TestScreenGUI
 
     private function handleRenderLauncher(array $elements): array
     {
-        $launcher = $this->getLauncher();
-        $request = $this->http->request();
-        $key = 'launcher_id';
-
-        if (array_key_exists($key, $request->getQueryParams()) && $request->getQueryParams()[$key] === 'exam_modal') {
-            $launcher = $launcher->withRequest($request);
-        }
-
-        $elements[] = $launcher;
-
+        $elements[] = $this->getLauncher();
         return $elements;
     }
 
     private function getLauncher(): Launcher
     {
-        $launcher = $this->ui_factory->launcher();
+        $launcher_factory = $this->ui_factory->launcher();
 
         if ($this->object->isStartingTimeEnabled() && !$this->object->startingTimeReached()) {
-            return $launcher
+            return $launcher_factory
                 ->inline($this->data_factory->link('', $this->data_factory->uri($this->http->request()->getUri()->__toString())))
                 ->withButtonLabel(sprintf(
                     $this->lng->txt('detail_starting_time_not_reached'),
@@ -218,7 +217,7 @@ class TestScreenGUI
         }
 
         if ($this->object->isEndingTimeEnabled() && $this->object->endingTimeReached()) {
-            return $launcher
+            return $launcher_factory
                 ->inline($this->data_factory->link('', $this->data_factory->uri($this->http->request()->getUri()->__toString())))
                 ->withButtonLabel(sprintf(
                     $this->lng->txt('detail_ending_time_reached'),
@@ -228,16 +227,9 @@ class TestScreenGUI
         }
 
         if ($this->isUserOutOfProcessingTime()) {
-            return $launcher
+            return $launcher_factory
                 ->inline($this->data_factory->link('', $this->data_factory->uri($this->http->request()->getUri()->__toString())))
                 ->withButtonLabel($this->lng->txt('tst_out_of_time_message'), false)
-            ;
-        }
-
-        if ($this->object->getFixedParticipants() && $this->object->getInvitedUsers($this->user->getId()) === []) {
-            return $launcher
-                ->inline($this->data_factory->link('', $this->data_factory->uri($this->http->request()->getUri()->__toString())))
-                ->withButtonLabel($this->lng->txt('tst_exam_not_assigned_participant_disclaimer'), false)
             ;
         }
 
@@ -245,15 +237,23 @@ class TestScreenGUI
             $this->object->getId(),
             $this->user->getId()
         );
-        if ($participant_access !== ParticipantAccess::ALLOWED) {
-            return $launcher
+
+        if ($participant_access === ParticipantAccess::NOT_INVITED) {
+            return $launcher_factory
                 ->inline($this->data_factory->link('', $this->data_factory->uri($this->http->request()->getUri()->__toString())))
-                ->withButtonLabel($this->lng->txt($participant_access->value), false)
+                ->withButtonLabel($this->lng->txt('tst_exam_not_assigned_participant_disclaimer'), false)
             ;
         }
 
-        if (!$this->hasUserPassedAlreadyAndCanRetake()) {
-            return $launcher
+        if ($participant_access !== ParticipantAccess::ALLOWED) {
+            return $launcher_factory
+                ->inline($this->data_factory->link('', $this->data_factory->uri($this->http->request()->getUri()->__toString())))
+                ->withButtonLabel($participant_access->getAccessForbiddenMessage($this->lng), false)
+            ;
+        }
+
+        if ($this->blockUserAfterHavingPassed()) {
+            return $launcher_factory
                 ->inline($this->data_factory->link('', $this->data_factory->uri($this->http->request()->getUri()->__toString())))
                 ->withButtonLabel($this->lng->txt('tst_already_passed_cannot_retake'), false)
             ;
@@ -261,7 +261,7 @@ class TestScreenGUI
 
         $next_pass_allowed_timestamp = 0;
         if (!$this->object->isNextPassAllowed($this->test_passes_selector, $next_pass_allowed_timestamp)) {
-            return $launcher
+            return $launcher_factory
                 ->inline($this->data_factory->link('', $this->data_factory->uri($this->http->request()->getUri()->__toString())))
                 ->withButtonLabel(
                     sprintf(
@@ -273,39 +273,20 @@ class TestScreenGUI
             ;
         }
 
-        if ($this->hasAvailablePasses()) {
-            if ($this->lastPassSuspended()) {
-                $launcher = $launcher->inline($this->getResumeLauncherLink());
-            }
-            if ($this->newPassCanBeStarted()) {
-                if ($this->isModalLauncherNeeded()) {
-                    $launcher = $launcher
-                        ->inline($this->getModalLauncherLink())
-                        ->withInputs(
-                            $this->ui_factory->input()->field()->group($this->getModalLauncherInputs()),
-                            function (Result $result) {
-                                $this->evaluateLauncherModalForm($result);
-                            },
-                            $this->getModalLauncherMessageBox()
-                        )
-                        ->withModalSubmitLabel($this->lng->txt('continue'))
-                    ;
-                } else {
-                    $launcher = $launcher->inline($this->getStartLauncherLink());
-                }
-            }
-        } else {
-            $launcher = $launcher
+        if (!$this->hasAvailablePasses()) {
+            return $launcher_factory
                 ->inline($this->data_factory->link('', $this->data_factory->uri($this->http->request()->getUri()->__toString())))
-                ->withButtonLabel($this->lng->txt('tst_launcher_button_label_passes_limit_reached'), false)
-            ;
+                ->withButtonLabel($this->lng->txt('tst_launcher_button_label_passes_limit_reached'), false);
         }
 
-        if ($launcher instanceof LauncherFactory) {
-            $launcher = $launcher->inline($this->data_factory->link('Test', $this->data_factory->uri($this->http->request()->getUri()->__toString())));
+        if ($this->lastPassSuspended()) {
+            return $launcher_factory->inline($this->getResumeLauncherLink());
         }
 
-        return $launcher;
+        if ($this->isModalLauncherNeeded()) {
+            return $this->buildModalLauncher();
+        }
+        return $launcher_factory->inline($this->getStartLauncherLink());
     }
 
     private function getResumeLauncherLink(): Link
@@ -315,6 +296,26 @@ class TestScreenGUI
             \ilTestPlayerCommands::RESUME_PLAYER
         );
         return $this->data_factory->link($this->lng->txt('tst_resume_test'), $this->data_factory->uri(ILIAS_HTTP_PATH . '/' . $url));
+    }
+
+    private function buildModalLauncher(): Launcher
+    {
+        $launcher = $this->ui_factory->launcher()->inline($this->getModalLauncherLink())
+            ->withInputs(
+                $this->ui_factory->input()->field()->group($this->getModalLauncherInputs()),
+                function (Result $result) {
+                    $this->evaluateLauncherModalForm($result);
+                },
+                $this->getModalLauncherMessageBox()
+            )->withModalSubmitLabel($this->lng->txt('continue'));
+
+        $request = $this->http->request();
+        $key = 'launcher_id';
+        if (array_key_exists($key, $request->getQueryParams())
+            && $request->getQueryParams()[$key] === 'exam_modal') {
+            $launcher = $launcher->withRequest($request);
+        }
+        return $launcher;
     }
 
     private function getModalLauncherLink(): Link
@@ -441,7 +442,6 @@ class TestScreenGUI
                         if ($anonymous && !empty($value)) {
                             $this->test_session->setAccessCodeToSession($value);
                         } else {
-                            $conditions_met = false;
                             $this->test_session->unsetAccessCodeInSession();
                         }
                         break;
@@ -518,13 +518,14 @@ class TestScreenGUI
             );
     }
 
-    private function hasUserPassedAlreadyAndCanRetake(): bool
+    private function blockUserAfterHavingPassed(): bool
     {
         if ($this->main_settings->getTestBehaviourSettings()->getBlockAfterPassedEnabled()) {
-            return !$this->test_passes_selector->hasTestPassedOnce($this->test_session->getActiveId());
+            return $this->test_passes_selector->getLastFinishedPass() >= 0
+                && $this->test_passes_selector->hasTestPassedOnce($this->test_session->getActiveId());
         }
 
-        return true;
+        return false;
     }
 
     private function hasAvailablePasses(): bool
@@ -537,13 +538,6 @@ class TestScreenGUI
     private function lastPassSuspended(): bool
     {
         return (count($this->test_passes_selector->getExistingPasses()) - count($this->test_passes_selector->getClosedPasses())) === 1;
-    }
-
-    private function newPassCanBeStarted(): bool
-    {
-        $nr_of_tries = $this->object->getNrOfTries();
-
-        return !$this->lastPassSuspended() && ($nr_of_tries === 0 || count($this->test_passes_selector->getExistingPasses()) < $nr_of_tries);
     }
 
     private function isModalLauncherNeeded(): bool
@@ -602,7 +596,7 @@ class TestScreenGUI
         return false;
     }
 
-    private function buildLinkTarget(string $cmd = null): string
+    private function buildLinkTarget(?string $cmd = null): string
     {
         $target = array_merge(['ilRepositoryGUI', 'ilObjTestGUI'], ['ilTestSkillAdministrationGUI', 'ilTestSkillLevelThresholdsGUI']);
         return $this->ctrl->getLinkTargetByClass($target, $cmd);

@@ -42,6 +42,8 @@ abstract class assBaseTestCase extends TestCase
 
         $this->addGlobal_tpl();
         $this->addGlobal_lng();
+        $this->addGlobal_objectService();
+        $this->addGlobal_objectMetadata();
         $this->addGlobal_ilObjDataCache();
         $this->addGlobal_ilAccess();
         $this->addGlobal_ilHelp();
@@ -57,6 +59,13 @@ abstract class assBaseTestCase extends TestCase
         $this->addGlobal_http();
         $this->addGlobal_upload();
         $this->addGlobal_ilCtrl();
+        $this->addGlobal_resourceStorage();
+        $this->addGlobal_filesystem();
+        $this->addGlobal_static_url();
+        $this->addGlobal_ilIliasIniFile();
+        $this->addGlobal_ilSetting();
+        $this->addGlobal_uiFactory();
+        $this->addGlobal_uiRenderer();
 
         $this->defineGlobalConstants();
 

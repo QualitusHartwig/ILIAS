@@ -223,6 +223,22 @@ class ilTrObjectUsersPropsTableGUI extends ilLPTableBaseGUI
                 $this->user_fields
             );
         }
+
+        /*
+         * ilTrQuery does not read out any information about org units
+         * (nor should it), so it needs to be added here.
+         */
+        if (in_array('org_units', $additional_fields)) {
+            foreach (($tr_data['set'] ?? []) as $key => $data) {
+                if (!isset($data['usr_id'])) {
+                    continue;
+                }
+                $usr_id = (int) $data['usr_id'];
+                $org_units = ilOrgUnitPathStorage::getTextRepresentationOfUsersOrgUnits($usr_id);
+                $tr_data["set"][$key]['org_units'] = $org_units;
+            }
+        }
+
         $this->setMaxCount($tr_data["cnt"]);
         $this->setData($tr_data["set"]);
     }
@@ -519,8 +535,8 @@ class ilTrObjectUsersPropsTableGUI extends ilLPTableBaseGUI
     ): void {
         $cnt = 0;
         foreach ($this->getSelectedColumns() as $c) {
-            if ($c != 'status') {
-                $val = $this->parseValue($c, $a_set[$c], $this->type);
+            if ($c !== 'status') {
+                $val = $this->parseValue($c, $a_set[$c] ?? null, $this->type);
             } else {
                 $val = ilLearningProgressBaseGUI::_getStatusText(
                     (int) $a_set[$c]
@@ -543,8 +559,8 @@ class ilTrObjectUsersPropsTableGUI extends ilLPTableBaseGUI
     protected function fillRowCSV(ilCSVWriter $a_csv, array $a_set): void
     {
         foreach ($this->getSelectedColumns() as $c) {
-            if ($c != 'status') {
-                $val = $this->parseValue($c, $a_set[$c], $this->type);
+            if ($c !== 'status') {
+                $val = $this->parseValue($c, $a_set[$c] ?? null, $this->type);
             } else {
                 $val = ilLearningProgressBaseGUI::_getStatusText(
                     (int) $a_set[$c]

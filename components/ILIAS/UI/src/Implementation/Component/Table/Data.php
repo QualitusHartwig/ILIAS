@@ -29,11 +29,10 @@ use ILIAS\UI\Component\Signal;
 use ILIAS\UI\Implementation\Component\JavaScriptBindable;
 use ILIAS\UI\Component\JavaScriptBindable as JSBindable;
 use ILIAS\Data\Factory as DataFactory;
-
-
 use ILIAS\UI\Component\Input\ViewControl;
 use ILIAS\UI\Component\Input\Container\ViewControl as ViewControlContainer;
 use ILIAS\Data\Range;
+use ILIAS\Data\Order;
 
 class Data extends AbstractTable implements T\Data
 {
@@ -126,14 +125,24 @@ class Data extends AbstractTable implements T\Data
         $view_controls = $this->getViewControls($total_count);
 
         if ($request = $this->getRequest()) {
-            $view_controls = $this->applyValuesToViewcontrols($view_controls, $request);
-            $data = $view_controls->getData();
+            # This retrieves container data from the request
+            $data = $this->applyValuesToViewcontrols($view_controls, $request)->getData();
             $range = $data[self::VIEWCONTROL_KEY_PAGINATION];
-            $range = ($range instanceof Range) ? $range->croppedTo($total_count ?? PHP_INT_MAX) : null;
+            $range = ($range instanceof Range) ? $range : null;
+            $order = $data[self::VIEWCONTROL_KEY_ORDERING];
+            $order = ($order instanceof Order) ? $order : null;
+
+            if ($range instanceof Range) {
+                $range = $range->withStart($range->getStart() <= $total_count ? $range->getStart() : 0);
+                $range = $range->croppedTo($total_count ?? PHP_INT_MAX);
+            }
+
             $table = $table
                 ->withRange($range)
-                ->withOrder($data[self::VIEWCONTROL_KEY_ORDERING] ?? null)
+                ->withOrder($order)
                 ->withSelectedOptionalColumns($data[self::VIEWCONTROL_KEY_FIELDSELECTION] ?? null);
+            # This retrieves the view controls that should be displayed
+            $view_controls = $table->applyValuesToViewcontrols($table->getViewControls($total_count), $request);
         }
 
         return [

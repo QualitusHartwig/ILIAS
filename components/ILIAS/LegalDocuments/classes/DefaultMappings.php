@@ -44,8 +44,7 @@ class DefaultMappings
     {
         $ui = new UI(
             $this->id,
-            $this->container->ui()->factory(),
-            $this->container->ui()->mainTemplate(),
+            $this->container->ui(),
             $this->container->language()
         );
 
@@ -70,7 +69,7 @@ class DefaultMappings
     public function contentAsComponent(): array
     {
         return [
-            'html' => fn($x) => $this->container->ui()->factory()->legacy($x->value()),
+            'html' => fn($x) => $this->container->ui()->factory()->legacy()->content($x->value()),
         ];
     }
 }

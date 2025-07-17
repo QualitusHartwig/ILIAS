@@ -13,7 +13,8 @@
  * us at:
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
- */
+ *
+ *********************************************************************/
 
 declare(strict_types=1);
 
@@ -57,17 +58,9 @@ class ilObjECSSettingsGUI extends ilObjectGUI
                 $this->ctrl->forwardCommand($perm_gui);
                 break;
 
-            case 'ilecssettingsgui':
-                $this->tabs_gui->setTabActive('settings');
-                $settings = new ilECSSettingsGUI();
-                $this->ctrl->forwardCommand($settings);
-                break;
-
             default:
                 $this->tabs_gui->setTabActive('settings');
                 $settings = new ilECSSettingsGUI();
-                // @todo: removed deprecated ilCtrl methods, this needs inspection by a maintainer.
-                // $this->ctrl->setCmdClass('ilecssettingsgui');
                 $this->ctrl->forwardCommand($settings);
                 break;
         }

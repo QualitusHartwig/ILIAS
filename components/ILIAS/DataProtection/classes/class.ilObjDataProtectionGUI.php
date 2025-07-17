@@ -59,7 +59,7 @@ final class ilObjDataProtectionGUI extends ilObject2GUI
         $this->legal_documents = new ilLegalDocumentsAdministrationGUI(self::class, $config, $this->afterDocumentDeletion(...));
 
         $this->data_protection_settings = $this->createDataProtectionSettings();
-        $this->ui = new UI($this->getType(), $this->container->ui()->factory(), $this->container->ui()->mainTemplate(), $this->container->language());
+        $this->ui = new UI($this->getType(), $this->container->ui(), $this->container->language());
     }
 
     public function getType(): string
@@ -175,12 +175,21 @@ final class ilObjDataProtectionGUI extends ilObject2GUI
 
     private function form(): Component
     {
+        $no_documents = $this->config->legalDocuments()->document()->repository()->countAll() === 0;
+        if ($no_documents) {
+            $this->tpl->setOnScreenMessage('info', $this->ui->txt('no_documents_exist'), true);
+        }
+
         $enabled = $this->optionalGroup('status_enable', 'status_enable_desc', [
             'type' => $this->radio('mode', [
                 'once' => 'once',
                 'eval_on_login' => 'reevaluate_on_login',
                 'no_acceptance' => 'no_acceptance',
-            ])->withValue('once')->withRequired(true),
+            ])->withValue(
+                $this->data_protection_settings->validateOnLogin()->value() ?
+                    'eval_on_login' :
+                    ($this->data_protection_settings->noAcceptance()->value() ? 'no_acceptance' : 'once')
+            )->withRequired(true),
         ]);
 
         $enabled = $enabled->withValue($this->data_protection_settings->enabled()->value() ? [
@@ -196,16 +205,24 @@ final class ilObjDataProtectionGUI extends ilObject2GUI
             ['enabled' => $enabled]
         );
 
-        return $this->legal_documents->admin()->withFormData($form, function (array $data): void {
-            $no_documents = $this->config->legalDocuments()->document()->repository()->countAll() === 0;
+        if (!$this->config->editable()) {
+            $form = $form->withSubmitLabel($this->lng->txt('refresh'));
+            return $this->legal_documents->admin()->withFormData($form, function () {
+                $this->ctrl->redirect($this, 'settings');
+            });
+        }
+
+        return $this->legal_documents->admin()->withFormData($form, function (array $data) use ($no_documents): void {
             if ($no_documents && isset($data['enabled'])) {
                 $this->tpl->setOnScreenMessage('failure', $this->ui->txt('no_documents_exist_cant_save'), true);
                 $this->ctrl->redirect($this, 'settings');
             }
             $type = $data['enabled']['type'] ?? false;
             $this->data_protection_settings->enabled()->update(isset($data['enabled']));
-            $this->data_protection_settings->validateOnLogin()->update($type === 'eval_on_login');
-            $this->data_protection_settings->noAcceptance()->update($type === 'no_acceptance');
+            if (isset($data['enabled'])) {
+                $this->data_protection_settings->validateOnLogin()->update($type === 'eval_on_login');
+                $this->data_protection_settings->noAcceptance()->update($type === 'no_acceptance');
+            }
 
             $this->tpl->setOnScreenMessage('success', $this->lng->txt('msg_obj_modified'), true);
             $this->ctrl->redirect($this, 'settings');

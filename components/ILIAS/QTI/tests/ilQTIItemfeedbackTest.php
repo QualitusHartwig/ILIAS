@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -16,8 +14,9 @@ declare(strict_types=1);
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
  *
- ********************************************************************
- */
+ *********************************************************************/
+
+declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
@@ -28,10 +27,8 @@ class ilQTIItemfeedbackTest extends TestCase
         $this->assertInstanceOf(ilQTIItemfeedback::class, new ilQTIItemfeedback());
     }
 
-    /**
-     * @depends testConstruct
-     * @dataProvider views
-     */
+    #[\PHPUnit\Framework\Attributes\Depends('testConstruct')]
+    #[\PHPUnit\Framework\Attributes\DataProvider('views')]
     public function testSetGetView(string $input, ?string $expected): void
     {
         $instance = new ilQTIItemfeedback();

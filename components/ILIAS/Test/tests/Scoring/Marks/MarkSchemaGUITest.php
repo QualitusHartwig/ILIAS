@@ -31,8 +31,6 @@ class MarkSchemaGUITest extends ilTestBaseTestCase
     {
         parent::setUp();
 
-        $this->addGlobal_ilCtrl();
-        $this->addGlobal_lng();
         $this->addGlobal_tpl();
         $this->addGlobal_ilToolbar();
         $this->addGlobal_ilTabs();
@@ -44,10 +42,10 @@ class MarkSchemaGUITest extends ilTestBaseTestCase
             $this->createMock(ilCtrl::class),
             $this->createMock(ilGlobalTemplateInterface::class),
             $this->createMock(ilToolbarGUI::class),
-            $this->createMock(\ilTabsGUI::class),
             $this->createMock(\ILIAS\Test\Logging\TestLogger::class),
             $this->createMock(ILIAS\HTTP\Wrapper\RequestWrapper::class),
             $this->createMock(ILIAS\HTTP\Wrapper\RequestWrapper::class),
+            $this->createMock(ILIAS\Test\ResponseHandler::class),
             $this->createMock(\GuzzleHttp\Psr7\Request::class),
             $this->createMock(ILIAS\Refinery\Factory::class),
             $this->createMock(ILIAS\UI\Factory::class),

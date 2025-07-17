@@ -62,7 +62,7 @@ class ilObjTermsOfServiceGUI extends ilObject2GUI
         }
         $this->config = $config;
         $this->legal_documents = new ilLegalDocumentsAdministrationGUI(self::class, $this->config, $this->afterDocumentDeletion(...));
-        $this->ui = new UI(Consumer::ID, $this->dic->ui()->factory(), $this->dic->ui()->mainTemplate(), $this->dic->language());
+        $this->ui = new UI(Consumer::ID, $this->dic->ui(), $this->dic->language());
         $this->tos_settings = $this->createSettings();
     }
 
@@ -94,9 +94,15 @@ class ilObjTermsOfServiceGUI extends ilObject2GUI
                 return;
             default:
                 switch ($cmd) {
+                    case 'documents':
+                        $this->ctrl->redirectByClass([self::class, ilLegalDocumentsAdministrationGUI::class], 'documents');
+                        return;
                     case 'confirmReset': $this->confirmReset();
                         return;
                     case 'resetNow': $this->resetNow();
+                        return;
+                    case 'documents':
+                        $this->ctrl->redirectByClass([self::class, get_class($this->legal_documents)], 'documents');
                         return;
                     default: $this->settings();
                         return;
@@ -126,6 +132,11 @@ class ilObjTermsOfServiceGUI extends ilObject2GUI
     {
         $read_only = !$this->rbac_system->checkAccess('write', $this->object->getRefId());
 
+        $no_documents = $this->config->legalDocuments()->document()->repository()->countAll() === 0;
+        if ($no_documents) {
+            $this->tpl->setOnScreenMessage('info', $this->lng->txt('tos_no_documents_exist'));
+        }
+
         $enabled = $this->dic->ui()->factory()->input()->field()->optionalGroup(
             [
                 'reeval_on_login' => $this->dic->ui()->factory()->input()->field()->checkbox(
@@ -145,11 +156,13 @@ class ilObjTermsOfServiceGUI extends ilObject2GUI
         );
 
         if ($read_only) {
-            return $form;
+            $form = $form->withSubmitLabel($this->lng->txt('refresh'));
+            return $this->legal_documents->admin()->withFormData($form, function () {
+                $this->ctrl->redirect($this, 'settings');
+            });
         }
 
-        return $this->legal_documents->admin()->withFormData($form, function (array $data): void {
-            $no_documents = $this->config->legalDocuments()->document()->repository()->countAll() === 0;
+        return $this->legal_documents->admin()->withFormData($form, function (array $data) use ($no_documents): void {
             if ($no_documents && $data['enabled']) {
                 $this->tpl->setOnScreenMessage('failure', $this->lng->txt('tos_no_documents_exist_cant_save'), true);
                 $this->ctrl->redirect($this, 'settings');
@@ -220,6 +233,7 @@ class ilObjTermsOfServiceGUI extends ilObject2GUI
         $in = $this->dic->database()->in('usr_id', [ANONYMOUS_USER_ID, SYSTEM_USER_ID], true, 'integer');
         $this->dic->database()->manipulate("UPDATE usr_data SET agree_date = NULL WHERE $in");
         $this->tos_settings->lastResetDate()->update((new DataFactory())->clock()->system()->now());
+        $this->tpl->setOnScreenMessage('success', $this->lng->txt('msg_obj_modified'), true);
         $this->dic->ctrl()->redirectByClass([self::class, $this->legal_documents::class], 'documents');
     }
 

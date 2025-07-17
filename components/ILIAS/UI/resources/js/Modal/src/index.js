@@ -16,6 +16,8 @@
 import il from 'il';
 import $ from 'jquery';
 import Modal from './Modal';
+import LightBoxCarousel from './LightBoxCarousel';
 
 il.UI = il.UI || {};
 il.UI.modal = new Modal($);
+il.UI.lightbox = LightBoxCarousel;

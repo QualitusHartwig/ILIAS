@@ -43,8 +43,6 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
 {
     public function testOnlyOneCourseIsCompletedOnLPChange(): void
     {
-        $this->markTestSkipped('Data Provider needs to be revisited.');
-
         $templateRepository = $this->getMockBuilder(ilCertificateTemplateRepository::class)->getMock();
 
         $templateRepository->method('fetchActiveCertificateTemplatesForCoursesWithDisabledLearningProgress')
@@ -62,6 +60,8 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                         true,
                         '/some/where/background.jpg',
                         '/some/where/thumbnail.svg',
+                        '-',
+                        '-',
                         1
                     ),
                     new ilCertificateTemplate(
@@ -76,6 +76,8 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                         true,
                         '/some/where/background.jpg',
                         '/some/where/thumbnail.svg',
+                        '-',
+                        '-',
                         5
                     ),
                 ]
@@ -95,7 +97,7 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                 function (string $k) use (&$consecutive_get): string {
                     list($expected, $ret) = array_shift($consecutive_get);
                     $this->assertEquals($expected, $k);
-                    return $k;
+                    return $ret;
                 }
             );
 
@@ -127,7 +129,7 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
             ->method('lookUpStatus')
             ->willReturnCallback(
                 function (int $id) use (&$consecutive_status): int {
-                    list($expected, $ret) = array_shift($consecutive_lookup);
+                    list($expected, $ret) = array_shift($consecutive_status);
                     $this->assertEquals($expected, $id);
 
                     return $ret;
@@ -153,8 +155,6 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
 
     public function testAllCoursesAreCompletedOnLPChange(): void
     {
-        $this->markTestSkipped('Data Provider needs to be revisited.');
-
         $templateRepository = $this->getMockBuilder(ilCertificateTemplateRepository::class)->getMock();
 
         $templateRepository->method('fetchActiveCertificateTemplatesForCoursesWithDisabledLearningProgress')
@@ -172,6 +172,8 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                         true,
                         '/some/where/background.jpg',
                         '/some/where/thumbnail.svg',
+                        '-',
+                        '-',
                         1
                     ),
                     new ilCertificateTemplate(
@@ -186,6 +188,8 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                         true,
                         '/some/where/background.jpg',
                         '/some/where/thumbnail.svg',
+                        '-',
+                        '-',
                         5
                     ),
                 ]
@@ -209,7 +213,7 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                 function (string $k) use (&$consecutive_get): string {
                     list($expected, $ret) = array_shift($consecutive_get);
                     $this->assertEquals($expected, $k);
-                    return $k;
+                    return $ret;
                 }
             );
 
@@ -247,7 +251,7 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
             ->method('lookUpStatus')
             ->willReturnCallback(
                 function (int $id) use (&$consecutive_status): int {
-                    list($expected, $ret) = array_shift($consecutive_lookup);
+                    list($expected, $ret) = array_shift($consecutive_status);
                     $this->assertEquals($expected, $id);
 
                     return $ret;
@@ -291,6 +295,8 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                         true,
                         '/some/where/background.jpg',
                         '/some/where/thumbnail.svg',
+                        '-',
+                        '-',
                         1
                     ),
                     new ilCertificateTemplate(
@@ -305,6 +311,8 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                         true,
                         '/some/where/background.jpg',
                         '/some/where/thumbnail.svg',
+                        '-',
+                        '-',
                         5
                     ),
                 ]
@@ -369,7 +377,9 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                     'created_timestamp' => 123_456_789,
                     'currently_active' => true,
                     'background_image_path' => '/some/where/background.jpg',
-                    'thumbnail_image_path' => 'some/path/test.svg'
+                    'thumbnail_image_path' => 'some/path/test.svg',
+                    'background_image_ident' => '-',
+                    'thumbnail_image_ident' => '-'
                 ],
                 [
                     'id' => 30,
@@ -383,16 +393,18 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                     'created_timestamp' => 123_456_789,
                     'currently_active' => false,
                     'background_image_path' => '/some/where/else/background.jpg',
-                    'thumbnail_image_path' => 'some/path/test.svg'
+                    'thumbnail_image_path' => 'some/path/test.svg',
+                    'background_image_ident' => '-',
+                    'thumbnail_image_ident' => '-'
                 ]
             ]],
         ];
     }
 
     /**
-     * @dataProvider globalLearningProgressStateProvder
      * @param array[] $template_recods
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('globalLearningProgressStateProvder')]
     public function testRetrievingCertificateTemplatesForCoursesWorksAsExpectedWhenUsingNonCachingRepository(
         bool $isGlobalLpEnabled,
         array $template_recods
@@ -468,6 +480,8 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                         true,
                         '/some/where/background.jpg',
                         '/some/where/thumbnail.svg',
+                        '-',
+                        '-',
                         1
                     ),
                     new ilCertificateTemplate(
@@ -482,6 +496,8 @@ class ilCertificateCourseLearningProgressEvaluationTest extends TestCase
                         true,
                         '/some/where/background.jpg',
                         '/some/where/thumbnail.svg',
+                        '-',
+                        '-',
                         5
                     ),
                 ];

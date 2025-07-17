@@ -21,8 +21,8 @@ declare(strict_types=1);
 namespace ILIAS\MediaPool;
 
 use ILIAS\MetaData\Services\ServicesInterface as LOMServices;
-use ILIAS\MetaData\Repository\Search\Clauses\Mode;
-use ILIAS\MetaData\Repository\Search\Clauses\Operator;
+use ILIAS\MetaData\Search\Clauses\Mode;
+use ILIAS\MetaData\Search\Clauses\Operator;
 
 /**
  * Media pool repository
@@ -33,7 +33,7 @@ class MediaPoolRepository
     protected \ilDBInterface $db;
     protected LOMServices $lom_services;
 
-    public function __construct(\ilDBInterface $db = null)
+    public function __construct(?\ilDBInterface $db = null)
     {
         global $DIC;
         $this->db = ($db) ?: $DIC->database();
@@ -210,7 +210,7 @@ class MediaPoolRepository
 
         $basic_clauses = [];
         foreach (explode(' ', $keywords) as $keyword) {
-            $basic_clauses = $searcher->getClauseFactory()->getBasicClause(
+            $basic_clauses[] = $searcher->getClauseFactory()->getBasicClause(
                 $paths->keywords(),
                 Mode::CONTAINS,
                 $keyword

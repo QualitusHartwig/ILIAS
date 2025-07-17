@@ -30,10 +30,10 @@ use ILIAS\UI\Component\Input\Field\Password as PasswordInput;
 
 class ilLocalUserPasswordSettingsGUI
 {
-    private const NEW_PASSWORD = 'new_password';
-    private const CURRENT_PASSWORD = 'current_password';
-    public const CMD_SHOW_PASSWORD = 'showPassword';
-    public const CMD_SAVE_PASSWORD = 'savePassword';
+    private const string NEW_PASSWORD = 'new_password';
+    private const string CURRENT_PASSWORD = 'current_password';
+    public const string CMD_SHOW_PASSWORD = 'showPassword';
+    public const string CMD_SAVE_PASSWORD = 'savePassword';
     private readonly ServerRequestInterface $request;
     private readonly ilErrorHandling $error;
     private readonly Refinery $refinery;
@@ -77,9 +77,9 @@ class ilLocalUserPasswordSettingsGUI
     }
 
     public function showPassword(
-        Form $form = null,
+        ?Form $form = null,
         bool $hide_form = false,
-        MessageBox $message_box = null
+        ?MessageBox $message_box = null
     ): void {
         // check whether password of user have to be changed
         // due to first login or password of user is expired
@@ -104,7 +104,7 @@ class ilLocalUserPasswordSettingsGUI
     }
 
     public function getPasswordForm(
-        ServerRequestInterface $request = null,
+        ?ServerRequestInterface $request = null,
         array $errors = []
     ): Form {
         $items = [];
@@ -193,14 +193,6 @@ class ilLocalUserPasswordSettingsGUI
 
                     break;
                 case ilAuthUtils::AUTH_SHIBBOLETH:
-                case ilAuthUtils::AUTH_CAS:
-                    if (ilDAVActivationChecker::_isActive()) {
-                        $title = $this->lng->txt('chg_ilias_and_webfolder_password');
-                    } else {
-                        $title = $this->lng->txt('chg_ilias_password');
-                    }
-
-                    break;
                 default:
                     $title = $this->lng->txt('chg_ilias_password');
 
@@ -227,17 +219,16 @@ class ilLocalUserPasswordSettingsGUI
         $form = $this->getPasswordForm()->withRequest($this->request);
         $section = $form->getInputs()['password'];
         /**
-         * @var PasswordInput $cp
+         * @var ?PasswordInput $cp
          * @var PasswordInput $np
          */
-        $cp = $section->getInputs()[self::CURRENT_PASSWORD];
+        $cp = $section->getInputs()[self::CURRENT_PASSWORD] ?? null;
         $np = $section->getInputs()[self::NEW_PASSWORD];
         $errors = [self::CURRENT_PASSWORD => [], self::NEW_PASSWORD => []];
 
         if (!$form->getError()) {
-            $data = $form->getData();
             $error = false;
-            if ($cp->getError()) {
+            if ($cp && $cp->getError()) {
                 $error = true;
                 $errors[self::CURRENT_PASSWORD][] = $cp->getError();
             }
@@ -246,7 +237,7 @@ class ilLocalUserPasswordSettingsGUI
                 $errors[self::NEW_PASSWORD][] = $np->getError();
             }
 
-            $entered_current_password = $cp->getValue();
+            $entered_current_password = $cp ? $cp->getValue() : '';
             $entered_new_password = $np->getValue();
 
             if (

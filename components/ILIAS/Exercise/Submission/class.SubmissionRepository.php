@@ -20,12 +20,12 @@ declare(strict_types=1);
 
 namespace ILIAS\Exercise\Submission;
 
-use ILIAS\Exercise\IRSS\IRSSWrapper;
+use ILIAS\Repository\IRSS\IRSSWrapper;
 use ILIAS\ResourceStorage\Stakeholder\ResourceStakeholder;
 use ILIAS\Filesystem\Stream\FileStream;
-use ILIAS\Data\Result;
 use ILIAS\FileUpload\DTO\UploadResult;
 use ILIAS\Exercise\InternalDataService;
+use ilExcTooManyFilesSubmittedException;
 
 class SubmissionRepository implements SubmissionRepositoryInterface
 {
@@ -36,7 +36,7 @@ class SubmissionRepository implements SubmissionRepositoryInterface
     public function __construct(
         protected IRSSWrapper $irss,
         protected InternalDataService $data,
-        \ilDBInterface $db = null
+        ?\ilDBInterface $db = null
     ) {
         global $DIC;
         $this->log = $DIC->logger()->exc();
@@ -70,7 +70,7 @@ class SubmissionRepository implements SubmissionRepositoryInterface
         int $team_id,
         ?array $submit_ids = null,
         bool $only_valid = false,
-        string $min_timestamp = null,
+        ?string $min_timestamp = null,
         bool $print_versions = false
     ): \Generator {
         $where = " team_id = " . $this->db->quote($team_id, "integer") . " ";
@@ -96,7 +96,7 @@ class SubmissionRepository implements SubmissionRepositoryInterface
         array $user_ids,
         ?array $submit_ids = null,
         bool $only_valid = false,
-        string $min_timestamp = null,
+        ?string $min_timestamp = null,
         bool $print_versions = false
     ): \Generator {
         $where = " " . $this->db->in("user_id", $user_ids, false, "integer") . " ";
@@ -122,7 +122,7 @@ class SubmissionRepository implements SubmissionRepositoryInterface
         bool $type_uses_print_versions,
         ?array $submit_ids = null,
         bool $only_valid = false,
-        string $min_timestamp = null,
+        ?string $min_timestamp = null,
         bool $print_versions = false
     ): \Generator {
         $sql = "SELECT * FROM exc_returned" .
@@ -180,6 +180,19 @@ class SubmissionRepository implements SubmissionRepositoryInterface
         }
     }
 
+    public function getById(
+        int $id
+    ): ?Submission {
+        $sql = "SELECT * FROM exc_returned" .
+            " WHERE returned_id = " . $this->db->quote($id, "integer");
+        $result = $this->db->query($sql);
+        if ($row = $this->db->fetchAssoc($result)) {
+            return $this->getSubmissionFromRecord($row);
+        }
+        return null;
+    }
+
+
     public function getUserId(int $submission_id): int
     {
         $q = "SELECT user_id FROM exc_returned " .
@@ -193,14 +206,14 @@ class SubmissionRepository implements SubmissionRepositoryInterface
     public function getAllSubmissionIdsOfOwner(int $ass_id, int $user_id): array
     {
         $set = $this->db->queryF(
-            "SELECT id FROM exc_returned " .
+            "SELECT returned_id FROM exc_returned " .
             " WHERE ass_id = %s AND user_id = %s",
             ["integer", "integer"],
             [$ass_id, $user_id]
         );
         $user_ids = [];
         while ($rec = $this->db->fetchAssoc($set)) {
-            $user_ids = (int) $rec["id"];
+            $user_ids[] = (int) $rec["returned_id"];
         }
         return $user_ids;
     }
@@ -426,6 +439,9 @@ class SubmissionRepository implements SubmissionRepositoryInterface
         return false;
     }
 
+    /**
+     * @throws ilExcTooManyFilesSubmittedException
+     */
     public function addZipUpload(
         int $obj_id,
         int $ass_id,
@@ -433,7 +449,8 @@ class SubmissionRepository implements SubmissionRepositoryInterface
         int $team_id,
         UploadResult $result,
         bool $is_late,
-        ResourceStakeholder $stakeholder
+        ResourceStakeholder $stakeholder,
+        int $remaining_allowed
     ): array {
         global $DIC;
 
@@ -446,6 +463,11 @@ class SubmissionRepository implements SubmissionRepositoryInterface
         );
         $this->log->debug("6");
         $stream = $this->irss->stream($rid);
+
+        if ($remaining_allowed !== -1 &&
+            $remaining_allowed < $DIC->archives()->unzip($stream)->getAmountOfFiles()) {
+            throw new ilExcTooManyFilesSubmittedException("Too many files submitted.");
+        }
 
         foreach ($DIC->archives()->unzip($stream)->getFileStreams() as $stream) {
             $this->log->debug("7");

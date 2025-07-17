@@ -22,6 +22,7 @@ use ILIAS\DI\UIServices;
 use ILIAS\Repository\Clipboard\ClipboardManager;
 use ILIAS\Container\StandardGUIRequest;
 use ILIAS\Container\Content\ModeManager;
+use ILIAS\ILIASObject\Properties\Translations\TranslationGUI;
 
 /**
  * Class ilContainerGUI
@@ -199,13 +200,8 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
 
         if ($new_tpl_id !== $current_tpl_id) {
             // redirect to didactic template confirmation
-            //$this->ctrl->setReturn($this, 'edit');
-            //$this->ctrl->setCmdClass('ildidactictemplategui');
-            //$this->ctrl->setCmd('confirmTemplateSwitch');
-            $this->ctrl->redirect(ilDidacticTemplateGUI::class, "confirmTemplateSwitch");
-            //$dtpl_gui = new ilDidacticTemplateGUI($this, $new_tpl_id);
-            //$this->ctrl->forwardCommand($dtpl_gui);
-            return;
+            $this->ctrl->setParameterByClass(ilDidacticTemplateGUI::class, "didactic_type", $new_tpl_id);
+            $this->ctrl->redirectByClass(ilDidacticTemplateGUI::class, "confirmTemplateSwitch");
         }
         parent::afterUpdate();
     }
@@ -313,8 +309,8 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
         $this->tpl->parseCurrentBlock();
 
         // get page object
-        $ot = ilObjectTranslation::getInstance($this->object->getId());
-        $lang = $ot->getEffectiveContentLang($ilUser->getCurrentLanguage(), "cont");
+        $ot = $this->object->getObjectTranslation();
+        $lang = $ot->getEffectiveCOPageLang($ilUser->getCurrentLanguage(), "cont");
         $page_gui = new ilContainerPageGUI($this->object->getId(), 0, $lang);
         $style = $this->content_style_domain->styleForRefId($this->object->getRefId());
         $page_gui->setStyleId($style->getEffectiveStyleId());
@@ -328,16 +324,6 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
 
         //$ret =& $page_gui->executeCommand();
         return $ret;
-    }
-
-    public function prepareOutput(bool $show_subobjects = true): bool
-    {
-        if (parent::prepareOutput($show_subobjects)) {    // return false in admin mode
-            if ($show_subobjects === true && $this->getCreationMode() === false) {
-                ilMemberViewGUI::showMemberViewSwitch($this->object->getRefId());
-            }
-        }
-        return true;
     }
 
     protected function setTitleAndDescription(): void
@@ -459,6 +445,11 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
                     }
                 }
             }
+            if (!$this->edit_order) {
+                if (!$this->isActiveAdministrationPanel() && $this->getCreationMode() === false) {
+                    ilMemberViewGUI::showMemberViewSwitch($this->object->getRefId());
+                }
+            }
         }
 
         $this->showContainerFilter();
@@ -513,14 +504,18 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
             $this->ctrl->setParameter($this, "type", "");
             $this->ctrl->setParameter($this, "item_ref_id", "");
 
-            $toolbar->addFormButton(
-                $this->lng->txt('paste_clipboard_items'),
-                'paste'
+            $toolbar->addComponent(
+                $this->ui->factory()->button()->standard(
+                    $this->lng->txt('paste_clipboard_items'),
+                    $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, static::class], 'paste')
+                )
             );
 
-            $toolbar->addFormButton(
-                $this->lng->txt('clear_clipboard'),
-                'clear'
+            $toolbar->addComponent(
+                $this->ui->factory()->button()->standard(
+                    $this->lng->txt('clear_clipboard'),
+                    $this->ctrl->getLinkTargetByClass([ilRepositoryGUI::class, static::class], 'clear')
+                )
             );
 
             $main_tpl->addAdminPanelToolbar($toolbar, true, false);
@@ -745,8 +740,8 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
     public function addStandardRow(
         ilTemplate $a_tpl,
         string $a_html,
-        int $a_item_ref_id = null,
-        int $a_item_obj_id = null,
+        ?int $a_item_ref_id = null,
+        ?int $a_item_obj_id = null,
         string $a_image_type = ""
     ): void {
         $ilSetting = $this->settings;
@@ -758,7 +753,7 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
 
             if ($ilSetting->get('custom_icons')) {
                 global $DIC;
-                /** @var ilObjectCustomIconFactory $customIconFactory */
+                /** @var ILIAS\ILIASObject\Properties\AdditionalProperties\Icon\Factory $customIconFactory */
                 $customIconFactory = $DIC['object.customicons.factory'];
                 $customIcon = $customIconFactory->getPresenterByObjId($a_item_obj_id, $a_image_type);
 
@@ -832,8 +827,7 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
         // back to upper context
         $this->tabs_gui->setBackTarget(
             $this->lng->txt("obj_cat"),
-            $this->ctrl->getLinkTarget($this, ""),
-            ilFrameTargetInfo::_getFrame("MainContent")
+            $this->ctrl->getLinkTarget($this, "")
         );
 
         $this->tabs_gui->addTarget(
@@ -1773,11 +1767,10 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
                 // get subnodes of top nodes
                 $subnodes[$ref_id] = $this->tree->getSubTree($top_node);
             }
-
             // now move all subtrees to new location
             foreach ($subnodes as $key => $subnode) {
                 // first paste top_node....
-                $obj_data = ilObjectFactory::getInstanceByRefId($ref_id);
+                $obj_data = ilObjectFactory::getInstanceByRefId($key);
                 $new_ref_id = $obj_data->createReference();
                 $obj_data->putInTree($this->requested_ref_id);
                 $obj_data->setPermissions($this->requested_ref_id);
@@ -1991,7 +1984,7 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
         int $srcRef,
         int $dstRef,
         array &$mapping,
-        string $newName = null
+        ?string $newName = null
     ): int {
         $tree = $this->tree;
 
@@ -2231,7 +2224,7 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
     {
         $trans = null;
         if ($this->getCreationMode() === false) {
-            /** @var ilObjectTranslation $trans */
+            /** @var ILIAS\ILIASObject\Properties\Translations\Translations $trans */
             $trans = $this->object->getObjectTranslation();
         }
         $title = new ilTextInputGUI($this->lng->txt("title"), "title");
@@ -2240,11 +2233,11 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
         $title->setMaxLength(ilObject::TITLE_LENGTH);
         $form->addItem($title);
 
-        if ($this->getCreationMode() === false && count($trans->getLanguages()) === 1) {
+        if ($this->getCreationMode() === false && count($trans->getLanguages()) > 1) {
             $languages = $this->domain->metadata()->getLOMLanguagesForSelectInputs();
             $title->setInfo(
                 $this->lng->txt("language") . ": " . $languages[$trans->getDefaultLanguage()] .
-                ' <a href="' . $this->ctrl->getLinkTargetByClass("ilobjecttranslationgui", "") .
+                ' <a href="' . $this->ctrl->getLinkTargetByClass(TranslationGUI::class, "") .
                 '">&raquo; ' . $this->lng->txt("obj_more_translations") . '</a>'
             );
 
@@ -2573,7 +2566,7 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
         $this->ctrl->redirect($this, "trash");
     }
 
-    protected function restoreToNewLocationObject(ilPropertyFormGUI $form = null): void
+    protected function restoreToNewLocationObject(?ilPropertyFormGUI $form = null): void
     {
         $this->tabs_gui->activateTab('trash');
 

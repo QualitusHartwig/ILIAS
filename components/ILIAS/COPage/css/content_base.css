@@ -1,5 +1,30 @@
 /* see content style roadmap */
 
+#il-edit-cont {
+	position: static;
+}
+
+#il-edit-cont p {
+	/*margin: 0px;*/
+	/*padding: 0px;*/
+}
+
+.ilTinyMenuSection .dropdown-menu .btn, .il-copg-button-group .dropdown-menu .btn {
+	width: 100%;
+	text-align: left;
+}
+
+#iltinymenu div.ilTinyMenuSection p, #iltinymenu .il-copg-button-group p {
+	background-color: transparent;
+}
+
+#tinytarget_div .tox-tinymce {
+	border-radius: 0;
+}
+#tinytarget_div .tox.tox-edit-focus .tox-edit-area::before {
+	opacity: 0;
+}
+
 div.ilc_QuestionPlaceHolder
 {
 	padding: 10px 10px 10px 10px;
@@ -55,14 +80,32 @@ div.ilc_VerificationPlaceHolder /* no custom image yet */
 }
 
 .copg-iim-area-shape-sel {
-	stroke: #B54F00;
 	stroke-width: 1;
 	fill: transparent;
+	cursor: pointer;
 }
 
+.copg-iim-area-shape-sel.copg-iim-hl-mode-Edit {
+	stroke: #B54F00;
+}
+.copg-iim-area-shape-sel.copg-iim-hl-mode-Always,
+.copg-iim-area-shape-sel.copg-iim-hl-mode-Hover:hover {
+	stroke: #B54F00;
+}
+.copg-iim-area-shape-sel.copg-iim-hl-mode-Always.copg-iim-hl-class-Dark,
+.copg-iim-area-shape-sel.copg-iim-hl-mode-Hover.copg-iim-hl-class-Dark:hover
+{
+	stroke: #181818;
+}
+.copg-iim-area-shape-sel.copg-iim-hl-mode-Always.copg-iim-hl-class-Light,
+.copg-iim-area-shape-sel.copg-iim-hl-mode-Hover.copg-iim-hl-class-Light:hover{
+	stroke: #ffffff;
+}
 .copg-iim-area-shape-sel:hover {
-	stroke: #0078D7;
 	stroke-width: 2;
+}
+.copg-iim-area-shape-sel.copg-iim-hl-mode-Edit:hover {
+	stroke: #0078D7;
 	fill-opacity: 40%;
 	fill: white;
 }
@@ -71,12 +114,23 @@ div.ilc_VerificationPlaceHolder /* no custom image yet */
 	position:absolute;
 	width: auto;
 	box-shadow: 2px 2px 4px rgba(0, 0, 0, .1);
+	z-index: 1;
 }
 
 button.copg-add.dropdown-toggle.btn:focus-visible {
   outline: 3px solid #0078D7;
   outline-offset: -3px;
 }
+
+#ilPageTocContent ul {
+	list-style-type: none;
+	padding-left: 20px;
+}
+
+#ilPageTocContent > ul {
+	padding-left: 5px;
+}
+
 
 @media (min-width: 480px) {
 	.copg-iim-popup-sm {
@@ -139,4 +193,24 @@ button.copg-add.dropdown-toggle.btn:focus-visible {
 	.copg-iim-popup-lg {
 		max-width: 100%;
 	}
+}
+
+.ilc_ca_cntr_CarouselCntr {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+}
+.ilc_ca_cntr_CarouselCntr > div {
+	width: 100%;
+	box-sizing: border-box;
+	opacity: 0;
+	transition: opacity 0.5s ease;
+	display: none;
+}
+.ilc_ca_cntr_CarouselCntr > div.active {
+	display: block;
+	opacity: 1;
+}
+.copg-src-form.c-form [data-il-ui-component=textarea-field-input] .c-input__field textarea {
+	height: 50vh;
 }

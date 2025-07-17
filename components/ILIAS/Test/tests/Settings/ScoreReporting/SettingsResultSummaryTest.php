@@ -20,6 +20,7 @@ namespace ScoreReporting;
 
 use DateTimeImmutable;
 use ILIAS\Test\Settings\ScoreReporting\SettingsResultSummary;
+use ILIAS\Test\Settings\ScoreReporting\ScoreReportingTypes;
 use ilTestBaseTestCase;
 
 class SettingsResultSummaryTest extends ilTestBaseTestCase
@@ -30,46 +31,25 @@ class SettingsResultSummaryTest extends ilTestBaseTestCase
         $this->assertInstanceOf(SettingsResultSummary::class, $settingsResultSummary);
     }
 
-    /**
-     * @dataProvider getAndWithScoreReportingDataProvider
-     */
-    public function testGetAndWithScoreReporting(int $IO): void
+    #[\PHPUnit\Framework\Attributes\DataProvider('getAndWithScoreReportingDataProvider')]
+    public function testGetAndWithScoreReporting(ScoreReportingTypes $IO): void
     {
-        $settingsResultSummary = new SettingsResultSummary(0);
-        $settingsResultSummary = $settingsResultSummary->withScoreReporting($IO);
-        $this->assertEquals($IO, $settingsResultSummary->getScoreReporting());
+        $this->assertEquals(
+            $IO,
+            (new SettingsResultSummary(0))->withScoreReporting($IO)->getScoreReporting()
+        );
     }
 
     public static function getAndWithScoreReportingDataProvider(): array
     {
         return [
-            [-1],
-            [0],
-            [1]
+            [ScoreReportingTypes::SCORE_REPORTING_DISABLED],
+            [ScoreReportingTypes::SCORE_REPORTING_FINISHED],
+            [ScoreReportingTypes::SCORE_REPORTING_AFTER_PASSED]
         ];
     }
 
-    /**
-     * @dataProvider getScoreReportingEnabledDataProvider
-     */
-    public function testGetScoreReportingEnabled(bool $IO): void
-    {
-        $settingsResultSummary = new SettingsResultSummary(0);
-        $settingsResultSummary = $settingsResultSummary->withScoreReporting($IO ? 1 : 0);
-        $this->assertEquals($IO, $settingsResultSummary->getScoreReportingEnabled());
-    }
-
-    public static function getScoreReportingEnabledDataProvider(): array
-    {
-        return [
-            [false],
-            [true]
-        ];
-    }
-
-    /**
-     * @dataProvider getAndWithReportingDateDataProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getAndWithReportingDateDataProvider')]
     public function testGetAndWithReportingDate(?\DateTimeImmutable $IO): void
     {
         $settingsResultSummary = new SettingsResultSummary(0);
@@ -85,9 +65,7 @@ class SettingsResultSummaryTest extends ilTestBaseTestCase
         ];
     }
 
-    /**
-     * @dataProvider getAndWithShowGradingStatusEnabledDataProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getAndWithShowGradingStatusEnabledDataProvider')]
     public function testGetAndWithShowGradingStatusEnabled(bool $IO): void
     {
         $settingsResultSummary = new SettingsResultSummary(0);
@@ -103,9 +81,7 @@ class SettingsResultSummaryTest extends ilTestBaseTestCase
         ];
     }
 
-    /**
-     * @dataProvider getAndWithShowGradingMarkEnabledDataProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getAndWithShowGradingMarkEnabledDataProvider')]
     public function testGetAndWithShowGradingMarkEnabled(bool $IO): void
     {
         $settingsResultSummary = new SettingsResultSummary(0);
@@ -121,9 +97,7 @@ class SettingsResultSummaryTest extends ilTestBaseTestCase
         ];
     }
 
-    /**
-     * @dataProvider getAndWithPassDeletionAllowedDataProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getAndWithPassDeletionAllowedDataProvider')]
     public function testGetAndWithPassDeletionAllowed(bool $IO): void
     {
         $settingsResultSummary = new SettingsResultSummary(0);
@@ -139,9 +113,7 @@ class SettingsResultSummaryTest extends ilTestBaseTestCase
         ];
     }
 
-    /**
-     * @dataProvider getAndWithShowPassDetailsDataProvider
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getAndWithShowPassDetailsDataProvider')]
     public function testGetAndWithShowPassDetails(bool $IO): void
     {
         $settingsResultSummary = new SettingsResultSummary(0);

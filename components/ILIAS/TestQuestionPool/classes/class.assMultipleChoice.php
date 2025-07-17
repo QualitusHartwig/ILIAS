@@ -21,8 +21,8 @@ declare(strict_types=1);
 use ILIAS\TestQuestionPool\Questions\QuestionLMExportable;
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
 use ILIAS\TestQuestionPool\ManipulateImagesInChoiceQuestionsTrait;
-
 use ILIAS\Test\Logging\AdditionalInformationGenerator;
+use ILIAS\TestQuestionPool\RequestDataCollector;
 
 /**
  * Class for multiple choice tests.
@@ -47,18 +47,13 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
     public const OUTPUT_RANDOM = 1;
 
     public array $answers = [];
-    public bool $is_singleline = false;
+    public bool $is_singleline = true;
     public int $feedback_setting = 0;
     protected ?int $selection_limit = null;
 
     public function setIsSingleline(bool $is_singleline): void
     {
         $this->is_singleline = $is_singleline;
-    }
-
-    public function getIsSingleline(): bool
-    {
-        return $this->is_singleline;
     }
 
     /**
@@ -100,11 +95,11 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
 
     public function isComplete(): bool
     {
-        if (strlen($this->title) and ($this->author) and ($this->question) and (count($this->answers)) and ($this->getMaximumPoints() > 0)) {
-            return true;
-        } else {
-            return false;
-        }
+        return $this->title !== ''
+            && $this->author !== ''
+            && $this->question !== ''
+            && $this->getAnswerCount() > 0
+            && $this->getMaximumPoints() >= 0;
     }
 
     public function saveToDb(?int $original_id = null): void
@@ -112,7 +107,6 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
         $this->saveQuestionDataToDb($original_id);
         $this->saveAdditionalQuestionDataToDb();
         $this->saveAnswerSpecificDataToDb();
-        $this->ensureNoInvalidObligation($this->getId());
         parent::saveToDb($original_id);
     }
 
@@ -137,10 +131,10 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
             $this->setQuestion(ilRTE::_replaceMediaObjectImageSrc($data["question_text"] ?? '', 1));
             $shuffle = (is_null($data['shuffle'])) ? true : $data['shuffle'];
             $this->setShuffle((bool) $shuffle);
-            if ($data['thumb_size'] !== null && $data['thumb_size'] >= self::MINIMUM_THUMB_SIZE) {
+            if ($data['thumb_size'] !== null && $data['thumb_size'] >= $this->getMinimumThumbSize()) {
                 $this->setThumbSize($data['thumb_size']);
             }
-            $this->is_singleline = $data['allow_images'] === '0';
+            $this->is_singleline = $data['allow_images'] === null || $data['allow_images'] === '0';
             $this->lastChange = $data['tstamp'];
             $this->setSelectionLimit((int) $data['selection_limit'] > 0 ? (int) $data['selection_limit'] : null);
             if (isset($data['feedback_setting'])) {
@@ -341,16 +335,11 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
      */
     public function getMaximumPoints(): float
     {
-        $points = 0;
-        $allpoints = 0;
-        foreach ($this->answers as $key => $value) {
-            if ($value->getPoints() > $value->getPointsUnchecked()) {
-                $allpoints += $value->getPoints();
-            } else {
-                $allpoints += $value->getPointsUnchecked();
-            }
+        $total_max_points = 0.0;
+        foreach ($this->getAnswers() as $answer) {
+            $total_max_points += max($answer->getPointsChecked(), $answer->getPointsUnchecked());
         }
-        return $allpoints;
+        return $total_max_points;
     }
 
     public function calculateReachedPoints(
@@ -392,13 +381,10 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
         return true;
     }
 
-    protected function isForcedEmptySolution($solutionSubmit): bool
+    protected function isForcedEmptySolution(array $solutionSubmit): bool
     {
-        if (!count($solutionSubmit) && !empty($_POST['tst_force_form_diff_input'])) {
-            return true;
-        }
-
-        return false;
+        $tst_force_form_diff_input = $this->questionpool_request->strArray('tst_force_form_diff_input');
+        return !count($solutionSubmit) && !empty($tst_force_form_diff_input);
     }
 
     public function saveWorkingData(
@@ -406,9 +392,7 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
         ?int $pass = null,
         bool $authorized = true
     ): bool {
-        if ($pass === null) {
-            $pass = ilObjTest::_getPass($active_id);
-        }
+        $pass = $pass ?? ilObjTest::_getPass($active_id);
 
         $answer = $this->getSolutionSubmit();
         $this->getProcessLocker()->executeUserSolutionUpdateLockOperation(
@@ -514,7 +498,7 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
 
                     // Reorder feedback
                     $feedback_order_db = intval($feedback_option['answer']);
-                    $db_answer_id = $db_answer_id_for_order[$feedback_order_db];
+                    $db_answer_id = $db_answer_id_for_order[$feedback_order_db] ?? null;
                     // This cuts feedback that currently would have no corresponding answer
                     // This case can happen while copying "broken" questions
                     // Or when saving a question with less answers than feedback
@@ -665,36 +649,6 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function setExportDetailsXLSX(ilAssExcelFormatHelper $worksheet, int $startrow, int $col, int $active_id, int $pass): int
-    {
-        parent::setExportDetailsXLSX($worksheet, $startrow, $col, $active_id, $pass);
-
-        $solution = $this->getSolutionValues($active_id, $pass);
-
-        $i = 1;
-        foreach ($this->getAnswers() as $id => $answer) {
-            $worksheet->setCell($startrow + $i, $col, $answer->getAnswertext());
-            $worksheet->setBold($worksheet->getColumnCoord($col) . ($startrow + $i));
-            $checked = false;
-            foreach ($solution as $solutionvalue) {
-                if ($id == $solutionvalue["value1"]) {
-                    $checked = true;
-                }
-            }
-            if ($checked) {
-                $worksheet->setCell($startrow + $i, $col + 2, 1);
-            } else {
-                $worksheet->setCell($startrow + $i, $col + 2, 0);
-            }
-            $i++;
-        }
-
-        return $startrow + $i + 1;
-    }
-
-    /**
      * @param ilAssSelfAssessmentMigrator $migrator
      */
     protected function lmMigrateQuestionTypeSpecificContent(ilAssSelfAssessmentMigrator $migrator): void
@@ -713,7 +667,7 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
         $result = [];
         $result['id'] = $this->getId();
         $result['type'] = (string) $this->getQuestionType();
-        $result['title'] = $this->getTitle();
+        $result['title'] = $this->getTitleForHTMLOutput();
         $result['question'] = $this->formatSAQuestion($this->getQuestion());
         $result['nr_of_tries'] = $this->getNrOfTries();
         $result['shuffle'] = $this->getShuffle();
@@ -809,87 +763,6 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
         return 'feedback_correct_sc_mc';
     }
 
-    /**
-     * returns boolean wether it is possible to set
-     * this question type as obligatory or not
-     * considering the current question configuration
-     *
-     * (overwrites method in class assQuestion)
-     *
-     * @param integer $questionId
-     *
-     * @return boolean $obligationPossible
-     */
-    public static function isObligationPossible(int $questionId): bool
-    {
-        /** @var $ilDB ilDBInterface */
-        global $DIC;
-        $ilDB = $DIC['ilDB'];
-
-        $query = "
-			SELECT SUM(points) points_for_checked_answers
-			FROM qpl_a_mc
-			WHERE question_fi = %s AND points > 0
-		";
-
-        $res = $ilDB->queryF($query, ['integer'], [$questionId]);
-
-        $row = $ilDB->fetchAssoc($res);
-
-        return $row['points_for_checked_answers'] > 0;
-    }
-
-    /**
-     * ensures that no invalid obligation is saved for the question used in test
-     *
-     * when points can be reached ONLY by NOT check any answer
-     * a possibly still configured obligation will be removed
-     */
-    public function ensureNoInvalidObligation(int $question_id): void
-    {
-        $query = "
-			SELECT		SUM(qpl_a_mc.points) points_for_checked_answers,
-						test_question_id
-
-			FROM		tst_test_question
-
-			INNER JOIN	qpl_a_mc
-			ON			qpl_a_mc.question_fi = tst_test_question.question_fi
-
-			WHERE		tst_test_question.question_fi = %s
-			AND			tst_test_question.obligatory = 1
-
-			GROUP BY	test_question_id
-		";
-
-        $res = $this->db->queryF($query, ['integer'], [$question_id]);
-
-        $updateTestQuestionIds = [];
-
-        while ($row = $this->db->fetchAssoc($res)) {
-            if ($row['points_for_checked_answers'] <= 0) {
-                $updateTestQuestionIds[] = $row['test_question_id'];
-            }
-        }
-
-        if (count($updateTestQuestionIds)) {
-            $test_question_id__IN__updateTestQuestionIds = $this->db->in(
-                'test_question_id',
-                $updateTestQuestionIds,
-                false,
-                'integer'
-            );
-
-            $query = "
-				UPDATE tst_test_question
-				SET obligatory = 0
-				WHERE $test_question_id__IN__updateTestQuestionIds
-			";
-
-            $this->db->manipulate($query);
-        }
-    }
-
     protected function getSolutionSubmit(): array
     {
         $solutionSubmit = [];
@@ -915,6 +788,7 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
             return 0.0;
         }
 
+        $found_values ??= [];
         $points = 0.0;
         foreach ($this->answers as $key => $answer) {
             if (in_array($key, $found_values)) {
@@ -997,16 +871,16 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
         return $config;
     }
 
-    public function isSingleline()
+    public function isSingleline(): bool
     {
-        return (bool) $this->is_singleline;
+        return $this->is_singleline;
     }
 
     public function toLog(AdditionalInformationGenerator $additional_info): array
     {
         $result = [
             AdditionalInformationGenerator::KEY_QUESTION_TYPE => (string) $this->getQuestionType(),
-            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitle(),
+            AdditionalInformationGenerator::KEY_QUESTION_TITLE => $this->getTitleForHTMLOutput(),
             AdditionalInformationGenerator::KEY_QUESTION_TEXT => $this->formatSAQuestion($this->getQuestion()),
             AdditionalInformationGenerator::KEY_QUESTION_SHUFFLE_ANSWER_OPTIONS => $additional_info
                 ->getTrueFalseTagForBool($this->getShuffle()),
@@ -1033,7 +907,7 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
         return $result;
     }
 
-    public function solutionValuesToLog(
+    protected function solutionValuesToLog(
         AdditionalInformationGenerator $additional_info,
         array $solution_values
     ): array {
@@ -1051,5 +925,35 @@ class assMultipleChoice extends assQuestion implements ilObjQuestionScoringAdjus
                 ->getCheckedUncheckedTagForBool($checked);
         }
         return $parsed_solutions;
+    }
+
+    public function solutionValuesToText(array $solution_values): array
+    {
+        $solution_ids = array_map(
+            static fn(array $v): string => $v['value1'],
+            $solution_values
+        );
+
+        return array_map(
+            function (ASS_AnswerMultipleResponseImage $v) use ($solution_ids): string {
+                $checked = 'unchecked';
+                if (in_array($v->getId(), $solution_ids)) {
+                    $checked = 'checked';
+                }
+                return "{$v->getAnswertext()} ({$this->lng->txt($checked)})";
+            },
+            $this->getAnswers()
+        );
+    }
+
+    public function getCorrectSolutionForTextOutput(int $active_id, int $pass): array
+    {
+        return array_map(
+            fn(ASS_AnswerMultipleResponseImage $v): string => $v->getAnswertext()
+                . "({$this->lng->txt('points')} "
+                . "{$this->lng->txt('checked')}: {$v->getPointsChecked()}, "
+                . "{$this->lng->txt('unchecked')}: {$v->getPointsUnchecked()})",
+            $this->getAnswers()
+        );
     }
 }

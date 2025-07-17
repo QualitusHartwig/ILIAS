@@ -21,23 +21,23 @@ declare(strict_types=1);
 namespace ILIAS\components\Authentication\Logout;
 
 use ilLink;
-use ilAccess;
 use ilObject;
 use ilSetting;
 use ILIAS\Data\URI;
 use ilCtrlInterface;
 use InvalidArgumentException;
 use ILIAS\Authentication\Logout\LogoutDestinations;
+use ilAccessHandler;
 
 class ConfigurableLogoutTarget implements LogoutTarget
 {
-    public const INTERNAL_RESSOURCE = 'internal_ressource';
-    public const EXTERNAL_RESSOURCE = 'external_ressource';
+    public const string INTERNAL_RESSOURCE = 'internal_ressource';
+    public const string EXTERNAL_RESSOURCE = 'external_ressource';
 
     public function __construct(
         private readonly ilCtrlInterface $ctrl,
         private readonly ilSetting $settings,
-        private readonly ilAccess $access,
+        private readonly ilAccessHandler $access,
         private readonly string $http_path = ILIAS_HTTP_PATH,
     ) {
     }

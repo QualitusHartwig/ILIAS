@@ -13,7 +13,8 @@
  * us at:
  * https://www.ilias.de
  * https://github.com/ILIAS-eLearning
- */
+ *
+ *********************************************************************/
 
 declare(strict_types=1);
 
@@ -294,7 +295,7 @@ class ilAuthProviderECS extends ilAuthProvider
             $res = $connector->getAuth($hash);
             $auths = $res->getResult();
 
-            $this->getLogger()->dump($auths, ilLogLevel::DEBUG);
+            //$this->getLogger()->dump($auths, ilLogLevel::DEBUG);
 
             if ($auths->pid) {
                 try {
@@ -327,7 +328,7 @@ class ilAuthProviderECS extends ilAuthProvider
             $connector = new ilECSConnector($this->getCurrentServer());
             $details = $connector->getAuth($hash, true);
 
-            $this->getLogger()->dump($details, ilLogLevel::DEBUG);
+            //$this->getLogger()->dump($details, ilLogLevel::DEBUG);
             $this->getLogger()->debug('Token create for mid: ' . $details->getFirstSender());
 
             $this->setMID($details->getFirstSender());
@@ -386,6 +387,8 @@ class ilAuthProviderECS extends ilAuthProvider
 
         // Create user in DB
         $userObj->setOwner(6);
+        $tmp_date = new ilDateTime(time(), IL_CAL_UNIX);
+        $userObj->setAgreeDate($tmp_date->get(IL_CAL_DATETIME));
         $userObj->create();
         $userObj->setActive(true);
         $userObj->saveAsNew();

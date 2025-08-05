@@ -773,6 +773,7 @@ assessment#:#gap#:#Lücke
 assessment#:#gap_combination#:#Lückentext-Kombination
 assessment#:#gaps#:#Lücken
 assessment#:#glossary_term#:#Glossarbegriff
+assessment#:#goto_first_question#:#Zur ersten Frage
 assessment#:#grading_mark_msg#:#Sie haben die Note &quot;[mark]&quot; erzielt.
 assessment#:#grading_status_failed_msg#:#Schade, leider haben Sie den Test <b>nicht bestanden</b>.
 assessment#:#grading_status_passed_msg#:#Herzlichen Glückwunsch! Sie haben den Test <b>bestanden</b>.
@@ -1950,6 +1951,7 @@ assessment#:#tst_time_limit_message#:#Sie haben <b>%s Minuten</b>, um alle Frage
 assessment#:#tst_title_output#:#Anzeige der Fragentitel
 assessment#:#tst_title_output_full#:#Fragentitel und erreichbare Punkte
 assessment#:#tst_title_output_hide_points#:#Nur Fragentitel
+assessment#:#tst_title_output_info#:#Setzt die Kombination von Titel und/oder verfügbaren Punkten fest, die den Teilnehmenden während der Durchführung sowie auf der Übersicht des Testduchlaufs angezeigt wird.
 assessment#:#tst_title_output_no_title#:#Weder Fragentitel noch erreichbare Punkte
 assessment#:#tst_title_output_only_points#:#Nur erreichbare Punkte
 assessment#:#tst_trigger_result_refreshing#:#Es erfolgt eine Neuberechnung des Ergebnisses. Dies kann eine Weile dauern.
@@ -2535,6 +2537,7 @@ book#:#book_bulk_creation#:#Massenerstellung
 book#:#book_bulk_data#:#Daten zu Angeboten
 book#:#book_cal_entry#:#Buchung:
 book#:#book_confirm_booking#:#Buchung vornehmen
+book#:#book_confirm_booking_for_users#:#Sind Sie sicher, dass Sie dieses Angebot für die folgenden Teilnehmer buchen wollen?
 book#:#book_confirm_booking_no_schedule#:#Sind Sie sicher, dass Sie das folgende Angebot buchen wollen?
 book#:#book_confirm_booking_schedule_number_of_objects#:#Buchungsbestätigung
 book#:#book_confirm_booking_schedule_number_of_objects_info#:#Bitte wählen Sie die Anzahl der zu buchenden Angebote.
@@ -4219,6 +4222,7 @@ common#:#group_status#:#Gruppe ist
 common#:#groupings#:#Mitgliedschaftsbeschränkung
 common#:#groupings_assigned_obj_crs#:#Zugeordnete Kurse
 common#:#groupings_assigned_obj_grp#:#Zugeordnete Gruppen
+common#:#groupings_source#:#Stammt aus
 common#:#groups#:#Gruppen
 common#:#grp#:#Gruppe
 common#:#grp_add#:#Gruppe anlegen
@@ -8110,6 +8114,7 @@ dateplaner#:#cal_agenda#:#Agenda
 dateplaner#:#cal_all_day#:#Ganztags
 dateplaner#:#cal_app_info#:#Information zum Kalendertermin
 dateplaner#:#cal_app_other_materials_num#:#Weitere Materialien anzeigen
+dateplaner#:#cal_appointment_notifications#:#Benachrichtigung
 dateplaner#:#cal_appointments#:#Termine
 dateplaner#:#cal_apps#:#Anzahl Termine
 dateplaner#:#cal_assigned_appointments#:#Termine dieses Kalenders
@@ -8118,6 +8123,7 @@ dateplaner#:#cal_back_to_list#:#Zurück zur Liste
 dateplaner#:#cal_back_to_search#:#Zurück zur Suche
 dateplaner#:#cal_batch_file_downloads#:#Datei-Downloads aus Kalender stapelweise verarbeiten
 dateplaner#:#cal_batch_file_downloads_info#:#Erlaubt Herunterladen aller Dateien zu Einträgen in der gewählten Kalenderansicht
+dateplaner#:#cal_belongs_to#:#Gehört zu Kalender
 dateplaner#:#cal_book_free#:#frei
 dateplaner#:#cal_booked_out#:#ausgebucht
 dateplaner#:#cal_booking_cancellation_body#:#Ihr Termin mit %s ist abgesagt.
@@ -8257,8 +8263,10 @@ dateplaner#:#cal_crs_notification_sub#:#Terminänderung in Kurs „%s“
 dateplaner#:#cal_crs_timing_end#:#Bearbeitungsende
 dateplaner#:#cal_crs_timing_start#:#Bearbeitungsbeginn
 dateplaner#:#cal_daily#:#Täglich
+dateplaner#:#cal_date_and_time#:#Datum und Uhrzeit
 dateplaner#:#cal_date_booked#:#gebucht
 dateplaner#:#cal_date_format_info#:#Bitte wählen Sie ein Format für die Eingabe eines Datums aus.
+dateplaner#:#cal_date_time_title#:#Datum und Uhrzeit
 dateplaner#:#cal_day_end#:#Tagesende
 dateplaner#:#cal_day_of_month#:#Tag des Monats
 dateplaner#:#cal_day_overview#:#Tagesübersicht
@@ -8297,6 +8305,8 @@ dateplaner#:#cal_download_files#:#Dateien herunterladen
 dateplaner#:#cal_download_files_started#:#Ein ZIP-Archiv mit allen Download-Dateien wird jetzt im Hintergrund erstellt. Den Status Ihrer Hintergrundprozesse sehen Sie oben rechts in der Nachrichtenzentrale. Dort können Sie das ZIP-Archiv auch herunterladen.
 dateplaner#:#cal_dstart_dend_warn#:#Bitte überprüfen Sie Ihre Eingabe. Der Tagesbeginn muss vor dem Tagesende sein.
 dateplaner#:#cal_duration#:#Dauer
+dateplaner#:#cal_duration_end#:#Ende
+dateplaner#:#cal_duration_start#:#Start
 dateplaner#:#cal_edit_appointment#:#Termin bearbeiten
 dateplaner#:#cal_edit_category#:#Kalender bearbeiten
 dateplaner#:#cal_edit_milestone#:#Meilenstein bearbeiten
@@ -8351,6 +8361,8 @@ dateplaner#:#cal_month_overview#:#Monatsübersicht
 dateplaner#:#cal_month_s#:#Monat(e)
 dateplaner#:#cal_month_selection#:#Monatsauswahl
 dateplaner#:#cal_monthly#:#Monatlich
+dateplaner#:#cal_monthly_by_date#:#Monatlich nach Datum
+dateplaner#:#cal_monthly_by_day#:#Monatlich nach Tag
 dateplaner#:#cal_ms_details#:#Details zum Meilenstein
 dateplaner#:#cal_ms_users_responsible#:#Verantwortliche Mitglieder
 dateplaner#:#cal_new_app#:#Neuer Termin
@@ -8371,6 +8383,16 @@ dateplaner#:#cal_owner#:#Im Besitz von
 dateplaner#:#cal_period#:#Zeitraum
 dateplaner#:#cal_rec_err_limit#:#Bitte geben Sie eine Anzahl von Terminen ein.
 dateplaner#:#cal_recurrence_confirm_deletion#:#Bitte wählen Sie aus, ob Sie einzelne Termine oder aber die gesamte Terminserie löschen möchten.
+dateplaner#:#cal_recurrence_count#:#Anzahl
+dateplaner#:#cal_recurrence_day_interval#:#Alle x Tag(e)
+dateplaner#:#cal_recurrence_end_date#:#Enddatum
+dateplaner#:#cal_recurrence_end_date_info#:#Letztes mögliches Datum für einen Termin.
+dateplaner#:#cal_recurrence_month_interval#:#Alle x Monat(e)
+dateplaner#:#cal_recurrence_until#:#Wiederholungsende
+dateplaner#:#cal_recurrence_until_count#:#Feste Anzahl von Terminen
+dateplaner#:#cal_recurrence_until_end_date#:#Wiederholen bis zu Enddatum
+dateplaner#:#cal_recurrence_week_interval#:#Alle x Woche(n)
+dateplaner#:#cal_recurrence_year_interval#:#Alle x Jahr(e)
 dateplaner#:#cal_recurrences#:#Wiederholungen
 dateplaner#:#cal_reg_register#:#Anmelden
 dateplaner#:#cal_reg_registered#:#Sie wurden für diesen Termin angemeldet.
@@ -8464,6 +8486,8 @@ dateplaner#:#cal_weekly#:#Wöchentlich
 dateplaner#:#cal_where#:#Ort
 dateplaner#:#cal_year_s#:#Jahr(e)
 dateplaner#:#cal_yearly#:#Jährlich
+dateplaner#:#cal_yearly_by_date#:#Jährlich nach Datum
+dateplaner#:#cal_yearly_by_day#:#Jährlich nach Tag
 dateplaner#:#consultation_hours_block_title#:#Sprechstunden
 dateplaner#:#crs_cal_activation_end#:#Kursende
 dateplaner#:#crs_cal_activation_start#:#Kursbeginn
@@ -8512,7 +8536,6 @@ dcl#:#dcl_change_notification_dcl_new_record#:#Der folgende Eintrag wurde erzeug
 dcl#:#dcl_change_notification_dcl_update_record#:#Der folgende Eintrag wurde aktualisiert
 dcl#:#dcl_change_notification_link#:#Zur Datensammlung gehen
 dcl#:#dcl_change_notification_subject#:#Die Datensammlung „%s“ wurde bearbeitet.
-dcl#:#dcl_change_why_you_receive_this_email#:#Sie erhalten diese Nachricht, weil Sie die Benachrichtigungsfunktion für die oben genannte Datensammlung aktiviert haben.
 dcl#:#dcl_changed_by#:#Letzte Änderung durch
 dcl#:#dcl_checked#:#Ausgewählt
 dcl#:#dcl_comments#:#Kommentare
@@ -8539,6 +8562,10 @@ dcl#:#dcl_date#:#Datumseingabe
 dcl#:#dcl_date_desc#:#Datum wird eingegeben oder im Kalender ausgewählt.
 dcl#:#dcl_date_selection#:#Datum per Auswahl
 dcl#:#dcl_date_selection_desc#:#Aus vorgegebenen Optionen kann ein Datum ausgewählt werden.
+dcl#:#dcl_datetime#:#Datumseingabe mit Uhrzeit
+dcl#:#dcl_datetime_desc#:#Datum und Uhrzeit wird eingegeben oder im Kalender ausgewählt.
+dcl#:#dcl_datetime_selection#:#Datum mit Uhrzeit per Auswahl
+dcl#:#dcl_datetime_selection_desc#:#Aus vorgegebenen Optionen kann ein Datum mit Uhrzeit ausgewählt werden.
 dcl#:#dcl_default_sort_field#:#Sortierung
 dcl#:#dcl_default_sort_field_order#:#Sortierrichtung
 dcl#:#dcl_default_sort_field_order_desc#:#Tabelle wird standardmässig nach dem ausgewählten Feld sortiert.
@@ -8586,7 +8613,6 @@ dcl#:#dcl_formula_desc#:#Ähnlich wie bei der Tabellenkalkulation können per Fo
 dcl#:#dcl_formula_detail_desc#:#Einträge in diesem Feld generieren sich automatisch. Sie können hier keinen Eintrag vornehmen.
 dcl#:#dcl_height#:#Höhe in Pixel
 dcl#:#dcl_height_desc#:#Die Datei wird beim Upload auf diese Größe verkleinert.
-dcl#:#dcl_hello#:#Hallo
 dcl#:#dcl_id#:#ID
 dcl#:#dcl_id_description#:#Die interne ID.
 dcl#:#dcl_ilias_reference#:#Objekt im Magazin
@@ -8644,7 +8670,6 @@ dcl#:#dcl_new_field#:#Neues Feld
 dcl#:#dcl_new_table#:#Neue Tabelle
 dcl#:#dcl_new_view#:#Neue Ansicht
 dcl#:#dcl_next_record#:#Nächster Eintrag
-dcl#:#dcl_no_content_warning#:#Achtung: die Datensammlung ist bereits online, hat aber noch keinen Felder
 dcl#:#dcl_no_entries#:#Keine Einträge
 dcl#:#dcl_no_entry#:#Kein Eintrag
 dcl#:#dcl_no_export_async_config#:#Keine SOAP Konfiguration für asyncrone Exporte verfügbar.
@@ -8720,8 +8745,6 @@ dcl#:#dcl_supported_filetypes_desc#:#Sie können hier kommagetrennt Dateiendunge
 dcl#:#dcl_switch_table#:#Tabelle wechseln
 dcl#:#dcl_switch_view#:#Ansicht ändern
 dcl#:#dcl_table#:#Tabelle
-dcl#:#dcl_table_create#:#Erstelle Tabelle
-dcl#:#dcl_table_edit#:#Speichern
 dcl#:#dcl_table_id#:#Tabellen ID
 dcl#:#dcl_table_list_fields#:#Felder der ausgewählten Tabelle
 dcl#:#dcl_table_list_tables#:#Verfügbare Tabellen
@@ -17226,6 +17249,7 @@ ui#:#2stars#:#zwei von fünf Sternen
 ui#:#3stars#:#drei von fünf Sternen
 ui#:#4stars#:#vier von fünf Sternen
 ui#:#5stars#:#fünf von fünf Sternen
+ui#:#datatable_close_warning#:#OK
 ui#:#datatable_multiaction_label#:#Sammelaktionen
 ui#:#datatable_multiactionmodal_actionlabel#:#Aktion für alle Einträge
 ui#:#datatable_multiactionmodal_apply#:#Ausführen
@@ -17286,6 +17310,7 @@ ui#:#ui_table_order#:#Reihenfolge
 ui#:#ui_transcription#:#Abschrift
 ui#:#unselect_node#:#Knoten %s von der Auswahl entfernen
 ui#:#vc_sort#:#Sortiert nach:
+ui#:#warning_url_too_long_msg#:#Die Anzahl der ausgewählten Zeilen führt zu einer zu großen Datenmenge, die nicht übertragen werden kann. Wählen Sie weniger Zeilen aus oder führen Sie die Aktion für die gesamte Tabelle durch (Sammelaktionen).
 user#:#all_roles_has_starting_point#:#Alle Rollen mit definierter Startseite
 user#:#back_to_starting_points_list#:#Zurück zu Startseiten
 user#:#change_email_email_confirmation_body#:#Die E-Mail-Adresse des Kontos %s wurde geändert. Bitte klicken Sie auf diesen Link %s , um die Änderung zu bestätigen. Der Link ist für %s Minuten gültig.

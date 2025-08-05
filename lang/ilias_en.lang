@@ -773,6 +773,7 @@ assessment#:#gap#:#Gap
 assessment#:#gap_combination#:#Gap Combination
 assessment#:#gaps#:#Gaps
 assessment#:#glossary_term#:#Glossary Term
+assessment#:#goto_first_question#:#Show first question
 assessment#:#grading_mark_msg#:#Your mark is: &quot;[mark]&quot;
 assessment#:#grading_status_failed_msg#:#Sorry, you have <b>failed</b> the test.
 assessment#:#grading_status_passed_msg#:#Congratulations, you have <b>passed</b> the test.
@@ -1957,6 +1958,7 @@ assessment#:#tst_time_limit_message#:#You will have <b>%s minutes</b> to answer 
 assessment#:#tst_title_output#:#Show Question Title
 assessment#:#tst_title_output_full#:#Question Titles and Available Points
 assessment#:#tst_title_output_hide_points#:#Only Question Titles
+assessment#:#tst_title_output_info#:#Set which combination of question titles and/or points available should be visible to participants while they are taking the test and within the test attempt overview (see below).
 assessment#:#tst_title_output_no_title#:#Neither Question Titles nor Available Points
 assessment#:#tst_title_output_only_points#:#Only Available Points
 assessment#:#tst_trigger_result_refreshing#:#Results need to be recalculated. This may take a while.
@@ -2543,6 +2545,7 @@ book#:#book_bulk_creation#:#Bulk Creation
 book#:#book_bulk_data#:#Item Data
 book#:#book_cal_entry#:#Booking:
 book#:#book_confirm_booking#:#Confirm Booking
+book#:#book_confirm_booking_for_users#:#Are you sure you want to book this item for the following user(s)?
 book#:#book_confirm_booking_no_schedule#:#Are you sure you want to book the following item?
 book#:#book_confirm_booking_schedule_number_of_objects#:#Booking Confirmation
 book#:#book_confirm_booking_schedule_number_of_objects_info#:#Please enter the number of items that you would like to book.
@@ -4226,6 +4229,7 @@ common#:#group_status#:#Group is
 common#:#groupings#:#Membership Limitations
 common#:#groupings_assigned_obj_crs#:#Assigned Courses
 common#:#groupings_assigned_obj_grp#:#Assigned Groups
+common#:#groupings_source#:#Source
 common#:#groups#:#Groups
 common#:#grp#:#Group
 common#:#grp_add#:#Add Group
@@ -8118,6 +8122,7 @@ dateplaner#:#cal_agenda#:#Agenda
 dateplaner#:#cal_all_day#:#All Day
 dateplaner#:#cal_app_info#:#Appointment Information
 dateplaner#:#cal_app_other_materials_num#:#View other materials
+dateplaner#:#cal_appointment_notifications#:#Notification
 dateplaner#:#cal_appointments#:#Appointment(s)
 dateplaner#:#cal_apps#:#Number of Appointments
 dateplaner#:#cal_assigned_appointments#:#Assigned Appointments
@@ -8126,6 +8131,7 @@ dateplaner#:#cal_back_to_list#:#Back to List
 dateplaner#:#cal_back_to_search#:#Back to Search
 dateplaner#:#cal_batch_file_downloads#:#Batch Download of Calendar Files
 dateplaner#:#cal_batch_file_downloads_info#:#Display a button in calendars to allow all files related to the current calendar/appointment view to be downloaded as a batch.
+dateplaner#:#cal_belongs_to#:#Belongs to Calendar
 dateplaner#:#cal_book_free#:#available
 dateplaner#:#cal_booked_out#:#booked up
 dateplaner#:#cal_booking_cancellation_body#:#your appointment with %s has been cancelled.
@@ -8265,8 +8271,10 @@ dateplaner#:#cal_crs_notification_sub#:#Changed Appointment in Course "%s"
 dateplaner#:#cal_crs_timing_end#:#Suggested End
 dateplaner#:#cal_crs_timing_start#:#Suggested Start
 dateplaner#:#cal_daily#:#Daily
+dateplaner#:#cal_date_and_time#:#Date and Time
 dateplaner#:#cal_date_booked#:#booked
 dateplaner#:#cal_date_format_info#:#Please choose a format for the input of dates.
+dateplaner#:#cal_date_time_title#:#Date and Time
 dateplaner#:#cal_day_end#:#Day End
 dateplaner#:#cal_day_of_month#:#Day of the month
 dateplaner#:#cal_day_overview#:#Day Overview
@@ -8305,6 +8313,8 @@ dateplaner#:#cal_download_files#:#Download Files
 dateplaner#:#cal_download_files_started#:#A ZIP archive with all download files is now created in the background. You can see the status of your background processes at the top right in the Notification Centre. You can also download the ZIP archive there.
 dateplaner#:#cal_dstart_dend_warn#:#Please check your input. The start of a day should be before the end of the day.
 dateplaner#:#cal_duration#:#Duration
+dateplaner#:#cal_duration_end#:#End
+dateplaner#:#cal_duration_start#:#Start
 dateplaner#:#cal_edit_appointment#:#Edit Appointment
 dateplaner#:#cal_edit_category#:#Edit Calendar
 dateplaner#:#cal_edit_milestone#:#Edit Milestone
@@ -8359,6 +8369,8 @@ dateplaner#:#cal_month_overview#:#Month Overview
 dateplaner#:#cal_month_s#:#Month(s)
 dateplaner#:#cal_month_selection#:#Select Month
 dateplaner#:#cal_monthly#:#Monthly
+dateplaner#:#cal_monthly_by_date#:#Monthly by Date
+dateplaner#:#cal_monthly_by_day#:#Monthly by Day
 dateplaner#:#cal_ms_details#:#Milestone Details
 dateplaner#:#cal_ms_users_responsible#:#Users Responsible
 dateplaner#:#cal_new_app#:#New Appointment
@@ -8379,6 +8391,16 @@ dateplaner#:#cal_owner#:#Owner
 dateplaner#:#cal_period#:#Period
 dateplaner#:#cal_rec_err_limit#:#Please enter a valid number of appointments.
 dateplaner#:#cal_recurrence_confirm_deletion#:#Please decide wether you want to delete single appointments or the complete series of appointments.
+dateplaner#:#cal_recurrence_count#:#Number of Appointments
+dateplaner#:#cal_recurrence_day_interval#:#Every x Day(s)
+dateplaner#:#cal_recurrence_end_date#:#End Date
+dateplaner#:#cal_recurrence_end_date_info#:#Last possible date for an appointment.
+dateplaner#:#cal_recurrence_month_interval#:#Every x Month(s)
+dateplaner#:#cal_recurrence_until#:#Recurrence End
+dateplaner#:#cal_recurrence_until_count#:#Fixed Number of Appointments
+dateplaner#:#cal_recurrence_until_end_date#:#Repeat Until End Date
+dateplaner#:#cal_recurrence_week_interval#:#Every x Week(s)
+dateplaner#:#cal_recurrence_year_interval#:#Every x Year(s)
 dateplaner#:#cal_recurrences#:#Recurrences
 dateplaner#:#cal_reg_register#:#Register
 dateplaner#:#cal_reg_registered#:#You have been registered.
@@ -8472,6 +8494,8 @@ dateplaner#:#cal_weekly#:#Weekly
 dateplaner#:#cal_where#:#Location
 dateplaner#:#cal_year_s#:#Year(s)
 dateplaner#:#cal_yearly#:#Yearly
+dateplaner#:#cal_yearly_by_date#:#Yearly by Date
+dateplaner#:#cal_yearly_by_day#:#Yearly by Day
 dateplaner#:#consultation_hours_block_title#:#Consultation Hours
 dateplaner#:#crs_cal_activation_end#:#Course Availability ends
 dateplaner#:#crs_cal_activation_start#:#Course Availability starts
@@ -8520,7 +8544,6 @@ dcl#:#dcl_change_notification_dcl_new_record#:#The following data record has bee
 dcl#:#dcl_change_notification_dcl_update_record#:#The following data record has been updated
 dcl#:#dcl_change_notification_link#:#Link to the Data Collection
 dcl#:#dcl_change_notification_subject#:#Data Collection ‘%s’ has been changed
-dcl#:#dcl_change_why_you_receive_this_email#:#You receive this message because you have activated the notification about this data collection.
 dcl#:#dcl_changed_by#:#Changed by
 dcl#:#dcl_checked#:#Checked.
 dcl#:#dcl_comments#:#Comments
@@ -8547,6 +8570,10 @@ dcl#:#dcl_date#:#Date Entry
 dcl#:#dcl_date_desc#:#Users can enter a date of their choice or select one using a calendar.
 dcl#:#dcl_date_selection#:#Date Selection
 dcl#:#dcl_date_selection_desc#:#Allow a date to be chosen from among a predefined selection of date options.
+dcl#:#dcl_datetime#:#Datetime Entry
+dcl#:#dcl_datetime_desc#:#Users can enter a date and time of their choice or select one using a calendar.
+dcl#:#dcl_datetime_selection#:#Datetime Selection
+dcl#:#dcl_datetime_selection_desc#:#Allow a date and time to be chosen from among a predefined selection of datetime options.
 dcl#:#dcl_deactivate_view#:#Deactivate this view
 dcl#:#dcl_default_sort_field#:#Default sort field
 dcl#:#dcl_default_sort_field_order#:#Default sort field order
@@ -8596,7 +8623,6 @@ dcl#:#dcl_formula_desc#:#You can aggregate several entries in a record with a fo
 dcl#:#dcl_formula_detail_desc#:#Entries are generated automatically, you are not able to edit the entry.
 dcl#:#dcl_height#:#Height in Pixels
 dcl#:#dcl_height_desc#:#The height of the file will be reduced to this value during upload.
-dcl#:#dcl_hello#:#Dear
 dcl#:#dcl_id#:#ID
 dcl#:#dcl_id_description#:#The internal ID.
 dcl#:#dcl_ilias_reference#:#Repository Object
@@ -8654,7 +8680,6 @@ dcl#:#dcl_new_field#:#New Field
 dcl#:#dcl_new_table#:#New Table
 dcl#:#dcl_new_view#:#New View
 dcl#:#dcl_next_record#:#Next Entry
-dcl#:#dcl_no_content_warning#:#Please note: the data collection is online but does not yet have any fields.
 dcl#:#dcl_no_entries#:#Action not permitted
 dcl#:#dcl_no_entry#:#No entry
 dcl#:#dcl_no_export_async_config#:#No SOAP Configuration for asyncronous exports available.
@@ -8731,8 +8756,6 @@ dcl#:#dcl_supported_filetypes_desc#:#You can set which file types can be uploade
 dcl#:#dcl_switch_table#:#Switch Table
 dcl#:#dcl_switch_view#:#Change View
 dcl#:#dcl_table#:#Table
-dcl#:#dcl_table_create#:#Create Table
-dcl#:#dcl_table_edit#:#Update Table
 dcl#:#dcl_table_id#:#Table ID
 dcl#:#dcl_table_list_fields#:#Fields Of Selected Table
 dcl#:#dcl_table_list_tables#:#Available Tables
@@ -12009,7 +12032,7 @@ meta#:#meta_annotation_plural#:#Annotations
 meta#:#meta_any#:#Any
 meta#:#meta_atomic#:#Atomic
 meta#:#meta_author#:#Author
-meta#:#meta_authors#:#Authors
+meta#:#meta_authors#:#Contributors
 meta#:#meta_browser#:#Browser
 meta#:#meta_button_to_full_editor_label#:#Edit the Full Learning Object Metadata
 meta#:#meta_c_AD#:#Andorra
@@ -17233,6 +17256,7 @@ ui#:#2stars#:#two of five stars
 ui#:#3stars#:#three of five stars
 ui#:#4stars#:#four of five stars
 ui#:#5stars#:#five of five stars
+ui#:#datatable_close_warning#:#OK
 ui#:#datatable_multiaction_label#:#Bulk Actions
 ui#:#datatable_multiactionmodal_actionlabel#:#Action for All Entries
 ui#:#datatable_multiactionmodal_apply#:#Apply
@@ -17293,6 +17317,7 @@ ui#:#ui_table_order#:#Order
 ui#:#ui_transcription#:#Transcript
 ui#:#unselect_node#:#Remove node %s from selection
 ui#:#vc_sort#:#Sort by:
+ui#:#warning_url_too_long_msg#:#The amount of selected rows will result in a very large URL; the Server will probably block this request.<br>Please select less rows or perform the action on all entries.
 user#:#all_roles_has_starting_point#:#All the roles have starting points
 user#:#back_to_starting_points_list#:#Back to Starting Points
 user#:#change_email_email_confirmation_body#:#The email address for the account %s was changed. To confirm this change, please click on this link %s. The link is valid for %s minutes.

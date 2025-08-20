@@ -270,7 +270,7 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
             $feedback_text = \ilUtil::stripSlashes(
                 (string) $form->getItemByPostVar("question__{$question_id}__feedback")->getValue(),
                 false,
-                \ilObjAdvancedEditing::_getUsedHTMLTagsAsString("assessment")
+                \ilRTESettings::_getUsedHTMLTagsAsString("assessment")
             );
 
             $this->object->saveManualFeedback(
@@ -327,7 +327,7 @@ class TestScoringByParticipantGUI extends \ilTestServiceGUI
             $notification->send();
         }
 
-        $scorer = new TestScoring($this->object, $this->user, $this->db, $this->lng);
+        $scorer = new TestScoring($this->object, $this->user, $this->db, $this->test_result_repository);
         $scorer->setPreserveManualScores(true);
         $scorer->recalculateSolution($active_id, $attempt);
 

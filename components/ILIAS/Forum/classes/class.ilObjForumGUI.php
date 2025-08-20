@@ -2396,10 +2396,10 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling, ilForu
             'charmap',
             'undo',
             'redo',
-            'justifyleft',
-            'justifycenter',
-            'justifyright',
-            'justifyfull',
+            'alignleft',
+            'aligncenter',
+            'alignright',
+            'alignjustify',
             'anchor',
             'fullscreen',
             'cut',
@@ -2519,7 +2519,7 @@ class ilObjForumGUI extends ilObjectGUI implements ilDesktopItemHandling, ilForu
             );
 
             if ($show_rte) {
-                ilObjAdvancedEditing::_setRichTextEditorUserState($show_rte);
+                (new ilRTESettings($this->lng, $this->user))->setRichTextEditorUserState($show_rte);
             }
 
             if ($quotingAllowed) {

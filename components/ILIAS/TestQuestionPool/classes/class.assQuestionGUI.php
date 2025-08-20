@@ -629,6 +629,7 @@ abstract class assQuestionGUI
     public function getILIASPage(string $html = ""): string
     {
         $page_gui = new ilAssQuestionPageGUI($this->object->getId());
+        $page_gui->setFileDownloadLink($this->buildFileDownloadLink());
         $page_gui->setQuestionHTML(
             [$this->object->getId() => $html]
         );
@@ -650,7 +651,8 @@ abstract class assQuestionGUI
         $this->lng->loadLanguageModule("content");
 
         $page_gui = new ilAssQuestionPageGUI($this->object->getId());
-        $page_gui->setOutputMode("presentation");
+        $page_gui->setFileDownloadLink($this->buildFileDownloadLink());
+        $page_gui->setOutputMode('presentation');
         $page_gui->setTemplateTargetVar($a_temp_var);
 
         if ($this->getNavigationGUI()) {
@@ -897,7 +899,7 @@ abstract class assQuestionGUI
         if (!$this->object->getSelfAssessmentEditingMode()) {
             if ($this->object->getAdditionalContentEditingMode() !== assQuestion::ADDITIONAL_CONTENT_EDITING_MODE_IPE) {
                 $question->setUseRte(true);
-                $question->setRteTags(ilObjAdvancedEditing::_getUsedHTMLTags('assessment'));
+                $question->setRteTags(ilRTESettings::_getUsedHTMLTags('assessment'));
                 $question->setRTESupport($this->object->getId(), 'qpl', 'assessment');
             }
         } else {
@@ -1928,7 +1930,7 @@ abstract class assQuestionGUI
             return ilArrayUtil::stripSlashesRecursive(
                 $answer_text,
                 false,
-                ilObjAdvancedEditing::_getUsedHTMLTagsAsString("assessment")
+                ilRTESettings::_getUsedHTMLTagsAsString("assessment")
             );
         }
 
@@ -2035,5 +2037,13 @@ abstract class assQuestionGUI
             $show_autosave_title,
             $show_inline_feedback
         );
+    }
+
+    public function buildFileDownloadLink(): string
+    {
+        if (strtolower($this->request_data_collector->string('cmdClass')) === 'ilassquestionpreviewgui') {
+            return $this->ctrl->getLinkTargetByClass(ilObjQuestionPoolGUI::class, 'downloadFile');
+        }
+        return $this->ctrl->getLinkTargetByClass(ilObjTestGUI::class, 'downloadFile');
     }
 }

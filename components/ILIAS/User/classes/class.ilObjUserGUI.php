@@ -19,7 +19,7 @@
 declare(strict_types=1);
 
 use ILIAS\User\UserGUIRequest;
-use ILIAS\Language\Language;
+use ILIAS\Repository\ExternalGUIService as RepositoryGUIs;
 use ILIAS\FileUpload\FileUpload;
 use ILIAS\ResourceStorage\Services as ResourceStorageServices;
 use ILIAS\ResourceStorage\Stakeholder\ResourceStakeholder;
@@ -39,6 +39,7 @@ class ilObjUserGUI extends ilObjectGUI
     private UserGUIRequest $user_request;
     private ilHelpGUI $help;
     private ilTabsGUI $tabs;
+    private RepositoryGUIs $repository_guis;
     private ilMailMimeSenderFactory $mail_sender_factory;
 
     private FileUpload $uploads;
@@ -74,6 +75,7 @@ class ilObjUserGUI extends ilObjectGUI
         $this->ctrl = $DIC['ilCtrl'];
         $this->tabs = $DIC['ilTabs'];
         $this->help = $DIC['ilHelp'];
+        $this->repository_guis = $DIC->repository()->gui();
         $this->mail_sender_factory = $DIC->mail()->mime()->senderFactory();
 
         $this->user_profile = new ilUserProfile();
@@ -121,9 +123,12 @@ class ilObjUserGUI extends ilObjectGUI
                 $this->ctrl->forwardCommand($new_gui);
                 break;
 
-            case 'ilobjectownershipmanagementgui':
-                $gui = new ilObjectOwnershipManagementGUI($this->object->getId());
-                $this->ctrl->forwardCommand($gui);
+            case strtolower(ilObjectOwnershipManagementGUI::class):
+                $this->ctrl->forwardCommand(
+                    $this->repository_guis->ownershipManagementGUI(
+                        $this->object->getId()
+                    )
+                );
                 break;
 
             default:
@@ -195,12 +200,14 @@ class ilObjUserGUI extends ilObjectGUI
             );
         }
 
-        $this->tabs_gui->addTarget(
-            'role_assignment',
-            $this->ctrl->getLinkTarget($this, 'roleassignment'),
-            ['roleassignment'],
-            get_class($this)
-        );
+        if ($this->checkAccessToRolesTab()) {
+            $this->tabs_gui->addTarget(
+                'role_assignment',
+                $this->ctrl->getLinkTarget($this, 'roleassignment'),
+                ['roleassignment'],
+                get_class($this)
+            );
+        }
 
         // learning progress
         if ($this->rbac_system->checkAccess('read', $this->ref_id) and
@@ -1607,21 +1614,15 @@ class ilObjUserGUI extends ilObjectGUI
     {
         $this->tabs->activateTab('role_assignment');
 
-        if ($this->object->getId() === (int) ANONYMOUS_USER_ID
-            || !$this->rbac_system->checkAccess('edit_roleassignment', $this->usrf_ref_id)
-                && !$this->access->isCurrentUserBasedOnPositionsAllowedTo('read_users', [$this->object->getId()])
-        ) {
-            $this->ilias->raiseError(
-                $this->lng->txt('msg_no_perm_assign_role_to_user'),
-                $this->ilias->error_obj->MESSAGE
-            );
+        if (!$this->checkAccessToRolesTab()) {
+            $this->tpl->setOnScreenMessage('failure', $this->lng->txt('msg_no_perm_view_roles_of_user'), true);
+            $this->ctrl->redirectByClass(self::class, 'edit');
         }
 
-        $filtered_roles = ilSession::get('filtered_roles');
         $req_filtered_roles = $this->user_request->getFilteredRoles();
         ilSession::set(
             'filtered_roles',
-            ($req_filtered_roles > 0) ? $req_filtered_roles : $filtered_roles
+            ($req_filtered_roles > 0) ? $req_filtered_roles : ilSession::get('filtered_roles')
         );
 
         $filtered_roles = ilSession::get('filtered_roles');
@@ -1976,5 +1977,22 @@ class ilObjUserGUI extends ilObjectGUI
     private function renderForm(): void
     {
         $this->tpl->setContent($this->legal_documents->userManagementModals() . $this->form_gui->getHTML());
+    }
+
+    private function checkAccessToRolesTab(): bool
+    {
+        return $this->object->getId() !== (int) ANONYMOUS_USER_ID
+            && (
+                $this->rbac_system->checkAccess('edit_roleassignment', $this->usrf_ref_id)
+                || $this->access->checkPositionAccess(\ilObjUserFolder::ORG_OP_EDIT_USER_ACCOUNTS, $this->usrf_ref_id)
+                    && in_array(
+                        $this->object->getId(),
+                        $this->access->filterUserIdsByPositionOfCurrentUser(
+                            \ilObjUserFolder::ORG_OP_EDIT_USER_ACCOUNTS,
+                            USER_FOLDER_ID,
+                            [$this->object->getId()]
+                        )
+                    )
+            );
     }
 }

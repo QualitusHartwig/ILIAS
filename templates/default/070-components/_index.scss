@@ -34,6 +34,7 @@
 @use "./UI-framework/Input/_ui-component_input.scss";
 @use "./UI-framework/MessageBox/_ui-component_messagebox.scss";
 @use "./UI-framework/Modal/_ui-component_modal.scss";
+@use "./UI-framework/Navigation/ui-component_sequence";
 @use "./UI-framework/Panel/_ui-component_panel.scss";
 @use "./UI-framework/Player/_ui-component_player.scss";
 @use "./UI-framework/Popover/_ui-component_popover.scss";
@@ -139,6 +140,5 @@
 @use "./legacy/Services/UIComponent/_component_progressbar.scss";
 @use "./legacy/Services/UIComponent/_component_tabs.scss";
 @use "./legacy/Services/UIComponent/_component_toolbar.scss";
-@use "./legacy/Services/UIComponent/_component_tooltip.scss";
 @use "./legacy/Services/_component_user.scss";
 @use "./legacy/Services/_component_webdav.scss";

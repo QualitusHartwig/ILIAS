@@ -41,6 +41,16 @@ final class Context
         return $this->container->refinery();
     }
 
+    public function lng(): \ilLanguage
+    {
+        return $this->container->language();
+    }
+
+    public function mainTemplate(): \ilGlobalTemplateInterface
+    {
+        return $this->container->ui()->mainTemplate();
+    }
+
     public function http(): Services
     {
         return $this->container->http();

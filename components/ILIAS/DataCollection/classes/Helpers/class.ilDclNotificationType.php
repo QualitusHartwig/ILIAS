@@ -18,22 +18,9 @@
 
 declare(strict_types=1);
 
-namespace ILIAS;
-
-use ILIAS\Component\Component;
-
-class GlobalCache_ implements Component
+enum ilDclNotificationType: int
 {
-    public function init(
-        array | \ArrayAccess &$define,
-        array | \ArrayAccess &$implement,
-        array | \ArrayAccess &$use,
-        array | \ArrayAccess &$contribute,
-        array | \ArrayAccess &$seek,
-        array | \ArrayAccess &$provide,
-        array | \ArrayAccess &$pull,
-        array | \ArrayAccess &$internal,
-    ): void {
-        // ...
-    }
+    case RECORD_CREATE = 1;
+    case RECORD_UPDATE = 2;
+    case RECORD_DELETE = 3;
 }

@@ -16,29 +16,26 @@
  *
  *********************************************************************/
 
-namespace ILIAS\Scripts\PHPStan\Rules;
+declare(strict_types=1);
 
-use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\Rule;
-use PhpParser\Node;
-use PHPStan\Analyser\Scope;
-use PHPStan\Rules\RuleErrorBuilder;
+use ILIAS\Export\ExportHandler\Consumer\ExportConfig\BasicHandler as ExportConfig;
 
-class NoLegacyTooltipsUsagesRule extends LegacyClassUsageRule implements Rule
+class ilUserExportConfig extends ExportConfig
 {
-    protected function getHumanReadableRuleName(): string
+    protected string $export_type;
+
+    public function __construct()
     {
-        return 'Legacy Tooltip Usages';
+        $this->export_type = '';
     }
 
-    protected function getRelevantILIASVersion(): int
+    public function setExportType(string $export_type)
     {
-        return 10;
+        $this->export_type = $export_type;
     }
 
-
-    protected function getForbiddenClasses(): array
+    public function getExportType(): string
     {
-        return ['ilTooltipGUI'];
+        return $this->export_type;
     }
 }

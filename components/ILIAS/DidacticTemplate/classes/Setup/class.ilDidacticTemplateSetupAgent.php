@@ -23,7 +23,7 @@ use ILIAS\Setup\Metrics;
 
 class ilDidacticTemplateSetupAgent extends NullAgent
 {
-    public function getUpdateObjective(Config $config = null): Objective
+    public function getUpdateObjective(?Config $config = null): Objective
     {
         return new ilDatabaseUpdateStepsExecutedObjective(
             new ilDidacticTemplate11DBUpdateSteps()

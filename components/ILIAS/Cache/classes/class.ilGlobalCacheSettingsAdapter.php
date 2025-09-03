@@ -66,7 +66,7 @@ class ilGlobalCacheSettingsAdapter implements Setup\Config
     {
         $this->active = (bool) $client_ini->readVariable('cache', 'activate_global_cache');
         $service_type = $client_ini->readVariable('cache', 'global_cache_service_type');
-        if(is_numeric($service_type)) {
+        if (is_numeric($service_type)) {
             $service_type = match ((int) $service_type) {
                 0 => Config::PHPSTATIC,
                 2 => Config::MEMCACHED,
@@ -74,7 +74,7 @@ class ilGlobalCacheSettingsAdapter implements Setup\Config
                 default => Config::PHPSTATIC,
             };
         }
-        $this->service = (string) $service_type;
+        $this->service = $service_type;
         $read_group = $client_ini->readGroup('cache_activated_components');
 
         $this->components = array_unique(

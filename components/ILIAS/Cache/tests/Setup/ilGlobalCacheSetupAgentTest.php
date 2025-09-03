@@ -35,7 +35,6 @@ class TestObj extends \ilGlobalCacheSetupAgent
 
 class ilGlobalCacheSetupAgentTest extends TestCase
 {
-    private Refinery $refinery;
     /**
      * @var \ilGlobalCacheSetupAgent
      */
@@ -43,9 +42,9 @@ class ilGlobalCacheSetupAgentTest extends TestCase
 
     public function setUp(): void
     {
-        $this->refinery = new Refinery($this->createMock(DataFactory::class), $this->createMock(\ilLanguage::class));
+        $refinery = new Refinery($this->createMock(DataFactory::class), $this->createMock(\ilLanguage::class));
 
-        $this->obj = new TestObj($this->refinery);
+        $this->obj = new TestObj($refinery);
     }
 
     public function testCreate(): void

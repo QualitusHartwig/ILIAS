@@ -1219,6 +1219,7 @@ assessment#:#save_on_navigation_confirmation#:#Ihre geänderten Antworten werden
 assessment#:#save_on_navigation_forced_feedback_hint#:#Vorher erhalten Sie Feedback zu Ihrer Antwort.
 assessment#:#save_on_navigation_locked_confirmation#:#Ihre geänderten Antworten werden beim Navigieren automatisch gespeichert und festgeschrieben.
 assessment#:#saved_adjustment#:#Veränderung gespeichert.
+assessment#:#score_anon#:#Anonym bewerten
 assessment#:#score_partsol_enabled#:#Halbpunktebewertung aktivieren
 assessment#:#score_partsol_enabled_info#:#Es hat sich als sinnvoll erwiesen, drei korrekte Antworten bereits mit der Hälfte der maximal erreichbaren Punktezahl zu honorieren. Bei weniger als drei korrekten Antworten werden keine Punkte vergeben.
 assessment#:#scored_pass#:#Bewerteter Durchlauf
@@ -1340,12 +1341,12 @@ assessment#:#tst_activate_skill_service_desc#:#Erlaubt die Zuordnung von Fragen 
 assessment#:#tst_activation_limited_visibility_info#:#Außerhalb des angegebenen Zeitraums wird der Testtitel angezeigt. Der Test kann aber nicht gestartet werden. Der weitere Zugriff, auch auf bereits laufende Tests, wird zum Ende des Zeitraums unterbunden.
 assessment#:#tst_activation_online_info#:#Nur wenn der Test online geschaltet ist, können Benutzer am Test teilnehmen.
 assessment#:#tst_add_quest_cont_edit_mode#:#Editor
-assessment#:#tst_add_quest_cont_edit_mode_IPE#:#Unformatierter Text für Fragen und Antworten und ILIAS-Seiteneditor für Rückmeldungen und Lösungshinweise
-assessment#:#tst_add_quest_cont_edit_mode_IPE_info#:#Bietet keine Formatierung von Text in Fragen und Antworten, erlaubt aber Gestaltung der Rückmeldungen und Lösungshinweise mit ILIAS-Seiteneditor und Wiederverwendung bei Fragen in ILIAS-Lernmodulen.
-assessment#:#tst_add_quest_cont_edit_mode_RTE#:#Rich-Text-Editor (TinyMCE) für das Editieren der Fragen, Antworten, Rückmeldungen und Lösungshinweisen
-assessment#:#tst_add_quest_cont_edit_mode_RTE_info#:#Erlaubt formatierten Text für Fragen, Antworten, Rückmeldungen und Lösungshinweise. Rückmeldungen und Lösungshinweise werden aber beim Einbinden von Fragen in ILIAS-Lernmodule nicht übernommen.
+assessment#:#tst_add_quest_cont_edit_mode_IPE#:#Unformatierter Text für Fragen und Antworten und ILIAS-Seiteneditor für Rückmeldungen
+assessment#:#tst_add_quest_cont_edit_mode_IPE_info#:#Bietet keine Formatierung von Text in Fragen und Antworten, erlaubt aber Gestaltung der Rückmeldungen mit ILIAS-Seiteneditor und Wiederverwendung bei Fragen in ILIAS-Lernmodulen.
+assessment#:#tst_add_quest_cont_edit_mode_RTE#:#Rich-Text-Editor (TinyMCE) für das Editieren der Fragen, Antworten und Rückmeldungen
+assessment#:#tst_add_quest_cont_edit_mode_RTE_info#:#Erlaubt formatierten Text für Fragen, Antworten und Rückmeldungen. Rückmeldungen werden aber beim Einbinden von Fragen in ILIAS-Lernmodule nicht übernommen.
 assessment#:#tst_add_quest_cont_edit_mode_plain#:#Unformatierter Text
-assessment#:#tst_add_quest_cont_edit_mode_plain_info#:#Bietet keine Formatierung von Text in Fragen, Antworten, Rückmeldungen und Lösungshinweisen.
+assessment#:#tst_add_quest_cont_edit_mode_plain_info#:#Bietet keine Formatierung von Text in Fragen, Antworten und Rückmeldungen.
 assessment#:#tst_addit_passes_blocked_after_passed_msg#:#Sie haben den Test bestanden. Der Test kann nicht noch einmal gestartet werden.
 assessment#:#tst_all_test_competences#:#Alle Test-Kompetenzen
 assessment#:#tst_all_user_data_deleted#:#Die Daten aller Testteilnehmer wurden gelöscht!
@@ -1514,8 +1515,6 @@ assessment#:#tst_highscore_anon#:#Keine Namen anzeigen
 assessment#:#tst_highscore_anon_description#:#Die Platzierungen anderer Teilnehmerinnen und Teilnehmer werden ohne Angabe der Namen angezeigt. Dies geschieht automatisch bei anonymisierten Tests.
 assessment#:#tst_highscore_description#:#Im Reiter „Meine Ergebnisse“ wird ein zusätzlicher Unterreiter „Platzierung“ angezeigt. Es wird eine Tabelle über das Abschneiden der verschiedenen Personen im Test angezeigt. Sie müssen die Option „Eigenes Testergebnis einsehen“ aktivieren, um diese Funktion zu nutzen.
 assessment#:#tst_highscore_enabled#:#Platzierungen
-assessment#:#tst_highscore_hints#:#Lösungshinweise
-assessment#:#tst_highscore_hints_description#:#Es wird einen zusätzliche Spalte eingeblendet, in welcher angezeigt wird, wie viele Lösungshinweise angefordert wurden.
 assessment#:#tst_highscore_mode#:#Modus
 assessment#:#tst_highscore_own_table#:#Eigenen Rang anzeigen
 assessment#:#tst_highscore_own_table_description#:#Teilnehmerinnen und Teilnehmern wird eine Tabelle mit ihrem Rang innerhalb aller Platzierungen angezeigt.
@@ -8574,6 +8573,7 @@ dcl#:#dcl_delete_fields#:#Felder löschen
 dcl#:#dcl_delete_fields_no_selection#:#Zum Löschen muss mindestens ein Feld ausgewählt werden.
 dcl#:#dcl_delete_perm#:#Einträge löschen
 dcl#:#dcl_delete_records#:#Datensätze löschen
+dcl#:#dcl_deleted_entries#:#Gelöschte Einträge
 dcl#:#dcl_deleted_records#:#Es wurden %s Datensätze gelöscht.
 dcl#:#dcl_deprecated_copy#:#(Veraltet)
 dcl#:#dcl_desc#:#Absteigend ↓
@@ -8667,6 +8667,7 @@ dcl#:#dcl_msg_tableviews_delete_all#:#Löschen nicht möglich: Es muss mindesten
 dcl#:#dcl_msg_tableviews_order_updated#:#Anordnung der Ansichten aktualisiert.
 dcl#:#dcl_multiple_selection#:#Mehrfachauswahl
 dcl#:#dcl_new#:#Neue Datensammlung anlegen
+dcl#:#dcl_new_entries#:#Neue Einträge
 dcl#:#dcl_new_field#:#Neues Feld
 dcl#:#dcl_new_table#:#Neue Tabelle
 dcl#:#dcl_new_view#:#Neue Ansicht
@@ -8682,11 +8683,12 @@ dcl#:#dcl_no_such_reference#:#Der folgende Wert ist in der Referenztabelle nicht
 dcl#:#dcl_no_tableview_found#:#Keine sichbare Tabellenansicht verfügbar!
 dcl#:#dcl_not_checked#:#Nicht ausgewählt
 dcl#:#dcl_not_supported_in_import#:#Dieser Feldtyp wird beim Import nicht unterstützt.
-dcl#:#dcl_notification_activate_dcl#:#Benachrichtigung aktivieren
+dcl#:#dcl_notification_activate#:#Benachrichtigung aktivieren
 dcl#:#dcl_notification_activated#:#Benachrichtigung aktiv
-dcl#:#dcl_notification_deactivate_dcl#:#Benachrichtigung deaktivieren
+dcl#:#dcl_notification_deactivate#:#Benachrichtigung deaktivieren
 dcl#:#dcl_notification_deactivated#:#Benachrichtigung inaktiv
 dcl#:#dcl_notification_info#:#Jede Person kann Benachrichtigungen für sich aktivieren.
+dcl#:#dcl_notification_settings#:#Benachrichtigungseinstellungen
 dcl#:#dcl_notimage_exception#:#Die Datei muss ein Bild sein.
 dcl#:#dcl_noturl_exception#:#Bitte geben Sie einen Link (beginnend mit http:// oder www.) oder eine E-Mail-Adresse ein.
 dcl#:#dcl_number#:#Ganze Zahlen
@@ -8789,6 +8791,7 @@ dcl#:#dcl_unknown_exception#:#Der eingegebene Wert ist nicht gültig.
 dcl#:#dcl_unknown_plugin#:#Unbekannter Plugintyp
 dcl#:#dcl_update_field#:#Feld aktualisieren
 dcl#:#dcl_update_record#:#Eintrag aktualisieren
+dcl#:#dcl_updated_entries#:#Bearbeitete Einträge
 dcl#:#dcl_url#:#URL oder E-Mail
 dcl#:#dcl_view_configuration#:#Ansichtskonfiguration
 dcl#:#dcl_view_own_records_perm#:#Nur eigene Einträge anzeigen
@@ -17236,6 +17239,10 @@ ui#:#footer_link_groups#:#Footer Link-Gruppen
 ui#:#footer_links#:#Footer Links
 ui#:#footer_permanent_link#:#Footer Permanent Link
 ui#:#footer_texts#:#Footer Texte
+ui#:#image_alt_text#:#Alternativtext
+ui#:#image_purpose_decorative#:#Dekoratives Bild
+ui#:#image_purpose_informative#:#Informatives Bild
+ui#:#image_purpose_user_defined#:#Verwendungszweck
 ui#:#label_fieldselection#:#Spaltenauswahl
 ui#:#label_fieldselection_refresh#:#Anwenden
 ui#:#label_modeviewcontrol#:#Anzeigemodus
@@ -17273,6 +17280,8 @@ ui#:#ui_link_label#:#Label
 ui#:#ui_link_url#:#URL
 ui#:#ui_md_input_edit#:#Bearbeiten
 ui#:#ui_md_input_view#:#Vorschau
+ui#:#ui_nav_sequence_control_label#:#Steuerung der nachfolgenden Sequenz von Inhalten
+ui#:#ui_nav_sequence_description#:#Wird genutzt, um durch Inhalte zu navigieren oder um Aktionen und Filter auszulösen, welche die gesamte Sequenz betreffen.
 ui#:#ui_pagination_unlimited#:#Unbegrenzt
 ui#:#ui_select_dropdown_label#:#Bitte auswählen
 ui#:#ui_table_no_records#:#Keine Einträge

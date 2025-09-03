@@ -61,6 +61,9 @@ class ScoringByQuestionTableBinder implements DataRetrieval
         $this->sortData($order);
         $data = array_slice($this->participant_data, $range->getStart(), $range->getLength());
         foreach ($data as $row) {
+            if (in_array($row['usr_id'], $this->test_obj->getAnonOnlyParticipantIds())) {
+                $row[ScoringByQuestionTable::COLUMN_NAME] = '';
+            }
             yield $row_builder->buildDataRow(
                 array_shift($row),
                 $row
@@ -164,13 +167,15 @@ class ScoringByQuestionTableBinder implements DataRetrieval
 
                 $row = [
                     "{$active_id}_{$pd->getPass()}",
-                    ScoringByQuestionTable::COLUMN_NAME => $this->buildParticipantName($current_participant),
+                    ScoringByQuestionTable::COLUMN_EXAMID => \ilObjTest::buildExamId($active_id, $pd->getPass(), $this->test_obj->getId()),
+                    ScoringByQuestionTable::COLUMN_NAME => $current_participant->getName(),
                     ScoringByQuestionTable::COLUMN_ATTEMPT => $pd->getPass() + 1,
                     ScoringByQuestionTable::COLUMN_POINTS_REACHED => $question_result['reached'] ?? 0.0,
                     ScoringByQuestionTable::COLUMN_POINTS_AVAILABLE => $current_participant->getQuestionByAttemptAndId($pd->getPass(), $question_id)['points'] ?? 0.0,
                     ScoringByQuestionTable::COLUMN_FEEDBACK => $feedback_data['feedback'] ?? '',
                     ScoringByQuestionTable::COLUMN_FINALIZED => isset($feedback_data['finalized_evaluation']) && $feedback_data['finalized_evaluation'] === 1,
-                    ScoringByQuestionTable::COLUMN_FINALIZED_BY => $this->buildFinalizedByName($feedback_data)
+                    ScoringByQuestionTable::COLUMN_FINALIZED_BY => $this->buildFinalizedByName($feedback_data),
+                    'usr_id' => $current_participant->getUserId()
                 ];
 
                 if (isset($feedback_data['finalized_tstamp'])
@@ -229,14 +234,6 @@ class ScoringByQuestionTableBinder implements DataRetrieval
             },
             []
         );
-    }
-
-    private function buildParticipantName(\ilTestEvaluationUserData $participant_data): string
-    {
-        if ($this->test_obj->getAnonymity()) {
-            return $this->lng->txt('anonymous');
-        }
-        return $participant_data->getName();
     }
 
     private function buildFinalizedByName(array $feedback_data): string

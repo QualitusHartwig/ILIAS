@@ -2413,6 +2413,21 @@ class ilObjTest extends ilObject
         );
     }
 
+    /**
+     * return int[]
+     */
+    public function getAnonOnlyParticipantIds(): array
+    {
+        $list = new ilTestParticipantList($this, $this->user, $this->lng, $this->db);
+        $list->initializeFromDbRows($this->getTestParticipants());
+        if ($this->getAnonymity()) {
+            return $list->getAllUserIds();
+        }
+        return $list->getAccessFilteredList(
+            $this->participant_access_filter->getAnonOnlyParticipantsUserFilter($this->getRefId())
+        )->getAllUserIds();
+    }
+
     public function getUnfilteredEvaluationData(): ilTestEvaluationData
     {
         return (new ilTestEvaluationFactory($this->db, $this))
@@ -6351,7 +6366,7 @@ class ilObjTest extends ilObject
     public function isPluginActive($a_pname): bool
     {
         if (!$this->component_repository->getComponentByTypeAndName(
-            ilComponentInfo::TYPE_MODULES,
+            ilComponentInfo::TYPE_COMPONENT,
             'TestQuestionPool'
         )->getPluginSlotById('qst')->hasPluginName($a_pname)) {
             return false;
@@ -6359,7 +6374,7 @@ class ilObjTest extends ilObject
 
         return $this->component_repository
             ->getComponentByTypeAndName(
-                ilComponentInfo::TYPE_MODULES,
+                ilComponentInfo::TYPE_COMPONENT,
                 'TestQuestionPool'
             )
             ->getPluginSlotById(

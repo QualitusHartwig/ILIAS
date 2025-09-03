@@ -61,7 +61,7 @@ class ilRisParserTest extends TestCase
         $content = $reader->parseContent();
 
         $this->assertIsArray($content);
-        $this->assertEquals(2, count($content));
+        $this->assertCount(2, $content);
 
         // First item
         $first_item = $content[0];
@@ -107,23 +107,25 @@ class ilRisParserTest extends TestCase
 
         $ilBiblEntryFactory->expects($this->atLeast(2))
                            ->method('getEmptyInstance')
-                           ->willReturnOnConsecutiveCalls(new ilBiblEntry(), new ilBiblEntry());
+                           ->willReturnOnConsecutiveCalls($one = new ilBiblEntry(), $two = new ilBiblEntry());
 
 
         $content = $reader->parseContentToEntries($ilObjBibliographic);
 
         $this->assertIsArray($content);
-        $this->assertEquals(2, count($content));
+        $this->assertCount(2, $content);
         $this->assertContainsOnlyInstancesOf(ilBiblEntry::class, $content);
 
         // First item
         /** @var ilBiblEntry $first_item */
         $first_item = $content[0];
         $this->assertEquals('BOOK', $first_item->getType());
+        $this->assertSame($one, $first_item);
         // Second Item
         /** @var ilBiblEntry $second_item */
         $second_item = $content[1];
         $this->assertEquals('JOURNAL', $second_item->getType());
+        $this->assertSame($two, $second_item);
     }
 
     protected function getRisContent(): string

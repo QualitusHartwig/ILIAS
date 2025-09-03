@@ -1220,6 +1220,7 @@ assessment#:#save_on_navigation_confirmation#:#Your changed answers will be auto
 assessment#:#save_on_navigation_forced_feedback_hint#:#Before you get feedback on your given answer.###fau: testNav
 assessment#:#save_on_navigation_locked_confirmation#:#Your changed answers will be automatically saved and locked when you navigate.###fau: testNav
 assessment#:#saved_adjustment#:#Changes saved.
+assessment#:#score_anon#:#Score anonymously
 assessment#:#score_partsol_enabled#:#Activate Half-Point Scoring
 assessment#:#score_partsol_enabled_info#:#Usually the participant has to answer the question fully correct to get the configured points. With this option the participant gets the half of the configured points with at least three correct decisions.
 assessment#:#scored_pass#:#Scored Test Attempt
@@ -1340,12 +1341,12 @@ assessment#:#tst_activate_skill_service_desc#:#Supports the assignment of questi
 assessment#:#tst_activation_limited_visibility_info#:#Before and after the period during which the test is available,  the test's title will be displayed, but participants won’t be able to take the test. Access, including to tests already in progress, will be prevented once the period of availability has ended.
 assessment#:#tst_activation_online_info#:#Participants can take the test if it is ‘Online’.
 assessment#:#tst_add_quest_cont_edit_mode#:#Editor
-assessment#:#tst_add_quest_cont_edit_mode_IPE#:#Use plain text for questions and answers and ILIAS page editor for feedback and hints
-assessment#:#tst_add_quest_cont_edit_mode_IPE_info#:#No formatting of text in question and answers. No use of LaTex either. But feedback and hints can be reused when question is embedded in ILIAS learning module.
-assessment#:#tst_add_quest_cont_edit_mode_RTE#:#Use Rich-Text-Editor (TinyMCE) for editing questions and answers, feedbacks and hints
-assessment#:#tst_add_quest_cont_edit_mode_RTE_info#:#Allows text formatting of questions, answers, feedbacks and hints. But feedback and hints cannot be reused when question is embedded in ILIAS learning module.
+assessment#:#tst_add_quest_cont_edit_mode_IPE#:#Use plain text for questions and answers and ILIAS page editor for feedback
+assessment#:#tst_add_quest_cont_edit_mode_IPE_info#:#No formatting of text in question and answers. No use of LaTex either. But feedback can be reused when question is embedded in ILIAS learning module.
+assessment#:#tst_add_quest_cont_edit_mode_RTE#:#Use Rich-Text-Editor (TinyMCE) for editing questions and answers and feedbacks
+assessment#:#tst_add_quest_cont_edit_mode_RTE_info#:#Allows text formatting of questions, answers and feedbacks. But feedback cannot be reused when question is embedded in ILIAS learning module.
 assessment#:#tst_add_quest_cont_edit_mode_plain#:#Use plain text
-assessment#:#tst_add_quest_cont_edit_mode_plain_info#:#No formatting of text in question, answers, feedback, and hints.
+assessment#:#tst_add_quest_cont_edit_mode_plain_info#:#No formatting of text in question, answers and feedback.
 assessment#:#tst_addit_passes_blocked_after_passed_msg#:#You have passed the test. The test cannot be started again.
 assessment#:#tst_all_test_competences#:#All Test Competence
 assessment#:#tst_all_user_data_deleted#:#All user data for this test has been removed!
@@ -1514,8 +1515,6 @@ assessment#:#tst_highscore_anon#:#Without Names
 assessment#:#tst_highscore_anon_description#:#Ranking is displayed without listing the names of the other participants. This will be the case anyway if the test was taken anonymously.
 assessment#:#tst_highscore_description#:#Within the 'My Results'-tab participants are presented with a subtab 'Show Ranking'. On clicking it participants are presented with a league table on the performance in the test. You have to activate 'Access to Test Results', too in order to use this functionality.
 assessment#:#tst_highscore_enabled#:#Ranking
-assessment#:#tst_highscore_hints#:#Hints
-assessment#:#tst_highscore_hints_description#:#A column containing the requested hints will be included in the ranking.
 assessment#:#tst_highscore_mode#:#Mode
 assessment#:#tst_highscore_own_table#:#Participant's Own Rank
 assessment#:#tst_highscore_own_table_description#:#Participants are advised of their own position in the ranking.
@@ -1768,13 +1767,6 @@ assessment#:#tst_question_set_type_random#:#Random Set of Questions
 assessment#:#tst_question_set_type_random_desc#:#Each participant gets a different set of questions. Questions are randomly selected from one or more question pools.
 assessment#:#tst_question_title#:#Question Title
 assessment#:#tst_question_type#:#Question Type
-assessment#:#tst_questions_hints_table_cmd_save_order#:#Save Order
-assessment#:#tst_questions_hints_table_multicmd_cut_hint#:#Cut Hint to Ordering Clipboard
-assessment#:#tst_questions_hints_table_multicmd_delete_hint#:#Delete Hint(s)
-assessment#:#tst_questions_hints_table_multicmd_paste_hint_after#:#Append Hint to the Selected One
-assessment#:#tst_questions_hints_table_multicmd_paste_hint_before#:#Prepend Hint to the Selected One
-assessment#:#tst_questions_hints_toolbar_cmd_add_hint#:#Add Hint
-assessment#:#tst_questions_hints_toolbar_cmd_reset_ordering_clipboard#:#Reset Hint Ordering Clipboard
 assessment#:#tst_questions_inserted#:#Question(s) inserted!
 assessment#:#tst_questions_removed#:#Question(s) removed!
 assessment#:#tst_random_nr_of_questions#:#How many questions?
@@ -8583,6 +8575,7 @@ dcl#:#dcl_delete_fields#:#Delete Fields
 dcl#:#dcl_delete_fields_no_selection#:#Please select at least one field to delete
 dcl#:#dcl_delete_perm#:#Delete Entries
 dcl#:#dcl_delete_records#:#Delete Entries
+dcl#:#dcl_deleted_entries#:#Deleted Entries
 dcl#:#dcl_deleted_records#:#Successfully deleted %s Entries
 dcl#:#dcl_deprecated_copy#:#(Deprecated)
 dcl#:#dcl_desc#:#Descending ↓
@@ -8677,6 +8670,7 @@ dcl#:#dcl_msg_tableviews_delete_all#:#Could not delete: At least one View must e
 dcl#:#dcl_msg_tableviews_order_updated#:#Order of views updated
 dcl#:#dcl_multiple_selection#:#Multiple Selection
 dcl#:#dcl_new#:#Create New Data Collection
+dcl#:#dcl_new_entries#:#New Entries
 dcl#:#dcl_new_field#:#New Field
 dcl#:#dcl_new_table#:#New Table
 dcl#:#dcl_new_view#:#New View
@@ -8692,11 +8686,12 @@ dcl#:#dcl_no_such_reference#:#The following value is not available in the refere
 dcl#:#dcl_no_tableview_found#:#No visible tableview found!
 dcl#:#dcl_not_checked#:#Not checked.
 dcl#:#dcl_not_supported_in_import#:#This type of field is not supported in the import
-dcl#:#dcl_notification_activate_dcl#:#Activate Notification for Data Collection
+dcl#:#dcl_notification_activate#:#Activate Notification for Data Collection
 dcl#:#dcl_notification_activated#:#Notification Activated
-dcl#:#dcl_notification_deactivate_dcl#:#Deactivate Notification for Data Collection
+dcl#:#dcl_notification_deactivate#:#Deactivate Notification for Data Collection
 dcl#:#dcl_notification_deactivated#:#Notification Deactivated
 dcl#:#dcl_notification_info#:#Users can choose for themselves if they wish to activate notifications for their accounts.
+dcl#:#dcl_notification_settings#:#Notification Settings
 dcl#:#dcl_notimage_exception#:#The file has to be a picture.
 dcl#:#dcl_noturl_exception#:#Please enter a link (beginning with http:// or www.) or an e-mail address.
 dcl#:#dcl_number#:#Integer
@@ -8800,6 +8795,7 @@ dcl#:#dcl_unknown_exception#:#The value you entered is not valid.
 dcl#:#dcl_unknown_plugin#:#Unknown plugin type
 dcl#:#dcl_update_field#:#Update Field
 dcl#:#dcl_update_record#:#Update Entry
+dcl#:#dcl_updated_entries#:#Updated Entries
 dcl#:#dcl_url#:#Mandatory URL or E-Mail
 dcl#:#dcl_view_configuration#:#View Configuration
 dcl#:#dcl_view_own_records_perm#:#View Only Own Entries
@@ -17243,6 +17239,10 @@ ui#:#footer_link_groups#:#Footer Link-Groups
 ui#:#footer_links#:#Footer Links
 ui#:#footer_permanent_link#:#Footer Permanent Link
 ui#:#footer_texts#:#Footer Texts
+ui#:#image_alt_text#:#Alternate Text
+ui#:#image_purpose_decorative#:#Decorative Image
+ui#:#image_purpose_informative#:#Informative Image
+ui#:#image_purpose_user_defined#:#Image Purpose
 ui#:#label_fieldselection#:#Field Selection
 ui#:#label_fieldselection_refresh#:#Apply
 ui#:#label_modeviewcontrol#:#view mode
@@ -17280,6 +17280,8 @@ ui#:#ui_link_label#:#Label
 ui#:#ui_link_url#:#URL
 ui#:#ui_md_input_edit#:#Edit
 ui#:#ui_md_input_view#:#View
+ui#:#ui_nav_sequence_control_label#:#Sequence control for contents below
+ui#:#ui_nav_sequence_description#:#Used to navigate through this content or trigger actions and filters on the entire sequence.
 ui#:#ui_pagination_unlimited#:#Unlimited
 ui#:#ui_select_dropdown_label#:#Please select
 ui#:#ui_table_no_records#:#No records

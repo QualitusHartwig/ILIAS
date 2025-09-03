@@ -16,29 +16,21 @@
  *
  *********************************************************************/
 
-namespace ILIAS\Scripts\PHPStan\Rules;
+namespace ILIAS\StaticURL\Response;
 
-use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\Rule;
-use PhpParser\Node;
-use PHPStan\Analyser\Scope;
-use PHPStan\Rules\RuleErrorBuilder;
-
-class NoLegacyGlyphUsagesRule extends LegacyClassUsageRule implements Rule
+/**
+ * @author Fabian Schmid <fabian@sr.solutions>
+ */
+class CannotReach implements Response
 {
-    protected function getHumanReadableRuleName(): string
+    public function getURIPath(): ?string
     {
-        return 'Legacy Glyph Usages';
+        return null;
     }
 
-    protected function getRelevantILIASVersion(): int
+    public function targetCanBeReached(): bool
     {
-        return 10;
+        return true;
     }
 
-
-    protected function getForbiddenClasses(): array
-    {
-        return ['ilGlyphGUI'];
-    }
 }

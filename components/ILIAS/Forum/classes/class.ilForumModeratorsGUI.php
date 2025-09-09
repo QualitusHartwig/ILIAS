@@ -153,7 +153,7 @@ class ilForumModeratorsGUI implements ilCtrlSecurityInterface
         $tmp_frm_noti = new ilForumNotification($this->forum->getRefId());
 
         $participants_result = $need_participants
-            ? new \ILIAS\Data\Result\Ok(ilParticipants::getInstance($this->forum->getRefId()))
+            ? new \ILIAS\Data\Result\Ok($this->forum->parentParticipants())
             : new \ILIAS\Data\Result\Error("Participants not required for ref_id {$this->forum->getRefId()}");
 
         foreach ($usr_ids as $usr_id) {

@@ -63,7 +63,7 @@ class ilCertificateDateHelperTest extends ilCertificateBaseTestCase
             [null, 'No date'],
             ['2001-01-01', '1. Jan 2001'],
             ['2001-01-01 00:00:00', '1. Jan 2001'],
-            [20010101, '1. Jan 2001'],
+            [978307200, '1. Jan 2001'],
             [0, 'No date'],
             ['', 'No date'],
         ];
@@ -76,11 +76,30 @@ class ilCertificateDateHelperTest extends ilCertificateBaseTestCase
         $this->assertEquals($output, $helper->formatDate($input));
     }
 
-    public function doesNotChangeUseRelativeDates(): void
+    public static function dataProviderFormatDateTimeWithDateTimeFormat(): array
+    {
+        return [
+            [null, 'No date'],
+            ['2001-01-01 00:00:00', '1. Jan 2001, 01:00'],
+            [978307200, '1. Jan 2001, 01:00'],
+            [0, 'No date'],
+            ['', 'No date'],
+        ];
+    }
+
+    #[DataProvider('dataProviderFormatDateTimeWithDateTimeFormat')]
+    public function testFormatDateTimeWithDefaultFormat($input, $output): void
+    {
+        $helper = new ilCertificateDateHelper();
+        $this->assertEquals($output, $helper->formatDateTime($input));
+    }
+
+    public function testHelperDoesNotChangeUseRelativeDates(): void
     {
         $used_relative_dates = ilDatePresentation::useRelativeDates();
 
         $helper = new ilCertificateDateHelper();
+
         $helper->formatDate('2001-01-01');
         $this->assertEquals($used_relative_dates, ilDatePresentation::useRelativeDates());
 
@@ -95,57 +114,117 @@ class ilCertificateDateHelperTest extends ilCertificateBaseTestCase
         ilDatePresentation::setUseRelativeDates($used_relative_dates);
     }
 
-    public function testUnixFormatIsCastedToString(): void
+    public static function provideExplicitFormatCases(): array
     {
-        $helper = new ilCertificateDateHelper();
-        $this->assertEquals(
-            $helper->formatDate((string) $this->current_time, null, IL_CAL_UNIX),
-            $helper->formatDate($this->current_time, null, IL_CAL_UNIX)
-        );
-    }
+        $ts = 1757609100; // See snippet in: https://github.com/ILIAS-eLearning/ILIAS/pull/10084
 
-    public function testDateTimeFormatIsCastToInt(): void
-    {
-        $helper = new ilCertificateDateHelper();
-        $this->assertEquals(
-            $helper->formatDate('20010101', null, IL_CAL_DATE),
-            $helper->formatDate(20010101, null, IL_CAL_DATE)
-        );
-    }
+        class_exists('ilDateTime');
 
-    public function testFormatDateWithUnixFormat(): void
-    {
-        $helper = new ilCertificateDateHelper();
-        $this->assertEquals(
-            $helper->formatDate((string) $this->current_time, null, IL_CAL_UNIX),
-            $helper->formatDate($this->current_time, null, IL_CAL_UNIX)
-        );
-        $this->assertEquals('1. Jan 2024', $helper->formatDate(1704067200, null, IL_CAL_UNIX));
-        $this->assertNotEquals('Today', $helper->formatDate($this->current_time, null, IL_CAL_UNIX));
-    }
-
-    public static function dataProviderFormatDateTimeWithDateTimeFormat(): array
-    {
         return [
-            [null, 'No date'],
-            ['2001-01-01 00:00:00', '1. Jan 2001, 01:00'],
-            [20010101000000, '1. Jan 2001, 01:00'],
-            [0, 'No date'],
-            ['', 'No date'],
+            'date: unix-int ok' => ['date', $ts, IL_CAL_UNIX, null, 'unix timestamp (int) accepted for date'],
+            'date: unix-string ok' => [
+                'date',
+                (string) $ts,
+                IL_CAL_UNIX,
+                null,
+                'unix timestamp (string) accepted for date'
+            ],
+            'datetime: unix-int ok' => [
+                'datetime',
+                $ts,
+                IL_CAL_UNIX,
+                null,
+                'unix timestamp (int) accepted for datetime'
+            ],
+            'datetime: unix-string ok' => [
+                'datetime',
+                (string) $ts,
+                IL_CAL_UNIX,
+                null,
+                'unix timestamp (string) accepted for datetime'
+            ],
+
+            'date: negative-unix ok' => ['date', -1, IL_CAL_UNIX, null, 'negative unix timestamp accepted as int'],
+            'datetime: negative-unix ok' => [
+                'datetime',
+                -1,
+                IL_CAL_UNIX,
+                null,
+                'negative unix timestamp accepted as int'
+            ],
+
+            'date: date ok' => ['date', '2025-09-12', IL_CAL_DATE, null, 'valid date string'],
+            'datetime: datetime ok' => [
+                'datetime',
+                '2025-09-12 20:30:00',
+                IL_CAL_DATETIME,
+                null,
+                'valid date-time string'
+            ],
+            'date: YYYYMMDD ok' => ['date', '20250912', IL_CAL_DATE, null, 'numeric YYYYMMDD is not treated as unix'],
+
+            'date: unix-string with DATE throws' => [
+                'date',
+                (string) $ts,
+                IL_CAL_DATE,
+                InvalidArgumentException::class,
+                'unix-like string with DATE format should be rejected'
+            ],
+            'datetime: unix-string with DATETIME throws' => [
+                'datetime',
+                (string) $ts,
+                IL_CAL_DATETIME,
+                InvalidArgumentException::class,
+                'unix-like string with DATETIME format should be rejected'
+            ],
+            'date: date with UNIX throws' => [
+                'date',
+                '2025-09-12',
+                IL_CAL_UNIX,
+                InvalidArgumentException::class,
+                'non-numeric with UNIX should be rejected'
+            ],
+            'datetime: datetime with UNIX throws' => [
+                'datetime',
+                '2025-09-12 20:30:00',
+                IL_CAL_UNIX,
+                InvalidArgumentException::class,
+                'non-numeric with UNIX should be rejected'
+            ],
         ];
     }
 
-    #[DataProvider('dataProviderFormatDateTimeWithDateTimeFormat')]
-    public function testFormatDateTimeWithDefaultFormat($input, $output): void
-    {
+    /**
+     * @param int|string                   $input
+     * @param class-string<Throwable>|null $expected_exception
+     */
+    #[DataProvider('provideExplicitFormatCases')]
+    public function testExplicitFormatsWorkAsExpected(
+        string $method,
+        $input,
+        int $format,
+        ?string $expected_exception,
+        string $why
+    ): void {
         $helper = new ilCertificateDateHelper();
-        $this->assertEquals($output, $helper->formatDateTime($input));
+
+        $cb = static function () use ($helper, $method, $input, $format) {
+            return $method === 'date'
+                ? $helper->formatDate($input, null, $format)
+                : $helper->formatDateTime($input, null, $format);
+        };
+
+        if ($expected_exception === null) {
+            $this->assertDoesNotThrow($cb, $why);
+        } else {
+            $this->assertThrows($cb, $expected_exception, null);
+        }
     }
 
     /**
-     * @return array{'formatDateTime'|'formatDate', array{0: string}}
+     * @return array<string, array{0: string}>
      */
-    public static function invalidDateProvider(): array
+    public static function dateFormattingMethodsProvider(): array
     {
         return [
             'formatDateTime' => ['formatDateTime'],
@@ -153,37 +232,12 @@ class ilCertificateDateHelperTest extends ilCertificateBaseTestCase
         ];
     }
 
-    #[DataProvider('invalidDateProvider')]
-    public function testCannotFormatString(string $method): void
+    #[DataProvider('dateFormattingMethodsProvider')]
+    public function testCannotFormatNonDateString(string $method): void
     {
         $helper = new ilCertificateDateHelper();
         $this->expectExceptionMessage('Cannot parse date: invalid-date');
         $helper->$method('invalid-date');
-    }
-
-    public function testCannotParseTimestampWithDateTimeFormat(): void
-    {
-        $helper = new ilCertificateDateHelper();
-
-        $this->assertDoesNotThrow(
-            fn() => $helper->formatDate($this->current_time),
-            'formatDate should not throw for a valid timestamp'
-        );
-
-        $this->expectException(ilDateTimeException::class);
-        $this->expectExceptionMessage('Cannot parse date: ' . $this->current_time);
-        $helper->formatDateTime($this->current_time);
-    }
-
-    public function testFormatDateWithoutRelativeDates(): void
-    {
-        $helper = new ilCertificateDateHelper();
-        $this->assertNotEquals('Today', $helper->formatDateTime($this->current_time, null, IL_CAL_UNIX));
-
-        $used_relative_dates = ilDatePresentation::useRelativeDates();
-        ilDatePresentation::setUseRelativeDates(true);
-        $this->assertNotEquals('Today', $helper->formatDateTime($this->current_time, null, IL_CAL_UNIX));
-        ilDatePresentation::setUseRelativeDates($used_relative_dates);
     }
 
     #[RunInSeparateProcess]
@@ -210,7 +264,6 @@ class ilCertificateDateHelperTest extends ilCertificateBaseTestCase
                      ->disableOriginalConstructor()
                      ->onlyMethods(['getTimeFormat', 'getLanguage', 'getTimeZone'])
                      ->getMock();
-        $user->prefs = ['language' => 'de'];
         $user->method('getTimeFormat')->willReturn((string) ilCalendarSettings::TIME_FORMAT_24);
         $user->method('getLanguage')->willReturn('de');
         $user->method('getTimeZone')->willReturn(self::USER_TIME_ZONE);

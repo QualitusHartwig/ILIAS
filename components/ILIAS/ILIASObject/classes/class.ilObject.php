@@ -1700,8 +1700,6 @@ class ilObject
             );
 
             return $this->appendNumberOfCopiesToTitle(
-                $this->lng->txt('copy_of_suffix'),
-                $this->lng->txt('copy_n_of_suffix'),
                 $this->getTitle(),
                 $existing_titles
             );
@@ -1728,18 +1726,11 @@ class ilObject
 
         $installed_langs = $this->lng->getInstalledLanguages();
         foreach ($obj_translations->getLanguages() as $language) {
-            $lang_code = $language->getLanguageCode();
-            $suffix_lang = $lang_code;
-            if (!in_array($suffix_lang, $installed_langs)) {
-                $suffix_lang = $this->lng->getDefaultLanguage();
-            }
             $obj_translations = $obj_translations->withLanguage(
                 $language->withTitle(
                     $this->appendNumberOfCopiesToTitle(
-                        $this->lng->txtlng('common', 'copy_of_suffix', $suffix_lang),
-                        $this->lng->txtlng('common', 'copy_n_of_suffix', $suffix_lang),
                         $language->getTitle(),
-                        $title_translations_per_lang[$lang_code] ?? []
+                        $title_translations_per_lang[$language->getLanguageCode()] ?? []
                     )
                 )
             );
@@ -1765,20 +1756,16 @@ class ilObject
     }
 
     private function appendNumberOfCopiesToTitle(
-        string $copy_suffix,
-        string $copy_n_suffix,
         string $title,
         array $other_titles_for_lang
     ): string {
-        $title_without_suffix = $this->buildTitleWithoutCopySuffix($copy_suffix, $copy_n_suffix, $title);
-        $title_with_suffix = "{$title_without_suffix} {$copy_suffix}";
-        if ($other_titles_for_lang === []
-            || $this->isTitleUnique($title_with_suffix, $other_titles_for_lang)) {
-            return $title_with_suffix;
+        $title_without_suffix = $this->buildTitleWithoutCopySuffix($title);
+        if ($this->isTitleUnique($title_without_suffix, $other_titles_for_lang)) {
+            return $title_without_suffix;
         }
 
-        for ($i = 2;true;$i++) {
-            $title_with_suffix = $title_without_suffix . ' ' . sprintf($copy_n_suffix, $i);
+        for ($i = 1; true; $i++) {
+            $title_with_suffix = "{$title_without_suffix} ({$i})";
             if ($this->isTitleUnique($title_with_suffix, $other_titles_for_lang)) {
                 return $title_with_suffix;
             }
@@ -1795,34 +1782,10 @@ class ilObject
         return true;
     }
 
-    private function buildTitleWithoutCopySuffix(string $copy_suffix, string $copy_n_suffix, string $title): string
+    private function buildTitleWithoutCopySuffix(string $title): string
     {
-        /*
-         * create a regular expression from the language text copy_n_of_suffix, so that
-         * we can match it against $filenameWithoutExtension, and retrieve the number of the copy.
-         * for example, if copy_n_of_suffix is 'Copy (%1s)', this creates the regular
-         * expression '/ Copy \\([0-9]+)\\)$/'.
-         */
-        $regexp_for_suffix = preg_replace(
-            '/([\^$.\[\]|()?*+{}])/',
-            '\\\\${1}',
-            ' '
-            . $copy_n_suffix
-        );
-        $regexp_for_file_name = '/' . preg_replace('/%1\\\\\$s/', '([0-9]+)', $regexp_for_suffix) . '$/';
-
-        if (preg_match($regexp_for_file_name, $title, $matches)) {
+        if (preg_match('/ \((\d+)\)$/', $title, $matches)) {
             return substr($title, 0, -strlen($matches[0]));
-        }
-
-        if (str_ends_with($title, " {$copy_suffix}")) {
-            return substr(
-                $title,
-                0,
-                -strlen(
-                    " {$copy_suffix}"
-                )
-            );
         }
 
         return $title;

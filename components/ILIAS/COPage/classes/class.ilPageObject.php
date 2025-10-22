@@ -51,6 +51,7 @@ use ILIAS\MetaData\Services\ServicesInterface as LOMServices;
  */
 abstract class ilPageObject
 {
+    protected \ILIAS\COPage\InternalDomainService $domain;
     protected \ILIAS\COPage\Dom\DomUtil $dom_util;
     protected \ILIAS\COPage\Link\LinkManager $link;
     protected \ILIAS\COPage\PC\PCDefinition $pc_definition;
@@ -101,9 +102,9 @@ abstract class ilPageObject
     protected ?string $activationstart = null;      // IL_CAL_DATETIME format
     protected ?string $activationend = null;        // IL_CAL_DATETIME format
     protected \ILIAS\COPage\ReadingTime\ReadingTimeManager $reading_time_manager;
-    protected $concrete_lang = "";
+    protected string $concrete_lang = "";
     protected \ILIAS\COPage\ID\ContentIdManager $content_id_manager;
-    protected \ILIAS\COPage\Page\PageManager $page_manager;
+    protected \ILIAS\COPage\Page\PageManagerInterface $page_manager;
     protected \ILIAS\COPage\Style\StyleManager $style_manager;
     protected \ILIAS\COPage\PC\DomainService $pc_service;
 
@@ -113,11 +114,14 @@ abstract class ilPageObject
         string $a_lang = "-"
     ) {
         global $DIC;
-        $this->obj_definition = $DIC["objDefinition"];
+
+        $this->domain = $DIC->copage()->internal()->domain();
+
+        $this->obj_definition = $this->domain->objectDefinition();
         $this->db = $DIC->database();
-        $this->user = $DIC->user();
-        $this->lng = $DIC->language();
-        $this->tree = $DIC->repositoryTree();
+        $this->user = $this->domain->user();
+        $this->lng = $this->domain->lng();
+        $this->tree = $this->domain->repositoryTree();
         $this->log = ilLoggerFactory::getLogger('copg');
         $this->lom_services = $DIC->learningObjectMetadata();
 
@@ -182,8 +186,9 @@ abstract class ilPageObject
 
     public function initPageConfig(): void
     {
-        $cfg = ilPageObjectFactory::getConfigInstance($this->getParentType());
-        $this->setPageConfig($cfg);
+        $this->setPageConfig(
+            $this->domain->pageConfig($this->getParentType())
+        );
     }
 
     /**

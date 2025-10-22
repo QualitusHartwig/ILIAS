@@ -1368,7 +1368,9 @@ class ilInitialisation
 
         self::initGlobal(
             'user',
-            new UserPublicInterface($ilUser)
+            new UserPublicInterface($ilUser),
+            null,
+            true
         );
 
         $ilias->account = $ilUser;

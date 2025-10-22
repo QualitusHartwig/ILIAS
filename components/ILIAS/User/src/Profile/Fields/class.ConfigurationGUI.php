@@ -290,6 +290,10 @@ class ConfigurationGUI implements DataRetrieval
     private function getColumns(): array
     {
         $cf = $this->ui_factory->table()->column();
+        $icon_checked = $this->ui_factory->symbol()->icon()
+            ->custom('assets/images/standard/icon_checked.svg', '', 'small');
+        $icon_unchecked = $this->ui_factory->symbol()->icon()
+            ->custom('assets/images/standard/icon_unchecked.svg', '', 'small');
         return [
             'field' => $cf->text($this->lng->txt('user_field'))->withIsSortable(true),
             'type' => $cf->text($this->lng->txt('type'))
@@ -303,29 +307,29 @@ class ConfigurationGUI implements DataRetrieval
                 $this->lng->txt(
                     PropertyAttributes::Required->value
                 ),
-                $this->ui_factory->symbol()->glyph()->checked(),
-                $this->ui_factory->symbol()->glyph()->unchecked()
+                $icon_checked,
+                $icon_unchecked
             )->withIsSortable(true),
             'export' => $cf->boolean(
                 $this->lng->txt(
                     PropertyAttributes::Export->value
                 ),
-                $this->ui_factory->symbol()->glyph()->checked(),
-                $this->ui_factory->symbol()->glyph()->unchecked()
+                $icon_checked,
+                $icon_unchecked
             )->withIsSortable(true),
             'searchable' => $cf->boolean(
                 $this->lng->txt(
                     PropertyAttributes::Searchable->value
                 ),
-                $this->ui_factory->symbol()->glyph()->checked(),
-                $this->ui_factory->symbol()->glyph()->unchecked()
+                $icon_checked,
+                $icon_unchecked
             )->withIsSortable(true),
             'available_in_certificates' => $cf->boolean(
                 $this->lng->txt(
                     PropertyAttributes::AvailableInCertificates->value
                 ),
-                $this->ui_factory->symbol()->glyph()->checked(),
-                $this->ui_factory->symbol()->glyph()->unchecked()
+                $icon_checked,
+                $icon_unchecked
             )->withIsSortable(true)
         ];
     }

@@ -379,11 +379,10 @@ class ilObjUserGUI extends ilObjectGUI
 
         $msg = $this->lng->txt('user_added');
 
-        $this->user->setPref(
+        $this->user->writePref(
             'send_info_mails',
-            ($this->form_gui->getInput('send_mail') == 'y') ? 'y' : 'n'
+            $this->form_gui->getInput('send_mail') === 'y' ? 'y' : 'n'
         );
-        $this->user->writePrefs();
 
         if ($profile_maybe_incomplete
             && $this->user_profile->isProfileIncomplete($this->object)) {
@@ -428,12 +427,8 @@ class ilObjUserGUI extends ilObjectGUI
             $this->form_gui->setValuesByPost();
             $this->tabs_gui->activateTab('properties');
             $this->renderForm();
+            return;
         }
-        $this->object = $this->user_profile->addFormValuesToUser(
-            $this->form_gui,
-            $this->context,
-            $this->object
-        );
 
         try {
             $this->object->updateLogin($this->form_gui->getInput('username'));
@@ -443,6 +438,12 @@ class ilObjUserGUI extends ilObjectGUI
             $this->renderForm();
             return;
         }
+
+        $this->object = $this->user_profile->addFormValuesToUser(
+            $this->form_gui,
+            $this->context,
+            $this->object
+        );
 
         if ($this->user->getId() === (int) SYSTEM_USER_ID
             || !in_array(SYSTEM_ROLE_ID, $this->rbac_review->assignedRoles($this->object->getId()))
@@ -471,11 +472,10 @@ class ilObjUserGUI extends ilObjectGUI
         if ($this->user->getId() === $this->object->getId()) {
             $this->user = $this->object;
         }
-        $this->user->setPref(
+        $this->user->writePref(
             'send_info_mails',
             ($this->form_gui->getInput('send_mail') === 'y') ? 'y' : 'n'
         );
-        $this->user->writePrefs();
 
         $mail_message = $this->__sendProfileMail();
         $msg = $this->lng->txt('saved_successfully') . $mail_message;

@@ -552,7 +552,7 @@ assessment#:#average_reached_points#:#Durchschnittlich erreichte Punktezahl
 assessment#:#back_to_objective_container#:#Zurück zum Kurs
 assessment#:#backtocallingpage#:#Zurück zur Fragenseite
 assessment#:#backtocallingpool#:#Zurück zum Fragenpool
-assessment#:#backtocallingtest#:#Zurück zum Test
+assessment#:#backtocallingtest#:#Zurück zur Fragenliste
 assessment#:#baseunit#:#Basiseinheit
 assessment#:#broken_test#:#Kaputtes Test-Objekt
 assessment#:#bulkedit_author#:#Autor ändern
@@ -900,8 +900,6 @@ assessment#:#logs_wrong_test_password_provided#:#Teilnehmer hat falsches Testpas
 assessment#:#longmenu#:#Longmenu
 assessment#:#longmenu_answeroptions_differ#:#Diese Frage funktioniert nicht richtig, denn sie hat nicht die gleiche Anzahl Lücken im Text wie in den Antwortoptionen.
 assessment#:#longmenu_text#:#„Long Menu“-Text
-assessment#:#mailnottype#:#Ein Versand findet auch beim Beenden einzelner Testdurchläufe statt
-assessment#:#mailnottype_desc#:#Der Besitzer des Tests wird auch dann benachrichtigt, wenn die Anzahl Durchläufe nicht beschränkt ist.
 assessment#:#mainbar_button_label_questionlist#:#Fragenliste
 assessment#:#maintenance#:#Wartung
 assessment#:#manscoring#:#Manuelle Bewertung
@@ -1173,9 +1171,12 @@ assessment#:#rectangle_click_tl_corner#:#Bitte klicken Sie auf die obere linke E
 assessment#:#redirectAfterSave#:#Die maximale Bearbeitungszeit für diesen Test wurde erreicht. In wenigen Sekunden werden Sie weitergeleitet...
 assessment#:#redirect_after_finishing_rule#:#Weiterleitung
 assessment#:#redirect_after_finishing_tst#:#Weiterleitung
-assessment#:#redirect_after_finishing_tst_desc#:#Teilnehmer werden nach Beenden des Tests automatisch zu einer definierten Webseite weitergeleitet. Dies geschieht nur, wenn der Test so konfiguriert wurde, dass die Teilnehmer ihre Testergebnisse nach Beenden des Tests nicht einsehen können. Wenn Sie die Adresse einer externen Webseite eingeben, verwenden Sie die vollständige URL (einschließlich „https://”). Wenn Sie zu einem Objekt in ILIAS weiterleiten, verwenden Sie den Permalink, der in der Fußzeile des betreffenden Objekts zu finden ist.
-assessment#:#redirect_always#:#immer zur definierten Zielseite
-assessment#:#redirect_in_kiosk_mode#:#nur bei aktivierter Prüfungsansicht
+assessment#:#redirect_after_finishing_tst_desc#:#Teilnehmer werden nach Beenden des Tests automatisch zu einer definierten Webseite weitergeleitet. Dies geschieht nur, wenn der Test so konfiguriert wurde, dass die Teilnehmer ihre Testergebnisse nach Beenden des Tests nicht einsehen können. Wenn Sie die Adresse einer externen Webseite eingeben, verwenden Sie die vollständige URL (einschließlich "https://"). Wenn Sie zu einem Objekt in ILIAS weiterleiten, verwenden Sie den Permalink, der in der Fußzeile des betreffenden Objekts zu finden ist.
+assessment#:#redirect_always#:#Immer zur definierten Zielseite
+assessment#:#redirect_always_to_logout#:#Immer zum Abmeldebildschirm
+assessment#:#redirect_in_kiosk_mode#:#Bei aktivierten Prüfungsansicht zur definierten Zielseite
+assessment#:#redirect_url_invalid#:#Bitte geben Sie eine gültige URL zur Zielseite an.
+assessment#:#redirect_url_required_for_rule#:#Die URL der Zielseite muss angegeben werden, wenn "%s" ausgewählt ist.
 assessment#:#redirection_url#:#URL Zielseite
 assessment#:#region#:#Region
 assessment#:#remaining_duration#:#Restdauer
@@ -1229,6 +1230,7 @@ assessment#:#search_roles#:#nach Rollen
 assessment#:#search_term#:#Suchbegriff
 assessment#:#search_users#:#nach Benutzern
 assessment#:#select_at_least_one_feedback_type_and_trigger#:#Bitte mindestens eine Art der Rückmeldung und einen Auslöser auswählen.
+assessment#:#select_at_least_one_lock_answer_type#:#Bitte mindestens eine Art Antworten festzuschreiben auswählen.
 assessment#:#select_gap#:#Auswahl-Lücke
 assessment#:#select_max_one_item#:#Bitte wählen Sie nur ein Objekt aus!
 assessment#:#select_one_user#:#Bitte wählen Sie mindestens einen Benutzer aus!
@@ -1358,6 +1360,7 @@ assessment#:#tst_anonymity_no_anonymization#:#Testergebnisse mit Namen
 assessment#:#tst_answer_aggr_answer_header#:#Antwort
 assessment#:#tst_answer_aggr_frequency_header#:#Häufigkeit
 assessment#:#tst_answer_details#:#Antwortdetails
+assessment#:#tst_answer_fixation#:#Antworten festschreiben
 assessment#:#tst_answer_fixation_handling#:#Teilnehmerantworten
 assessment#:#tst_answer_fixation_none#:#Antworten während des Testdurchlaufs nicht festschreiben
 assessment#:#tst_answer_fixation_none_desc#:#Solange ein Testdurchlauf nicht beendet ist, können Teilnehmer ihre Antworten beliebig verändern.
@@ -1418,7 +1421,7 @@ assessment#:#tst_count_correct_solutions#:#Nur vollständig richtig beantwortete
 assessment#:#tst_count_correct_solutions_desc#:#Vollständige und richtige Antworten erhalten die maximale Punktzahl. In allen anderen Fällen gibt es 0 Punkte. Dies gilt auch für Fragen, die Punkte für Teilantworten vorsehen.
 assessment#:#tst_count_partial_solutions#:#Auch teilweise falsch beantwortete Fragen ergeben Punkte
 assessment#:#tst_count_partial_solutions_desc#:#Bei einigen Fragetypen können für korrekt gegebene Teilantworten Punkte erzielt werden. Diese werden aufsummiert. Dies betrifft die Fragetypen Multiple Choice, KPrim, Mehrfachauswahl in Imagemaps, Fehler / Worte markieren und Zuordnungsfrage.
-assessment#:#tst_current_run_no_longer_valid#:#Ihr aktueller Testdurchlauf ist nicht mehr gültig. <br>Er wurde wahrscheinlich bereits abgeschlossen oder von einem Tutor beendet.
+assessment#:#tst_current_run_no_longer_valid#:#Ihr aktueller Testdurchlauf ist nicht mehr gültig. <br>Er wurde wahrscheinlich bereits abgeschlossen oder von den Testverantwortlichen beendet.
 assessment#:#tst_default_settings#:#Persönliche Standardeinstellungen
 assessment#:#tst_defaults_applied#:#Die ausgewählten Standardeinstellungen wurden angewendet.
 assessment#:#tst_defaults_apply_not_possible#:#ILIAS konnte die ausgewählten Standardeinstellungen nicht auf diesen Test anwenden! Eventuell enthält dieser Test bereits Teilnehmerdatensätze, die verhindern, dass bestimmte Standardeinstellungen übernommen werden können.
@@ -1487,12 +1490,7 @@ assessment#:#tst_finish_confirm_button#:#Ja, ich will den Test beenden
 assessment#:#tst_finish_confirm_cancel_button#:#Nein, ich will zur letzten Antwort zurückgehen
 assessment#:#tst_finish_confirmation_question#:#Sie sind dabei, diesen Test zu beenden. Danach werden Sie nicht mehr in der Lage sein, den Test erneut aufzurufen, um Ihre Antworten zu ändern. Wollen Sie den Test wirklich beenden?
 assessment#:#tst_finish_confirmation_question_no_attempts_left#:#Sie sind dabei, diesen Test zu beenden und die maximale Anzahl erlaubter Testdurchläufe zu erreichen. Danach werden Sie nicht mehr in der Lage sein, den Test erneut aufzurufen, um Ihre Antworten zu ändern. Wollen Sie den Test wirklich beenden?
-assessment#:#tst_finish_notification#:#Benachrichtigung
-assessment#:#tst_finish_notification_advanced#:#Komplettes Testergebnis pro Benutzer
-assessment#:#tst_finish_notification_content_type#:#Inhalt der Benachrichtigung
-assessment#:#tst_finish_notification_desc#:#Für jede Person, die einen Test beendet, wird eine Mail versendet. Die Mail wird an den Benutzer versendet, welcher im Reiter „Rechte“ unter „Im Besitz von“ eingetragen ist. Die Mail enthält die folgenden Informationen:
 assessment#:#tst_finish_notification_no#:#Keine Benachrichtigung
-assessment#:#tst_finish_notification_simple#:#Nur Anmeldename und Datum des Beendens
 assessment#:#tst_finished#:#Beendet
 assessment#:#tst_form_dynamic_question_set_config#:#Fortlaufende Fragenauswahl
 assessment#:#tst_gap_analysis#:#Gap-Analyse
@@ -1500,7 +1498,6 @@ assessment#:#tst_general_properties#:#Einstellungen des Tests
 assessment#:#tst_header_participant#:#Frage und Ihre Antwort:
 assessment#:#tst_header_participant_no_answer#:#Frage - nicht beantwortet:
 assessment#:#tst_header_solution#:#Bestmögliche Lösung:
-assessment#:#tst_heading_scoring#:#Bewertung
 assessment#:#tst_hide_info_tab#:#Info-Tab ausblenden
 assessment#:#tst_hide_info_tab_desc#:#Blendet den Tab „Info“ des Tests aus.
 assessment#:#tst_hide_pagecontents#:#Seiteninhalte ausblenden
@@ -1565,7 +1562,6 @@ assessment#:#tst_instant_feedback_answer_specific#:#Unterschiedliche Rückmeldun
 assessment#:#tst_instant_feedback_answer_specific_desc#:#Bei Anklicken des 'Rückmeldung anfordern'-Buttons zeigt ILIAS zu jeder abgegebenen Antwort die jeweils hinterlegte  Rückmeldung an. Nicht alle Fragetypen unterstützen diese Art von Rückmeldungen. Die Rückmeldungen müssen bei der Frage im Reiter „Rückmeldung“ hinterlegt werden.
 assessment#:#tst_instant_feedback_contents#:#Inhalte der Rückmeldung
 assessment#:#tst_instant_feedback_desc#:#Sofern Fragen mit Rückmeldungen versehen sind, stehen diese den Teilnehmern während des Tests zur Verfügung.
-assessment#:#tst_instant_feedback_forced#:#Rückmeldung immer beim Einreichen einer Antwort anzeigen
 assessment#:#tst_instant_feedback_results#:#Erreichte Punkte
 assessment#:#tst_instant_feedback_results_desc#:#Klicken Teilnehmer beim Beantworten einer Frage auf den Button „Rückmeldung anfordern“ zeigt ILIAS an, wie viele Punkte für die gegebene Antwort erreichen wurden.
 assessment#:#tst_instant_feedback_solution#:#Bestmögliche Lösung anzeigen
@@ -1654,7 +1650,6 @@ assessment#:#tst_no_marks_defined#:#Es sind keine Noten definiert. Bitte erzeuge
 assessment#:#tst_no_question_selected_for_moving_to_qpl#:#Bitte wählen Sie wenigstens eine Frage aus, die Sie in einen Fragenpool überführen möchten!
 assessment#:#tst_no_question_selected_for_removal#:#Bitte wählen Sie wenigstens eine Frage zum Entfernen aus!
 assessment#:#tst_no_scorable_qst_available#:#Keine manuell bewertbare Frage verfügbar
-assessment#:#tst_no_tries#:#keine
 assessment#:#tst_non_avail_pool_msg_status_lost#:#<b>Dieser Fragenpool steht nicht mehr zur Verfügung.</b><br />Eine Synchronisierung von Fragen aus diesem Pool ist nicht mehr möglich. Sie können aus den im Test bereits befindlichen Fragen einen neuen Fragenpool ableiten.
 assessment#:#tst_non_avail_pool_msg_status_trashed#:#<b>Der Fragenpool liegt im Papierkorb.</b><br />Sollte er permanent vom System entfernt werden kann der Test die Fragen aus diesem Pool nicht erneut synchronisieren.
 assessment#:#tst_non_avail_pools_table#:#Nicht verfügbare Fragenpools
@@ -1667,7 +1662,6 @@ assessment#:#tst_notify_manscoring_done_body_msg_topic#:#die manuelle Bewertung 
 assessment#:#tst_nr_of_passes#:#Anzahl der Testdurchläufe
 assessment#:#tst_nr_of_tries#:#Maximale Anzahl von Testdurchläufen
 assessment#:#tst_nr_of_tries_desc#:#Maximale Anzahl der Testdurchläufe, die ein Teilnehmer absolvieren kann.
-assessment#:#tst_nr_of_tries_of_user#:#Bereits durchgeführte Testdurchläufe
 assessment#:#tst_num_all_questions#:#Anzahl aller Fragen
 assessment#:#tst_num_correct_answered_questions#:#Richtig beantwortet
 assessment#:#tst_num_non_answered_questions_notseen#:#Noch nicht angesehen
@@ -1845,16 +1839,10 @@ assessment#:#tst_score_cut_question_desc#:#Bei der Vergabe negativer Punkte für
 assessment#:#tst_score_cut_test#:#Eine Frage kann auch ein negatives Punkteergebnis haben.
 assessment#:#tst_score_cut_test_desc#:#Es können pro Frage Minuspunkte erzielt werden. Die Punktestände aller Fragen werden aufsummiert und erst wenn diese Summe noch negativ ist, wird das Gesamtergebnis des Tests auf 0 Punkte gesetzt. Ganz oder teilweise falsch beantwortete Fragen fallen damit sehr stark ins Gewicht.
 assessment#:#tst_score_cutting#:#Negative Punkte
-assessment#:#tst_score_reporting#:#Ergebnisausgabe
-assessment#:#tst_score_reporting_date#:#Datum der Ergebnisausgabe
 assessment#:#tst_search_users#:#Teilnehmer suchen
 assessment#:#tst_select_questionpool#:#Bitte wählen Sie einen Fragenpool aus, in dem Sie die erstellte Frage ablegen!
 assessment#:#tst_selected_user_data_deleted#:#Die Testdaten der ausgewählten Benutzer wurden erfolgreich gelöscht.
-assessment#:#tst_sequence#:#Reihenfolge
-assessment#:#tst_sequence_fixed#:#Die Reihenfolge der Fragen muss eingehalten werden.
-assessment#:#tst_sequence_postpone#:#Fragen können an das Ende eines Testdurchlaufs zurückgestellt werden.
 assessment#:#tst_sequence_properties#:#Durchführung: Funktionen für Teilnehmer
-assessment#:#tst_session_settings#:#Durchführung
 assessment#:#tst_set_offline_due_to_switched_question_set_type_setting#:#Der Test wurde offline gesetzt, da sich die Einstellung zur Auswahl der Testfragen geändert hat. Weisen Sie dem Test wieder Fragen zu. Anschließend können Sie den Test wieder online setzen.
 assessment#:#tst_settings_conflict_postpone_and_lock#:#„Nicht beantwortete Fragen werden ans Testende geschoben“ kann nicht zusammen mit „Antworten bei Anzeige der Folgefrage festschreiben“ verwendet werden.
 assessment#:#tst_settings_conflict_shuffle_and_lock#:#„Fragen mischen“ kann nicht zusammen mit „Antworten bei Anzeige der Folgefrage festschreiben“ verwendet werden.
@@ -2825,7 +2813,7 @@ certificate#:#certificate_short_name_description#:#Bitte geben Sie einen Kurztit
 certificate#:#certificate_text#:#Text des Zertifikats
 certificate#:#certificate_text_info#:#Bitte geben Sie hier den Text des Zertifikats ein. Falls der WYSIWYG-Edtior in der ILIAS-Administration deaktiviert wurde, können Sie hier dennoch gültiges XHTML zur Formatierung nutzen.<br><br>
 certificate#:#certificate_unit_description#:#Geben Sie Maße immer in der Form WERT[cm|mm|in|pt|pc|px|em] an, d.h. 10mm oder 3in
-certificate#:#certificate_usage#:#Bitte beachten Sie, dass die Verwendung und Erstellung von Zertifikaten nur möglich ist, wenn Sie den Java-Server von ILIAS verwenden. Der Java-Server wird in der Hauptseite der Administration in der Kategorie Web-Services konfiguriert und ist unter anderem für die Generierung von PDF-Dateien erforderlich.
+certificate#:#certificate_usage#:#Bitte beachten Sie, dass die Verwendung und Erstellung von Zertifikaten nur möglich ist, wenn Sie den Java-Server von ILIAS verwenden. Der Java-Server wird durch Angabe von Netzwerk-Host und -Port über das ILIAS-Setup konfiguriert und ist unter anderem für die Generierung von PDF-Dateien erforderlich.
 certificate#:#certificate_var_max_points#:#Maximale Punktzahl im verwendeten Test
 certificate#:#certificate_var_result_mark_long#:#Erreichte Note in der Form 'Offizielle Bezeichnung'
 certificate#:#certificate_var_result_mark_short#:#Erreichte Note in der Form 'Kurzbezeichnung'
@@ -3018,7 +3006,8 @@ chatroom#:#preferred_chatname#:#Gewünschter Name
 chatroom#:#public_chat_created#:#Es wurde ein neuer öffentlicher Chatraum im Magazin angelegt.
 chatroom#:#scope#:#Raum
 chatroom#:#select_custom_username#:#Angezeigter Name im Chat
-chatroom#:#server_further_information#:#Weitere Informationen zur Konfiguration des Servers finden Sie in der <a href="%1$s" target="_blank">Readme-Datei</a>.
+chatroom#:#server_further_information#:#Weitere Informationen zur Konfiguration des Servers finden Sie in der Readme-Datei.
+chatroom#:#server_readme_file_btn_label#:#Readme-Datei
 chatroom#:#session#:#Sitzung
 chatroom#:#settings_general#:#Allgemein
 chatroom#:#settings_title#:#Einstellungen des Chats
@@ -3795,7 +3784,7 @@ common#:#cron_forum_notification_crob_desc#:#Wenn aktiviert, sendet ILIAS tägli
 common#:#cron_forum_notification_disabled#:#Kann nicht deaktiviert werden, wenn der Cron-Job aktiv ist.
 common#:#cron_jobs#:#Cron-Jobs
 common#:#cron_lucene_index#:#Lucene-Suchindex aktualisieren
-common#:#cron_lucene_index_info#:#Wenn eingeschaltet, wird der Lucene-Suchindex aktualisiert. Bitte konfigurieren Sie vorher den Lucene-Server in der Administration unter „Suchen und finden » Suche“, Reiter „Lucene“.
+common#:#cron_lucene_index_info#:#Startet die Aktualisierung des Lucene-Suchindexes, der neue Inhalte erfasst. Achtung: Dies erzeugt Serverlast und kann abhängig von der Installationsgröße mehrere Stunden dauern. Bitte konfigurieren Sie den Lucene-Server unter Administration > Suchen und finden > Suche > Lucene. Prüfen Sie am Fuß der Seite unter „Letzte Indexerstellung“, ob der Index einen aktuellen Zeitstempel hat.
 common#:#cron_mail_notification#:#E-Mail-Benachrichtigungen für neue Nachrichten versenden
 common#:#cron_mail_notification_cron#:#Regelmäßig per Cron-Job
 common#:#cron_mail_notification_desc#:#ILIAS verschickt auf Wunsch E-Mail-Benachrichtigungen über neue Mails. Im Gegensatz zur sofortigen Weiterleitung aller Mails sammelt dieser Cronjob die Mails eines Tages und stellt diese als Paket zu. Bitte aktivieren Sie die Option „%s“, um diese Funktion zu nutzen. Zusätzlich müssen die E-Mail-Benachrichtigungen für jedes ILIAS-Konto in den persönlichen Mail-Einstellungen aktiviert werden.
@@ -4328,7 +4317,7 @@ common#:#il_lso_member#:#Lernsequenzmitglied
 common#:#il_lti_instructor#:#LTI Instructor
 common#:#il_lti_learner#:#LTI Learner
 common#:#il_lti_user#:#LTI User
-common#:#il_orgu_employee#:#Mitarbeiter
+common#:#il_orgu_employee#:#Team
 common#:#il_orgu_superior#:#Vorgesetzte Führungskraft
 common#:#ilias_version#:#ILIAS-Version
 common#:#image#:#Bild
@@ -4412,7 +4401,7 @@ common#:#itgr_add#:#Objekteblock anlegen
 common#:#itgr_new#:#Neuen Objekteblock anlegen
 common#:#java_server#:#Java-Server
 common#:#java_server_host#:#Host
-common#:#java_server_info#:#Diese indexbasierte Suchart durchsucht sowohl die ILIAS-Datenbank als auch Dateien. Sie wird für größere ILIAS-Installationen empfohlen. Um die Lucene-Suche in ILIAS verwenden zu können, muss der JAVA-basierte ilServer installiert und konfiguriert sein (siehe Reiter „Lucene“).
+common#:#java_server_info#:#Es wird ein Suchindex der ILIAS-Datenbank samt enthaltener Dateien und Objekte erstellt. Um die Lucene-Suche verwenden zu können, muss der JAVA-basierte ilServer installiert und konfiguriert sein: siehe Reiter „Lucene“.
 common#:#java_server_port#:#Port
 common#:#java_server_readme#:#Zur Installationsanleitung
 common#:#join#:#Beitreten
@@ -4653,7 +4642,7 @@ common#:#mm_repo_tree_view_act#:#Baumansicht an
 common#:#mm_repo_tree_view_deact#:#Baumansicht aus
 common#:#mm_repository#:#Magazin
 common#:#mm_skills#:#Kompetenzen
-common#:#mm_staff_list#:#Mitarbeiterliste
+common#:#mm_staff_list#:#Teammitglieder
 common#:#mm_tags#:#Tags
 common#:#mm_task_derived_tasks#:#To-Dos
 common#:#mme_lost_item_reason#:#Eintrag wird nicht mehr angeboten.
@@ -4729,19 +4718,19 @@ common#:#msg_no_files_selected#:#Keine Dateien ausgewählt
 common#:#msg_no_language_selected#:#Angabe einer Übersetzungsprache fehlt! Sie müssen für alle Übersetzungen eine Sprache bestimmen.
 common#:#msg_no_perm_assign_role_to_user#:#Sie haben keine Berechtigung die Rollenzuweisung des Kontos zu ändern.
 common#:#msg_no_perm_assign_user_to_role#:#Sie habe keine Berechtigung, um die Kontenzuweisung zu ändern.
-common#:#msg_no_perm_copy#:#Sie besitzen keine ausreichende Berechtigung, die folgenden Objekte zu kopieren:
-common#:#msg_no_perm_create_rolt#:#Sie besitzen keine ausreichende Berechtigung um neue Rollenvorlagen anzulegen!
-common#:#msg_no_perm_cut#:#Sie besitzen keine ausreichende Berechtigung die folgenden Objekte auszuschneiden:
-common#:#msg_no_perm_delete#:#Sie besitzen keine ausreichende Berechtigung die folgenden Objekte zu löschen:
-common#:#msg_no_perm_link#:#Sie besitzen keine ausreichende Berechtigung eine Verknüpfung für die folgenden Objekte zu erstellen:
-common#:#msg_no_perm_modify_rolt#:#Sie besitzen keine ausreichende Berechtigung um Rollenvorlagen zu ändern.
-common#:#msg_no_perm_modify_user#:#Sie besitzen keine ausreichende Berechtigung um Benutzerdaten zu ändern.
-common#:#msg_no_perm_paste#:#Sie besitzen keine ausreichende Berechtigung, um die folgenden Objekte einzufügen:
-common#:#msg_no_perm_paste_object_in_folder#:#Sie besitzen keine ausreichende Berechtigung, um das Objekt %s in den Ordner %s einzufügen.
-common#:#msg_no_perm_perm#:#Sie besitzen keine ausreichende Berechtigung, um auf die Rechteeinstellungen zuzugreifen.
-common#:#msg_no_perm_read#:#Sie besitzen keine ausreichende Berechtigung, um auf dieses Objekt zuzugreifen.
+common#:#msg_no_perm_copy#:#Ihnen fehlt die Berechtigung, die folgenden Objekte zu kopieren:
+common#:#msg_no_perm_create_rolt#:#Ihnen fehlt die Berechtigung, um neue Rollenvorlagen anzulegen!
+common#:#msg_no_perm_cut#:#Ihnen fehlt die Berechtigung, die folgenden Objekte auszuschneiden:
+common#:#msg_no_perm_delete#:#Ihnen fehlt die Berechtigung, die folgenden Objekte zu löschen:
+common#:#msg_no_perm_link#:#Ihnen fehlt die Berechtigung, eine Verknüpfung für die folgenden Objekte zu erstellen:
+common#:#msg_no_perm_modify_rolt#:#Ihnen fehlt die Berechtigung, um Rollenvorlagen zu ändern.
+common#:#msg_no_perm_modify_user#:#Ihnen fehlt die Berechtigung, diese Daten zu ändern!
+common#:#msg_no_perm_paste#:#Ihnen fehlt die Berechtigung, um die folgenden Objekte einzufügen:
+common#:#msg_no_perm_paste_object_in_folder#:#Ihnen fehlt die Berechtigung, um das Objekt %s in den Ordner %s einzufügen.
+common#:#msg_no_perm_perm#:#Ihnen fehlt die Berechtigung, um auf die Rechteeinstellungen zuzugreifen.
+common#:#msg_no_perm_read#:#Ihnen fehlt die Berechtigung, um auf dieses Objekt zuzugreifen.
 common#:#msg_no_perm_read_item#:#Sie haben keine Berechtigung, auf das Objekt „%s“ zuzugreifen.
-common#:#msg_no_perm_read_lm#:#Sie besitzen keine ausreichende Berechtigung, um diese Lernmodul anzuzeigen.
+common#:#msg_no_perm_read_lm#:#Ihnen fehlt die Berechtigung, um diese Lernmodul anzuzeigen.
 common#:#msg_no_perm_view_roles_of_user#:#Sie haben keine Berechtigung, auf die Rollenzuweisung des Kontos zuzugreifen
 common#:#msg_no_perm_write#:#Sie besitzen keine Rechte, um Einstellungen zu ändern!
 common#:#msg_no_search_result#:#Keine Einträge gefunden
@@ -4757,7 +4746,7 @@ common#:#msg_obj_may_not_contain_objects_of_type#:#Das Objekt %s darf keine Obje
 common#:#msg_obj_modified#:#Änderungen gespeichert
 common#:#msg_obj_no_download#:#können nicht heruntergeladen werden.
 common#:#msg_obj_no_link#:#Das Verknüpfen von Containerobjekten wie Kategorien, Kursen, Gruppen und Ordnern ist aus technischen Gründen leider nicht möglich. Verknüpfen Sie stattdessen die einzelnen Objekte der Container zum gewünschten Ort oder verwenden die Objekttypen Kategorienlink, Kurslink bzw. Gruppenlink.
-common#:#msg_obj_perm_download#:#Sie besitzen keine ausreichende Berechtigung um folgenden Objekte herunterzuladen:
+common#:#msg_obj_perm_download#:#Ihnen fehlt die Berechtigung, um folgenden Objekte herunterzuladen:
 common#:#msg_paste_object_not_in_itself#:#Es ist nicht möglich, das Objekt „%s“ in sich selbst einzufügen.
 common#:#msg_perm_adopted_from1#:#Rechteeinstellungen übernommen von
 common#:#msg_perm_adopted_from2#:#(Die Einstellungen wurden gespeichert!)
@@ -4782,7 +4771,7 @@ common#:#my_certificates#:#Meine Zertifikate
 common#:#my_contacts#:#Meine Kontakte
 common#:#my_courses#:#Meine Kurse
 common#:#my_courses_groups#:#Meine Kurse und Gruppen
-common#:#my_staff#:#Mitarbeiter
+common#:#my_staff#:#Team
 common#:#name#:#Name
 common#:#nc_contact_requests_headline#:#Kontaktanfragen
 common#:#nc_contact_requests_number_p#:#Sie haben %s Kontaktanfragen.
@@ -4796,7 +4785,7 @@ common#:#newline#:#Zeilenumbruch
 common#:#news#:#Neuigkeiten
 common#:#next#:#weiter
 common#:#no#:#Nein
-common#:#no_access_item#:#Sie besitzen keine ausreichende Berechtigung, um auf dieses Objekt zuzugreifen.
+common#:#no_access_item#:#Ihnen fehlt die Berechtigung, um auf dieses Objekt zuzugreifen.
 common#:#no_access_item_public#:#Um dieses Objekt zu nutzen, müssen Sie angemeldet sein und entsprechende Zugriffsrechte besitzen.
 common#:#no_accessibility_control_concept_description#:#Aktuell wird in dieser Installation keine Info zur Barrierefreiheit angeboten. Bitte kontaktieren Sie die <a href="%1$s">Anlaufstelle für Barrierefreiheit</a> für weitere Informationen.
 common#:#no_checkbox#:#Sie haben keine Auswahl getroffen.
@@ -4808,7 +4797,6 @@ common#:#no_import_file_found#:#Keine Importdatei gefunden
 common#:#no_items#:#Keine Einträge
 common#:#no_limit#:#Kein Limit
 common#:#no_mkisofs_configured#:#Sie müssen das mkisofs Tool im ILIAS-Setup konfigurieren, um den ISO-Export ausführen zu können.
-common#:#no_owner#:#Kein Besitzer
 common#:#no_parent_access#:#Kein Zugriff auf ein übergeordnetes Objekt!
 common#:#no_permission#:#Sie haben nicht die entsprechenden Zugriffsrechte!
 common#:#no_roles_user_can_be_assigned_to#:#Sie haben keinen Zugriff auf globale Rollen, deswegen können Sie keine lokalen Benutzer anlegen.
@@ -4896,7 +4884,7 @@ common#:#obj_dshs#:#Dashboard
 common#:#obj_dshs_desc#:#Dashboard administrieren
 common#:#obj_ecss#:#ECS
 common#:#obj_ecss_desc#:#Enthält globale Einstellungen für den E-Learning Community Server
-common#:#obj_etal#:#Mitarbeiter-Gespräch
+common#:#obj_etal#:#Gespräch Teammitglied
 common#:#obj_exc#:#Übung
 common#:#obj_exc_duplicate#:#Übung kopieren
 common#:#obj_excv#:#Übungszertifikat
@@ -5070,7 +5058,7 @@ common#:#obj_tags#:#Tagging
 common#:#obj_tags_desc#:#Einstellungen für Tagging
 common#:#obj_tala#:#Gesprächsvorlagen
 common#:#obj_tala_desc#:#Gesprächsvorlagen
-common#:#obj_tals#:#Mitarbeiter Gesprächsserie
+common#:#obj_tals#:#Team Gesprächserie
 common#:#obj_talt#:#Gesprächsvorlage
 common#:#obj_task#:#To-Do
 common#:#obj_tax#:#Taxonomie
@@ -5126,7 +5114,7 @@ common#:#objs_copa#:#Inhaltsseiten
 common#:#objs_crs#:#Kurse
 common#:#objs_crsr#:#Kurslinks
 common#:#objs_dcl#:#Datensammlungen
-common#:#objs_etal#:#Mitarbeiter-Gespräche
+common#:#objs_etal#:#Gespräche Teammitglieder
 common#:#objs_exc#:#Übungen
 common#:#objs_file#:#Dateien
 common#:#objs_fold#:#Ordner
@@ -5512,7 +5500,7 @@ common#:#search_results#:#Suchergebnisse
 common#:#search_user#:#Benutzer suchen
 common#:#seas_max_hits#:#Maximalanzahl von Treffern
 common#:#seas_max_hits_info#:#Stellen Sie hier die Maximalanzahl von Suchergebnissen ein, die nach einer Suchanfrage ausgegeben werden. Je geringer die Zahl ist, desto schneller erfolgt der Seitenaufbau.
-common#:#seas_settings#:#Sucheinstellungen
+common#:#seas_settings#:#Systemweite Suche
 common#:#second#:#Sekunde
 common#:#second_email#:#Zweite E-Mail
 common#:#seconds#:#Sekunden
@@ -5616,7 +5604,6 @@ common#:#show_hidden_sections#:#Weitere Informationen anzeigen &raquo;
 common#:#show_list#:#Auflistung anzeigen
 common#:#show_members#:#Mitglieder anzeigen
 common#:#show_more#:#Mehr zeigen
-common#:#show_owner#:#Besitzerinfo
 common#:#show_preview#:#Vorschau anzeigen
 common#:#show_users_online#:#Aktive Benutzer anzeigen
 common#:#show_who_is_online#:#Zeig wer online ist
@@ -5857,7 +5844,6 @@ common#:#user_profile_other#:#Weitere Informationen
 common#:#user_send_new_account_mail#:#Begrüssungsmail versenden
 common#:#user_status#:#Benutzerstatus
 common#:#user_toggle_noti#:#Benachrichtigungen können nicht deaktiviert werden.
-common#:#userdata#:#Benutzerdaten
 common#:#userfolder_export_csv#:#Durch Komma getrennte Werte (CSV)
 common#:#userfolder_export_excel_x86#:#Microsoft Excel
 common#:#userfolder_export_file#:#Datei
@@ -6822,6 +6808,7 @@ content#:#cont_page_notification_activated#:#Benachrichtigung aktiviert (Einzeln
 content#:#cont_page_template#:#Vorlage
 content#:#cont_page_toc#:#Seitenübersicht
 content#:#cont_page_translation_does_not_exist#:#Die Seite existiert noch nicht in dieser Sprache. Sie wird nun als Kopie der Basissprache erstellt. Sprache der neuen Seite
+content#:#cont_page_usage#:#Seite
 content#:#cont_pages#:#Seiten
 content#:#cont_pages_and_subchapters#:#Unterkapitel und Seiten
 content#:#cont_par_format#:#Absatzformat
@@ -6901,10 +6888,13 @@ content#:#cont_qover_short_message#:#Fragenstatus
 content#:#cont_qover_short_message_info#:#Eine Meldung "Sie haben x von y Fragen noch nicht oder falsch beantwortet" wird angezeigt.
 content#:#cont_qtries#:#Anzahl der Versuche für Fragen
 content#:#cont_qtries_info#:#Standardwert "Anzahl der Versuche" für neu angelegte Fragen.
+content#:#cont_question#:#Frage
+content#:#cont_question_page_usage#:#Fragen auf Seiten
 content#:#cont_question_placeh#:#Klicken und bearbeiten, um eine Frage einzufügen
 content#:#cont_question_placehl#:#Fragen-Platzhalter
 content#:#cont_question_stats#:#Statistik
 content#:#cont_question_type#:#Fragetyp
+content#:#cont_question_usage#:#Nutzung
 content#:#cont_quit_text_editing#:#Textbearbeitung beenden
 content#:#cont_rand_start#:#Zufällige Startseite
 content#:#cont_really_delete_overlays#:#Möchten Sie wirklich die folgenden Overlays löschen?
@@ -7345,6 +7335,7 @@ copg#:#copg_reload_page#:#Seite neu laden
 copg#:#copg_remove_formats#:#Zeichenformate entfernen
 copg#:#copg_sec_link_info#:#Wählen Sie ein Ziel für die Verlinkung des Blocks. Achtung: In diesem Fall darf der Inhalt des Blocks dann selbst keine weiteren Links enthalten!
 copg#:#copg_snippet_cannot_be_edited#:#Dies ist ein vordefinierter Inhaltsbaustein, der an dieser Stelle nicht editiert werden kann.
+copg#:#copg_templates#:#Vorlagen
 copg#:#copg_unsupported_media_type#:#Dieses Medienobjekt hat einen nicht unterstützen Medientyp.
 copg#:#copg_x_minutes#:#%s Minute(n)
 cpad#:#cpad_reading_time_status#:#Lesezeit
@@ -8069,6 +8060,10 @@ dash#:#dash_learning_sequences#:#Meine Lernsequenzen
 dash#:#dash_list#:#Liste
 dash#:#dash_main_panel#:#Hauptbereich
 dash#:#dash_make_favourite#:#Zu Favoriten hinzufügen
+dash#:#dash_manual_new_item_pos#:#Position von neuen Objekten
+dash#:#dash_manual_new_item_pos_bot#:#Unten
+dash#:#dash_manual_new_item_pos_top#:#Oben
+dash#:#dash_manual_sorting_title#:#Manuelles Sortieren von Favoriten
 dash#:#dash_member_main_alt#:#Eine Ansicht der Mitgliedschaften kann auch direkt im Haupmenü eingebunden werden.
 dash#:#dash_memberships#:#Meine Kurse und Gruppen
 dash#:#dash_page_edit_info#:#Der Inhalt dieser Seite wird allen Nutzern auf ihrem Dashboard angezeigt. Die Inhaltsblöcke des Dashboards werden darunter angezeigt.
@@ -8078,8 +8073,12 @@ dash#:#dash_remove_from_list#:#Aus Liste entfernen
 dash#:#dash_side_panel#:#Seitenbereich
 dash#:#dash_sort_by_alphabet#:#Alphabet
 dash#:#dash_sort_by_location#:#Ort
+dash#:#dash_sort_by_manually#:#Manuell
 dash#:#dash_sort_by_start_date#:#Veranstaltungszeitraum
 dash#:#dash_sort_by_type#:#Typ
+dash#:#dash_sort_option_bot#:#Unten
+dash#:#dash_sort_option_top#:#Oben
+dash#:#dash_sort_options#:#Postition von neuen Objekten
 dash#:#dash_sortation#:#Sortierung
 dash#:#dash_study_programmes#:#Meine Studienprogramme
 dash#:#dash_tile#:#Kacheln
@@ -9071,7 +9070,7 @@ ecs#:#ecs_lm_export_enabled#:#Freigeben
 ecs#:#ecs_lm_export_obj_settings#:#Einstellungen für Lernmodulfreigaben
 ecs#:#ecs_local_information#:#Weitere Informationen
 ecs#:#ecs_local_settings#:#Lokale Einstellungen
-ecs#:#ecs_login#:#Benutzername bzw. Externes Benutzerkonto
+ecs#:#ecs_login#:#Anmeldename bzw. externes Anmeldekonto
 ecs#:#ecs_mapping_crs#:#Zuordnung für Kurse
 ecs#:#ecs_mapping_exp_tbl#:#Zuordnung der Erweiterten Metadaten zu ECS-Daten
 ecs#:#ecs_mapping_rcrs#:#Zuordnung für ECS-Kurse
@@ -9173,8 +9172,10 @@ etal#:#etal_date_series_edit#:#Gesprächsserie
 etal#:#etal_delete_confirmation_msg#:#Sind Sie sicher, dass das folgende Gespräch gelöscht werden soll?
 etal#:#etal_edit#:#Allgemein
 etal#:#etal_invalid_user#:#Dieses Konto existiert nicht, oder kann nicht eingeladen werden.
+etal#:#etal_location#:#Ort
 etal#:#etal_new#:#Neues Gespräch
 etal#:#etal_open#:#Gespräch öffnen
+etal#:#etal_recurrence#:#Wiederholung
 etal#:#etal_status_all#:#Alle
 etal#:#etal_status_completed#:#Abgeschlossen
 etal#:#etal_status_pending#:#Ausstehend
@@ -9194,10 +9195,10 @@ etal#:#tala_no_content_without_admin_info#:#Um auf Gesprächsvorlagen zuzugreife
 etal#:#talk_serial#:#Talk Serial
 etal#:#tals_add#:#Gespräche hinzufügen
 etal#:#tals_new#:#Neue Gesprächsserie
-etal#:#talt_activation_online_info#:#Markieren Sie die Vorlage als aktiv, damit diese für Mitarbeiter zur Verfügung steht.
+etal#:#talt_activation_online_info#:#Markieren Sie die Vorlage als aktiv, damit diese für Teammitglieder zur Verfügung steht.
 etal#:#talt_add#:#Erstellen
 etal#:#talt_edit#:#Allgemein
-etal#:#talt_etal#:#Mitarbeiter-Gespräch
+etal#:#talt_etal#:#Gespräch Teammitglied
 etal#:#talt_new#:#Neue Gesprächsvorlage
 etal#:#will_update_series_info_lock#:#Die Bearbeitung von allen Gesprächsterminen dieser Serie sperren
 etal#:#will_update_series_info_title#:#Änderungen am Titel gelten für alle Gesprächstermine dieser Serie.
@@ -9205,7 +9206,7 @@ exc#:#exc_add_assignment#:#Übungseinheit hinzufügen
 exc#:#exc_add_criteria#:#Kriterium hinzufügen
 exc#:#exc_add_criteria_catalogue#:#Katalog hinzufügen
 exc#:#exc_add_feedback_file#:#Als Datei hinterlegen
-exc#:#exc_add_participant#:#Teilnehmer hinzufügen
+exc#:#exc_add_participant#:#Personen hinzufügen
 exc#:#exc_adopt_group_teams#:#Teams aus Gruppen bilden
 exc#:#exc_adopt_group_teams_added#:#%s Benutzer wurden hinzugefügt.
 exc#:#exc_adopt_group_teams_blocked#:#%s Benutzer waren bereits vorhanden.
@@ -9317,8 +9318,8 @@ exc#:#exc_grades#:#Notenübersicht
 exc#:#exc_grades_overview#:#Notenübersicht
 exc#:#exc_hand_in#:#Datei abgeben
 exc#:#exc_hand_in_lead_text#:#In %s abzugeben
-exc#:#exc_idl_request_and_tutor_needed#:#Bitte senden Sie eine Anfrage an Ihren Tutor. Dieser muss Ihnen eine individuelle Abgabefrist zuweisen.
-exc#:#exc_idl_tutor_needed#:#Ihre Anfrage wurde bereits gesendet und ist noch offen. Sie werden benachrichtigt, sobald Ihr Tutor Ihnen einen individuelle Abgabefrist zugeordnet hat.
+exc#:#exc_idl_request_and_tutor_needed#:#Bitten Sie um eine individuelle Abgabefrist. Die für Sie zuständige Person wird automatisch benachrichtigt.
+exc#:#exc_idl_tutor_needed#:#Ihre Anfrage wurde gesendet. Sie werden benachrichtigt, sobald Ihnen eine individuelle Abgabefrist gesetzt worden ist.
 exc#:#exc_import#:#Übung importieren
 exc#:#exc_individual_deadline#:#Individueller Abgabetermin
 exc#:#exc_individual_deadline_action#:#Individuellen Abgabetermin setzen
@@ -9361,8 +9362,8 @@ exc#:#exc_msg_deadline_request_body#:#Der folgende Benutzer hat eine individuell
 exc#:#exc_msg_deadline_request_subject#:#Es wurde eine Abgabefrist in Übung „%s“ angefragt.
 exc#:#exc_msg_failed_mandatory#:#Sie haben mindestens eine obgligatorische Übungseinheit nicht bestanden.
 exc#:#exc_msg_grading_done#:#Es wurde eine Übungseinheit in Übung „%s“ bewertet.
-exc#:#exc_msg_grading_done_body#:#Ein Tutor hat Ihre Lösungsabgabe in Übung „%s“ bewertet.
-exc#:#exc_msg_idl_set_body#:#Es wurde eine individuelle Abgabefrist für Sie durch den Tutor gesetzt.
+exc#:#exc_msg_grading_done_body#:#Ihre Einreichung für die Übung „%s“ wurde bewertet.
+exc#:#exc_msg_idl_set_body#:#Sie haben einen individuellen Abgabetermin erhalten. Nähere Informationen dazu finden Sie in der Übung.
 exc#:#exc_msg_idl_set_subject#:#Es wurde eine Abgabefrist in Übung „%s“ gesetzt.
 exc#:#exc_msg_min_number_ass#:#Sie müssen mindestens %s Übungseinheiten bestehen, um die Übung zu bestehen.
 exc#:#exc_msg_missed_minimum_number#:#Sie haben die Mindestanzahl an Übungseinheiten nicht bestanden.
@@ -9393,7 +9394,7 @@ exc#:#exc_no_deadline_specified#:#Es wurde kein Abgabetermin festgelegt.
 exc#:#exc_no_feedback_dir_found_in_zip#:#Die Verzeichnisstruktur des hochgeladenen Zip-Archivs konnte nicht verarbeitet werden.
 exc#:#exc_no_get_target#:#Kein gültiges Link-Ziel gefunden.
 exc#:#exc_no_graded_mem_selected#:#Wählen Sie nur Personen aus, die auch bewertet wurden.
-exc#:#exc_no_participants#:#Zur Zeit gibt es keine Teilnehmer.
+exc#:#exc_no_participants#:#Bisher hat noch niemand an der Übung teilgenommen.
 exc#:#exc_no_peer_feedback_deadline#:#Keine Frist für Abgabe des Feedbacks
 exc#:#exc_no_portfolio_templates#:#Es sind keine Portfoliovorlagen vorhanden.
 exc#:#exc_no_submission_yet#:#Bisher keine Abgabe
@@ -9409,13 +9410,13 @@ exc#:#exc_ongoing#:#Laufende
 exc#:#exc_optional#:#Optional
 exc#:#exc_order_by_deadline#:#Nach Abgabetermin sortieren
 exc#:#exc_overview#:#Übersicht
-exc#:#exc_participant#:#Teilnehmer
-exc#:#exc_participant_view#:#Je Teilnehmer
+exc#:#exc_participant#:#Alle Übungseinheiten von
+exc#:#exc_participant_view#:#Je Person
 exc#:#exc_participants#:#Personen
 exc#:#exc_pass_all#:#Nur verpflichtende Übungseinheiten
-exc#:#exc_pass_all_info#:#Teilnehmer müssen alle verpflichtenden Übungseinheiten bestehen, um die gesamte Übung zu bestehen.
+exc#:#exc_pass_all_info#:#Um die gesamte Übung zu bestehen, müssen alle verpflichtenden Übungseinheiten bestanden werden.
 exc#:#exc_pass_minimum_nr#:#Mindestanzahl an Übungseinheiten
-exc#:#exc_pass_minimum_nr_info#:#Teilnehmer müssen eine Mindestanzahl an Übungseinheiten bestehen, um die gesamte Übung zu bestehen.
+exc#:#exc_pass_minimum_nr_info#:#Um die gesamte Übung zu bestehen, muss eine Mindestanzahl an Übungseinheiten bestanden werden.
 exc#:#exc_pass_mode#:#Anforderung
 exc#:#exc_pass_mode_not_changeable_info#:#Diese Option kann nicht mehr geändert werden.
 exc#:#exc_passed_status_determination#:#Bewertung als „Bestanden“
@@ -9423,7 +9424,7 @@ exc#:#exc_passing_exc#:#Bestehen der Übung
 exc#:#exc_past#:#Vergangene
 exc#:#exc_peer_deadline_mismatch#:#Da das Feedback erst nach dem Abgabetermin der Übungseinheit gegeben werden kann, darf die Deadline für das Feedback nicht vor dem Abgabedatum liegen.
 exc#:#exc_peer_review#:#Peer-Feedback
-exc#:#exc_peer_review_ass_setting_info#:#Nachdem der Abgabetermin und ggfs. die Nachfrist verstrichen sind, können Teilnehmer ihre Arbeitsergebnisse gegenseitig bewerten. Genaue Einstellungen zum Peer-Feedback werden im gleichnamigen Reiter vorgenommen. Der Reiter wird eingeblendet, wenn diese Option aktiviert und gespeichert wurde.
+exc#:#exc_peer_review_ass_setting_info#:#Der zusätzliche Reiter „Peer-Feedback“ wird aktiviert. Dort legen Sie fest, wie teilnehmende Personen einander Feedback geben sollen. Feedback kann abgegeben werden, sobald der Abgabetermin und eine etwaige Nachfrist abgelaufen sind.
 exc#:#exc_peer_review_chars_invalid#:#Sie haben noch nicht die erforderliche Länge des Textes von %s Zeichen erreicht.
 exc#:#exc_peer_review_completion#:#Bestimmung des Status "Bestanden"
 exc#:#exc_peer_review_completion_all#:#Alle geforderten Feedbacks
@@ -9441,13 +9442,13 @@ exc#:#exc_peer_review_file_info#:#Ermöglicht Peers eine Datei je Review hochzul
 exc#:#exc_peer_review_give#:#Feedback geben
 exc#:#exc_peer_review_given#:#Gegebenes Feedback zeigen
 exc#:#exc_peer_review_giver#:#Feedback-Geber
-exc#:#exc_peer_review_invalid_giver_ids#:#Feedback-Geber, die nicht mehr Teilnehmer der Übung sind oder keine Abgabe haben
-exc#:#exc_peer_review_invalid_peer_ids#:#Feedback-Nehmer, die nicht mehr Teilnehmer der Übung sind oder keine Abgabe haben
+exc#:#exc_peer_review_invalid_giver_ids#:#Feedback-Geber, die an der Übung nicht teilnehmen oder nichts abgegeben haben
+exc#:#exc_peer_review_invalid_peer_ids#:#Feedback-Nehmer, die an der Übung nicht teilnehmen oder nichts abgegeben haben
 exc#:#exc_peer_review_min_chars#:#Mindestanzahl Zeichen
 exc#:#exc_peer_review_min_chars_info#:#Die nötige Anzahl Zeichen für ein gültiges Feedback.
 exc#:#exc_peer_review_min_chars_tgl#:#Mindestlänge
 exc#:#exc_peer_review_min_number#:#Geforderte Anzahl von Feedbacks
-exc#:#exc_peer_review_min_number_info#:#Anzahl von Feedback, die ein Teilnehmer den Peers geben muss. Sollte die Anzahl der geforderten Feedbacks die Anzahl der tatsächlichen Einreichungen übersteigen, wird die geforderte Anzahl automatisch auf die Anzahl der tatsächlichen Einreichungen reduziert.
+exc#:#exc_peer_review_min_number_info#:#Anzahl von Einreichungen, zu denen man Feedback geben muss. Sollte die Anzahl der geforderten Rückmeldungen die Anzahl der tatsächlichen Einreichungen übersteigen, wird die geforderte Anzahl automatisch auf die Anzahl der tatsächlichen Einreichungen reduziert.
 exc#:#exc_peer_review_missing_info#:#Um das erhaltene Feedback zu sehen, fehlen noch %s eigene Feedbacks.
 exc#:#exc_peer_review_missing_info_deadline#:#Um das erhaltene Feedback zu sehen, fehlen noch %1$s eigene Feedbacks. Die Freischaltung erfolgt am: %2$s.
 exc#:#exc_peer_review_missing_users#:#Benutzer mit einer Abgabe, die nicht Teil des Peer-Feedbacks sind
@@ -9489,7 +9490,7 @@ exc#:#exc_random#:#Zufällig
 exc#:#exc_random_assignment#:#Zufällige Auswahl
 exc#:#exc_random_assignment_info#:#Wenn Sie die Übung starten, wird Ihnen eine zufällige Auswahl an verpflichtenden Übungseinheiten zugewiesen.
 exc#:#exc_random_selection#:#Zufällige Auswahl
-exc#:#exc_random_selection_info#:#Jedem Benutzer wird eine zufällige Auswahl an verpflichtenden Übungseinheiten zugeordnet.
+exc#:#exc_random_selection_info#:#Jeder Person wird eine zufällige Auswahl an verpflichtenden Übungseinheiten zugeordnet.
 exc#:#exc_random_selection_not_changeable_info#:#Diese Option kann nicht aktiviert werden.
 exc#:#exc_received_feedback#:#Erhaltene Feedbacks
 exc#:#exc_rel_last_submission#:#Letztmöglicher Abgabetermin
@@ -9497,12 +9498,12 @@ exc#:#exc_rel_last_submission_info#:#Wird dieses Datum gesetzt, so müssen alle 
 exc#:#exc_rel_start_latest_lead_text#:#spätestens am %s
 exc#:#exc_rel_start_lead_text#:#%s Tage nach Starten abgeben
 exc#:#exc_relative_date#:#Relatives Datum
-exc#:#exc_relative_date_info#:#Das Abgabedatum ergibt sich aus dem Bearbeitungszeitraum und dem durch den Teilnehmer gewählten Startzeitpunkt.
+exc#:#exc_relative_date_info#:#Aus dem individuell gewählten Startzeitpunkt und der Länge des Bearbeitungszeitraums ergibt sich ein Abgabedatum.
 exc#:#exc_relative_date_period#:#Bearbeitungszeitraum
 exc#:#exc_rem_time_after_start#:#Bearbeitungszeitraum nach Start
 exc#:#exc_reminder_cron_ok#:#Erinnerungen wurden verschickt
 exc#:#exc_reminder_end#:#Letzte Erinnerung
-exc#:#exc_reminder_feedback_setting#:#Teilnehmer an Peer-Feedbacks erinnern
+exc#:#exc_reminder_feedback_setting#:#An Peer-Feedback erinnern
 exc#:#exc_reminder_feedback_start#:#Start vor Peer-Feedback-Termin
 exc#:#exc_reminder_frequency#:#Häufigkeit
 exc#:#exc_reminder_grade_body#:#Die folgende Übungseinheit wurde noch nicht bewertet
@@ -9517,7 +9518,7 @@ exc#:#exc_reminder_salutation#:#Hallo %s,
 exc#:#exc_reminder_start#:#Start vor Abgabetermin
 exc#:#exc_reminder_start_info#:#Alle Mitglieder der übergeordneten Gruppe oder des übergeordneten Kurses werden benachrichtigt.<br>Ohne Kurs oder Gruppe wird niemand benachrichtigt.
 exc#:#exc_reminder_submit_body#:#die folgenden Übungseinheiten wurden von Ihnen noch nicht abgegeben
-exc#:#exc_reminder_submit_setting#:#Teilnehmer an Abgaben erinnern
+exc#:#exc_reminder_submit_setting#:#An Abgabe erinnern
 exc#:#exc_reminder_submit_subject#:#Übungseinheit „%s“ wurde noch nicht abgegeben
 exc#:#exc_reminders_cron#:#Erinnerungen für Übungseinheiten
 exc#:#exc_reminders_cron_info#:#Bei Aktivierung werden drei Erinnerungen versendet: Ausstehende Abgaben, ausstehende Bewertungen und ausstehende Peer-Feedbacks
@@ -9543,15 +9544,15 @@ exc#:#exc_set_failed#:#Auf 'nicht bestanden' setzen
 exc#:#exc_set_passed#:#Auf 'bestanden' setzen
 exc#:#exc_settings_feedback#:#Rückmeldung
 exc#:#exc_settings_feedback_file#:#Datei
-exc#:#exc_settings_feedback_file_info#:#Rückmeldungen werden als Datei hochgeladen und im Reiter „Übungseinheiten“ angezeigt. Die Teilnehmerinnen und Teilnehmer werden darüber per Mail benachrichtigt.
+exc#:#exc_settings_feedback_file_info#:#Rückmeldungen werden als Datei hochgeladen und im Reiter „Übungseinheiten“ angezeigt. Teilnehmende Personen werden darüber per Mail benachrichtigt.
 exc#:#exc_settings_feedback_mail#:#per Mail
 exc#:#exc_settings_feedback_mail_info#:#Rückmeldungen zur jeweiligen Abgabe werden in ein Mailformular eingegeben und von ILIAS versandt.
 exc#:#exc_settings_feedback_text#:#Texteingabe
-exc#:#exc_settings_feedback_text_info#:#Rückmeldungen zur jeweiligen Abgabe werden in ein Textfeld eingegeben und im Reiter „Übungseinheiten“ angezeigt. Zusätzlich erhalten Teilnehmerinnen und Teilnehmer eine Benachrichtigung per Mail.
+exc#:#exc_settings_feedback_text_info#:#Rückmeldungen zur jeweiligen Abgabe werden in ein Textfeld eingegeben und im Reiter „Übungseinheiten“ angezeigt. Zusätzlich erhalten teilnehmende Personen eine Benachrichtigung per Mail.
 exc#:#exc_show_instructions#:#Arbeitsanweisung anzeigen
 exc#:#exc_show_peer_review#:#Peer-Feedback anzeigen
 exc#:#exc_show_submissions#:#Lösungsabgaben veröffentlichen
-exc#:#exc_show_submissions_info#:#Bei Übungseinheiten mit einem festen Abgabetermin können Teilnehmerinnen und Teilnehmer nach dem Abgabetermin alle Lösungsabgaben einsehen.
+exc#:#exc_show_submissions_info#:#Bei Übungseinheiten mit einem festen Datum können nach dem Abgabetermin alle Personen die Einreichungen der anderen einsehen.
 exc#:#exc_start_assignment#:#Übungseinheit starten
 exc#:#exc_start_exercise#:#Übung beginnen
 exc#:#exc_start_time#:#Startzeit
@@ -9562,7 +9563,7 @@ exc#:#exc_submission_file#:#Dateiabgabe
 exc#:#exc_submission_no_new_files#:#Keine neuen Abgaben vorhanden.
 exc#:#exc_submission_notification#:#Benachrichtigung bei Abgabe
 exc#:#exc_submission_notification_body#:#Eine neue Abgabe für die Übung „%s“ liegt vor.
-exc#:#exc_submission_notification_info#:#Sie werden per Mail benachrichtigt, sobald neue Lösungen abgegeben wurden oder Abgabefristen beantragt werden. Dies ist eine persönliche Einstellung, die nur für Sie gilt. Andere Tutoren der Übung sind davon nicht betroffen.
+exc#:#exc_submission_notification_info#:#Sobald neue Lösungen abgegeben wurden, erhalten Sie eine Mail. Dies ist eine persönliche Einstellung, die nur für Sie gilt. Andere Personen, die Abgaben bewerten, erhalten nur dann eine Mail, wenn auch sie diese Checkbox aktivieren.
 exc#:#exc_submission_notification_link#:#Link zur Übung: %s
 exc#:#exc_submission_notification_subject#:#Eine neue Abgabe für die Übung „%s“ liegt vor
 exc#:#exc_submission_open_notification_link#:#Abgabe öffnen: %s
@@ -9615,14 +9616,14 @@ exc#:#exc_team_at_least_one#:#Es muss mindestens ein Team-Mitglied geben.
 exc#:#exc_team_by_assignment#:#Übernahme von Übungseinheit
 exc#:#exc_team_by_assignment_info#:#Die Teams werden von einer bestehender Übungseinheit übernommen.
 exc#:#exc_team_by_participants#:#Teams werden selbstorganisiert gebildet.
-exc#:#exc_team_by_participants_info#:#Teilnehmerinnen und Teilnehmer gründen Teams und ordnen Teammitglieder zu.
-exc#:#exc_team_by_random#:#Automatische, zufällige Zuordnung
-exc#:#exc_team_by_random_add_info#:#Bitte beachten Sie, dass Sie der Übung zunächst alle Teilnehmer zuordnen müssen, bevor Sie diese Option sinnvoll nutzen können.
-exc#:#exc_team_by_random_info#:#Teilnehmer werden automatisch und zufällig zu Teams zugeordnet.
+exc#:#exc_team_by_participants_info#:#An der Übung teilnehmende Personen gründen selbst ein Team und legen Teammitglieder fest.
+exc#:#exc_team_by_random#:#Automatische Zuordnung
+exc#:#exc_team_by_random_add_info#:#Um diese Option sinnvoll zu nutzen, müssen Sie der Übung zuerst alle Personen zuordnen.
+exc#:#exc_team_by_random_info#:#Teammitglieder werden per Zufall bestimmt.
 exc#:#exc_team_by_tutors#:#Teams werden vorgegeben.
-exc#:#exc_team_by_tutors_info#:#Personen mit dem Recht „Abgaben und Noten bearbeiten“ legen Teams an und verteilen die Teammitglieder.
-exc#:#exc_team_by_tutors_manual#:#Manuell
-exc#:#exc_team_by_tutors_manual_info#:#Personen mit dem Recht „Abgaben und Noten bearbeiten“ ordnen die Teilnehmerinnen und Teilnehmer manuell den Teams zu.
+exc#:#exc_team_by_tutors_info#:#Mitglieder werden manuell oder automatisch auf Teams verteilt.
+exc#:#exc_team_by_tutors_manual#:#Manuelle Zuordnung
+exc#:#exc_team_by_tutors_manual_info#:#Personen mit dem Recht „Abgaben und Noten bearbeiten“ ordnen die teilnehmenden Personen manuell den Teams zu.
 exc#:#exc_team_creation#:#Erstellung
 exc#:#exc_team_formation#:#Organisation der Teams
 exc#:#exc_team_log#:#Team Log
@@ -9631,21 +9632,20 @@ exc#:#exc_team_log_add_member#:#Mitglied %s hinzugefügt.
 exc#:#exc_team_log_create_team#:#Team erstellt.
 exc#:#exc_team_log_remove_file#:#Datei %s entfernt.
 exc#:#exc_team_log_remove_member#:#Mitglied %s entfernt.
-exc#:#exc_team_management_tutor#:#Team-Management durch Tutoren
-exc#:#exc_team_max_small_than_members#:#Die maximale Anzahl von Teilnehmern kann nicht auf %s gesetzt werden, da einige Teams %s Teilnehmer erhalten müssen.
+exc#:#exc_team_max_small_than_members#:#Die maximale Anzahl teilnehmender Personen kann nicht auf %s gesetzt werden, da einige Teams %s Personen enthalten müssen.
 exc#:#exc_team_member_add#:#Team-Mitglied hinzufügen (Suche)
 exc#:#exc_team_member_container_add#:#Team-Mitglied aus Kurs/Gruppe hinzufügen
 exc#:#exc_team_member_remove_sure#:#Wollen Sie wirklich die folgenden Mitglieder Ihres Teams entfernen? Bitte beachten Sie, dass auch die jeweiligen hochgeladenen Dateien aus dem Team entfernt werden.
 exc#:#exc_team_members#:#Team-Mitglieder
-exc#:#exc_team_min_big_than_max#:#Die maximale Anzahl von Teilnehmern kann nicht kleiner als die Mindestanzahl sein.
-exc#:#exc_team_min_small_than_members#:#Die Mindestanzahl von Teilnehmern kann nicht auf %s gesetzt werden, da einige Teams %s Teilnehmer erhalten müssen.
-exc#:#exc_team_minimal_too_big#:#Die Mindestanzahl von Teilnehmern %s ist zu groß, bitte verringern Sie den Wert.
+exc#:#exc_team_min_big_than_max#:#Die maximale Anzahl teilnehmender Personen kann nicht kleiner als die Mindestanzahl sein.
+exc#:#exc_team_min_small_than_members#:#Die Mindestanzahl teilnehmender Personen kann nicht auf %s gesetzt werden, da einige Teams %s Personen enthalten müssen.
+exc#:#exc_team_minimal_too_big#:#Die Mindestanzahl teilnehmender Personen beträgt %s und ist damit zu groß. Tragen Sie eine kleinere Zahl ein.
 exc#:#exc_team_multi_create#:#Team erstellen
 exc#:#exc_team_multi_dissolve#:#Team(s) auflösen
 exc#:#exc_team_notification_body_add#:#Sie wurden zu einer Team-Upload-Übungseinheit hinzugefügt.
 exc#:#exc_team_notification_body_rmv#:#Sie wurden aus einer Team-Upload-Übungseinheit entfernt.
 exc#:#exc_team_notification_link#:#Link zur Übung
-exc#:#exc_team_notification_reason#:#Sie erhalten diese Nachricht, da Sie ein Teilnehmer der oben genannten Übung sind.
+exc#:#exc_team_notification_reason#:#Sie erhalten diese Nachricht, da Sie an der oben genannten Übung teilnehmen.
 exc#:#exc_team_notification_subject_add#:#Als Team-Mitglied zu einer Übungseinheit der Übung „%s“ hinzugefügt
 exc#:#exc_team_notification_subject_rmv#:#Als Team-Mitglied aus einer Übungseinheit der Übung „%s“ entfernt
 exc#:#exc_teams_assignment_adopted#:#Die Teams wurden von der bestehender Übungseinheit übernommen.
@@ -9655,8 +9655,8 @@ exc#:#exc_text_assignment_show#:#Text anzeigen
 exc#:#exc_text_saved#:#Der Text wurde gespeichert.
 exc#:#exc_too_many_files#:#Der Upload beinhaltet zu viele Dateien.
 exc#:#exc_total_exc#:#Gesamte Übung
-exc#:#exc_total_members#:#Gesamtanzahl an Teilnehmern
-exc#:#exc_type#:#Type
+exc#:#exc_total_members#:#Gesamtanzahl an teilnehmenden Personen
+exc#:#exc_type#:#Typ
 exc#:#exc_type_blog#:#Blog
 exc#:#exc_type_portfolio#:#Portfolio
 exc#:#exc_type_text#:#Text
@@ -9666,15 +9666,15 @@ exc#:#exc_value_can_not_set#:#Dieser Wert kann nicht gesetzt werden
 exc#:#exc_view_portfolio#:#Portfolio anzeigen
 exc#:#exc_wait_for_files#:#Der Download sollte automatisch starten. Bei Problemen klicken Sie bitte hier.
 exc#:#exc_wiki_container#:#Wiki-Container
-exc#:#exc_wiki_container_info#:#Ort in dem neue Wikis der Teilnehmer angelegt werden.
+exc#:#exc_wiki_container_info#:#An dieser Stelle werden die neuen Team-Wikis angelegt.
 exc#:#exc_with_template#:#Mit Portfoliovorlage
-exc#:#exc_with_template_info#:#Ein leeres Portfolio wird automatisch aus einer bestimmten Portfoliovorlage abgeleitet.
+exc#:#exc_with_template_info#:#Neue Portfolios werden automatisch auf Basis der Portfoliovorlage erstellt.
 exc#:#exc_with_wiki_template#:#Mit Vorlage
-exc#:#exc_with_wiki_template_info#:#Neue Wikis der Teilnehmer werden durch Kopie der Vorlage erstellt.
+exc#:#exc_with_wiki_template_info#:#Neue Team-Wikis werden automatisch auf Basis der Vorlage erstellt.
 exc#:#exc_without_template#:#Ohne Portfoliovorlage
-exc#:#exc_without_template_info#:#Teilnehmer erstellen ihre Portfolios selbstständig ohne Vorlage.
+exc#:#exc_without_template_info#:#Portfolios werden selbstständig ohne Vorlage erstellt.
 exc#:#exc_without_wiki_template#:#Ohne Vorlage
-exc#:#exc_without_wiki_template_info#:#Teilnehmer starten mit leerem Wiki.
+exc#:#exc_without_wiki_template_info#:#Teams starten mit leerem Wiki.
 exc#:#exc_work_instructions#:#Arbeitsanweisung
 exc#:#exc_x_of_y#:#von
 exc#:#exc_your_text#:#Ihr Text
@@ -10443,6 +10443,7 @@ gsfo#:#reset_footer#:#Fußzeile zurücksetzen
 gsfo#:#reset_success#:#Fußzeile erfolgreich zurückgesetzt
 gsfo#:#services#:#Services
 gsfo#:#support#:#Support
+gsfo#:#translate#:#Übersetzen
 gsfo#:#translations#:#Übersetzungen
 help#:#help_all#:#Alle
 help#:#help_component#:#Komponente
@@ -11022,8 +11023,8 @@ lso#:#lso_mail_wl_bod#:#Sie sind auf die Warteliste der Lernsequenz „%s“ ges
 lso#:#lso_mail_wl_sub#:#Ihre Anmeldung für Lernsequenz „%s“
 lso#:#lso_mainbar_button_label_curriculum#:#Lernsequenz
 lso#:#lso_mainbar_button_label_toc#:#Inhalte
-lso#:#lso_mem_tbl_header#:#Lernsequenz Teilnehmer
-lso#:#lso_member_administration#:#Teilnehmerverwaltung
+lso#:#lso_mem_tbl_header#:#Mitglieder
+lso#:#lso_member_administration#:#Verwalten
 lso#:#lso_members_deleted#:#Die ausgewählten Mitglieder sind aus der Lernsequenz ausgetragen worden.
 lso#:#lso_members_gallery#:#Galerie
 lso#:#lso_members_print_title#:#Lernsequenzmitglieder
@@ -11537,9 +11538,8 @@ mail#:#mail_nacc_target_type#:#Typ des Zielobjekts, z. B. "Kurs" für ein Kursob
 mail#:#mail_nacc_timelimit#:#Zugangszeitraum des Benutzers
 mail#:#mail_nacc_title#:#Titel
 mail#:#mail_nacc_use_placeholder#:#Im Feld 'Inhalt' können folgende Platzhalter verwendet werden
-mail#:#mail_nacc_user_fullname#:#Vollständiger Benutzername
+mail#:#mail_nacc_user_fullname#:#Nachname, Vorname [Anmeldename]
 mail#:#mail_nacc_user_login#:#Anmeldename
-mail#:#mail_nacc_user_name#:#Benutzername
 mail#:#mail_new_template#:#Neue Textvorlage
 mail#:#mail_no_mail_items#:#Keine ungelesenen Mails.
 mail#:#mail_no_permissions_write_smtp#:#Sie haben keine Berechtigung externe E-Mails zu versenden.
@@ -11618,7 +11618,7 @@ mail#:#mail_system_usr_from_addr#:#„FROM”-Adresse für manuell versendete E-
 mail#:#mail_system_usr_from_addr_info#:#Damit die manuell aus ILIAS versendeten E-Mails nicht als Spam abgelehnt werden, muss hier eine absendende Adresse (technisch: „FROM”-Header) eingetragen werden. Bei manuell verschickten E-Mails wird die zu einem ILIAS-Konto gehörige Adresse als Antwortadresse (technisch: „REPLY-TO”-Header) übernommen. <br /><br />Beispiele: <span style="font-style: italic">info@institution.de</span> oder <span style="font-style: italic">no-reply@institution.de</span>
 mail#:#mail_system_usr_from_name#:#„FROM”-Name und Format
 mail#:#mail_system_usr_from_name_info#:#Dieser Name wird üblicherweise im E-Mail-Client in der Spalte „Von“ angezeigt. Als Platzhalter können &lbrace;&lbrace;FULLNAME&rbrace;&rbrace;, &lbrace;&lbrace;FIRSTNAME&rbrace;&rbrace; und &lbrace;&lbrace;LASTNAME&rbrace;&rbrace; genutzt werden. Diese werden dann durch die jeweiligen Daten der Person ersetzt, die eine manuelle E-Mail versendet hat.
-mail#:#mail_system_usr_general_signature#:#Benutzer Signatur
+mail#:#mail_system_usr_general_signature#:#Signatur
 mail#:#mail_tbl_head_attachments#:#Anhang
 mail#:#mail_template_client#:#Textvorlage
 mail#:#mail_template_client_info#:#Wählen Sie zwischen einer der verfügbaren Textvorlagen. Sie haben die Möglichkeit, die durch die Textvorlage angebotenen Platzhalter zu nutzen. Bei der Wahl einer Textvorlage wird der Inhalt dieser Nachricht ersetzt und etwaige Änderungen die schon vorgenommen wurden, gehen verloren. Der Betreff ändert sich nicht und muss manuell angepasst werden.
@@ -12635,6 +12635,8 @@ mme#:#additional_langs#:#Zusätzliche Sprachen
 mme#:#button_save#:#Speichern
 mme#:#component_not_active#:#Komponente ist nicht aktiviert.
 mme#:#confirm_move#:#Möchten Sie diesen Eintrag zu einem Haupteintrag machen?
+mme#:#deactived_by_configuration#:#Über Konfiguration deaktiviert
+mme#:#edit_sub_tems#:#Einträge bearbeiten
 mme#:#err_uri_not_valid#:#Bitte geben Sie eine gültige URL an.
 mme#:#field_external#:#Externer Link
 mme#:#field_external_info#:#Link wird in einem neuen Fenster geöffnet.
@@ -12644,6 +12646,7 @@ mme#:#field_url#:#URL
 mme#:#field_url_info#:#Link zu der gewünschten Website, beginnend mit http(s)://
 mme#:#flush#:#Verlorene Einträge löschen
 mme#:#item_must_be_always_active#:#Eintrag muss aktiv sein.
+mme#:#item_updated#:#Eintrag gespeichert
 mme#:#main#:#Hauptmenü
 mme#:#mm_translation_lang#:#Sprache
 mme#:#mm_translation_trans#:#Übersetzung
@@ -12651,12 +12654,14 @@ mme#:#move_to_item#:#Zu Einträge verschieben
 mme#:#move_to_top_item#:#In Haupteinträge verschieben
 mme#:#msg_languages_added#:#Sprachen hinzugefügt
 mme#:#msg_moved#:#Eintrag wurde erfolgreich verschoben.
-mme#:#msg_not_moved#:#Eintrag konnte nicht verschoben werden, wähle einen gültigen Haupteintrag aus.
+mme#:#msg_not_changed#:#Die folgenden Einträge konnten nicht geändert werden: %s
+mme#:#msg_not_moved#:#Eintrag konnte nicht verschoben werden. Entweder ist das ausgewählte übergeordnete Element ungültig oder der Eintrag ist ein Container, der nicht verschoben werden kann.
 mme#:#msg_ref_id_not_callable#:#Diese Referenz-ID kann vom Hauptmenü nicht verwendet werden. Ausgewählt werden können nur Ziele im Magazin.
 mme#:#msg_restore_confirm#:#Alle angelegten Einträge und Übersetzungen werden gelöscht, die Standardeinträge werden auf ihren Ursprungszustand zurückgesetzt. Alle Anpassungen am Hauptmenü gehen verloren.
 mme#:#msg_restored#:#Hauptmenü zurückgesetzt
 mme#:#msg_subitem_deleted#:#Eintrag gelöscht.
 mme#:#msg_subitem_flushed#:#Verlorene Einträge wurden gelöscht.
+mme#:#msg_success#:#Erfolgreich gespeichert
 mme#:#msg_topitem_deleted#:#Eintrag gelöscht.
 mme#:#msg_translations_deleted#:#Übersetzungen gelöscht.
 mme#:#msg_translations_saved#:#Übersetzungen gespeichert
@@ -12673,12 +12678,13 @@ mme#:#sub_position#:#Position
 mme#:#sub_provider#:#Provider
 mme#:#sub_role_based_visibility#:#Sichtbarkeit für Rollen
 mme#:#sub_role_based_visibility_byline#:#Globale Rollen wählen, welche dieses Item sehen können. Wenn nicht aktiviert, wird das Item immer angezeigt.
-mme#:#sub_status#:#Status
+mme#:#sub_status#:#Bemerkung
 mme#:#sub_title#:#Titel
 mme#:#sub_title_default#:#Titel (Standard-Sprache)
 mme#:#sub_title_default_byline#:#Weitere Sprachen können über den Aktionslink "Übersetzen" hinzugefügt werden.
 mme#:#sub_type#:#Typ
 mme#:#sub_type_byline#:#Typ für den Eintrag auswählen. Je nach Typ sind zusätzliche Angaben nötig.
+mme#:#subitem#:#Eintrag
 mme#:#subitem_add#:#Eintrag hinzufügen
 mme#:#subitem_confirm_delete#:#Möchten Sie den folgenden Eintrag wirklich löschen?
 mme#:#subitem_delete#:#Löschen
@@ -12693,7 +12699,6 @@ mme#:#topitem_active#:#Aktiv
 mme#:#topitem_active_byline#:#Diesen Haupteintrag aktivieren
 mme#:#topitem_add#:#Haupteintrag hinzufügen
 mme#:#topitem_confirm_delete#:#Möchten Sie den folgenden Eintrag wirklich löschen?
-mme#:#topitem_css_id#:#CSS-ID
 mme#:#topitem_delete#:#Löschen
 mme#:#topitem_edit#:#Bearbeiten
 mme#:#topitem_icon#:#Icon
@@ -12720,13 +12725,19 @@ mme#:#type_top_link_item#:#Link
 mme#:#type_top_parent_item#:#Container
 mme#:#unable_to_render#:#Der Eintrag '%s' kann nicht in '%s' angezeigt werden.
 mob#:#mob_choose_from_pool#:#Aus Medienpool
+mob#:#mob_copyright#:#Copyright
+mob#:#mob_copyright_icon#:#Copyright Icon
 mob#:#mob_external_url#:#Externe URL
 mob#:#mob_extract_preview_image#:#Vorschaubild erzeugen
 mob#:#mob_file#:#Datei
 mob#:#mob_file_could_not_be_uploaded#:#Datei konnte nicht hochgeladen werden.
 mob#:#mob_general#:#Allgemein
 mob#:#mob_image_extracted#:#Vorschaubild wurde erzeugt
+mob#:#mob_internal_usages_in_object#:#Auf Seiten
 mob#:#mob_language#:#Sprache
+mob#:#mob_last_update#:#Letztes Update
+mob#:#mob_media#:#Medien
+mob#:#mob_media_objects_overview#:#Medienobjekte auf Seiten
 mob#:#mob_mime_type_not_allowed#:#Die folgenden MIME-Typen sind am Zielort nicht erlaubt.
 mob#:#mob_multi_srt_files#:#Untertitel-Dateien
 mob#:#mob_no_extraction_possible#:#Leider konnte kein Vorschaubild aus der Datei erzeugt werden.
@@ -12749,17 +12760,19 @@ mob#:#mob_url#:#URL
 mob#:#mob_url_info#:#Externe URL, z.B. Youtube- oder Vimeo-URL.
 mob#:#mob_url_info1#:#URL des externen Inhalts. Erlaubte Dateikennungen sind:
 mob#:#mob_url_info_video#:#Sie können auch auf ein Video bei Youtube oder Vimeo verweisen.
+mob#:#mob_usages_in_media_pools#:#In Medienpools
+mob#:#mob_usages_in_other_objects#:#Andere Nutzungen
 mst#:#mst_cert_issued_on#:#Ausgestellt am
 mst#:#mst_courses_of#:#Einschreibungen von %s
 mst#:#mst_download_certificate#:#Zertifikat herunterladen
 mst#:#mst_list_certificates#:#Zertifikate
 mst#:#mst_list_competences#:#Kompetenzen
 mst#:#mst_list_courses#:#Einschreibungen
-mst#:#mst_list_users#:#Mitarbeiterliste
+mst#:#mst_list_users#:#Liste Teammitglieder
 mst#:#mst_memb_status_registered#:#Angemeldet
 mst#:#mst_memb_status_requested#:#Beantragt
 mst#:#mst_memb_status_waitinglist#:#Warteliste
-mst#:#mst_my_staff#:#Mitarbeiter
+mst#:#mst_my_staff#:#Team
 mst#:#mst_opt_all#:#Alle
 mst#:#mst_please_select_course#:#Bitte wählen Sie einen Kurs aus.
 mst#:#mst_profile_fulfilled#:#Erreicht
@@ -12794,10 +12807,10 @@ news#:#news_enable_private_feed_info#:#Erlaubt den Zugriff auf private und öffe
 news#:#news_feed_url#:#Feed-URL
 news#:#news_feed_url_for#:#Feed-URL für „%s“
 news#:#news_first_letter_of_word_notification#:#B
-news#:#news_get_feed_info#:#Dies ist die Adresse Ihres persönlichen Newsfeeds. Dieser Newsfeed enthält alle Neuigkeiten, die von den jeweiligen Verfassern als öffentlich definiert wurden. Dieser Newsfeed wird durch keinerlei Authentifzierungsmaßnahme geschützt.
+news#:#news_get_feed_info#:#Kopieren Sie diese Adresse in Ihren RSS-Reader. Alle öffentlich zugänglichen Neuigkeiten werden eingesammelt. Der Newsfeed wird durch keinerlei Authentifzierungsmaßnahme geschützt.
 news#:#news_get_feed_title#:#URL Ihres persönlichen Newsfeeds
 news#:#news_get_feed_url#:#Newsfeed-URL bekommen
-news#:#news_get_priv_feed_info#:#Dies ist die Adresse Ihres privaten Newsfeeds. Dieser Newsfeed enthält neben öffentlichen Neuigkeiten auch solche, die von den jeweiligen Verfassern als privat definiert wurden. Dieser Newsfeed wird durch ein Kennwort geschützt, welches Sie unter "Einstellungen" einrichten können. Bitte ersetzen Sie in der unten angezeigten URL -password- durch Ihr Feed-Passwort.
+news#:#news_get_priv_feed_info#:#Sie haben ein Passwort für Ihren privaten Newsfeed vergeben. Dieser Newsfeed enthält neben öffentlich zugänglichen auch private Neuigkeiten. Ersetzen Sie in der folgenden Feed-URL –password– durch Ihr Newsfeed-Passwort und kopieren Sie diese Adresse in Ihren RSS-Reader. Teilen Sie die Feed-URL nicht mit anderen.
 news#:#news_get_priv_feed_title#:#URL Ihres privaten Newsfeeds
 news#:#news_hide_news_block#:#Block "Neuigkeiten" verbergen
 news#:#news_hide_news_block_info#:#Verberge Block in der Lerneransicht. Der Block "Neuigkeiten" wird nur für Benutzer mit Schreibberechtigung sichtbar sein.
@@ -12925,8 +12938,11 @@ noti#:#noti_activate_notification#:#Benachrichtigung aktivieren
 noti#:#noti_deactivate_notification#:#Benachrichtigung deaktivieren
 noti#:#noti_notification_activated#:#Benachrichtigungen sind aktiviert
 noti#:#noti_notification_deactivated#:#Benachrichtigungen sind deaktiviert
+notifications#:#push_notification#:#Push-Benachrichtigungen
 notifications_adm#:#enable_osd#:#Pop-up-Benachrichtigungen aktivieren
 notifications_adm#:#enable_osd_desc#:#Wenn aktiviert, werden Benutzer durch ein Pop-up über neue Benachrichtigungen informiert.
+notifications_adm#:#enable_push#:#Push-Benachrichtigungen aktivieren
+notifications_adm#:#enable_push_desc#:#Wenn aktiviert, werden Benutzer durch Push-Benachrichtigungen informiert. Nutzer können diese Benachrichtigungen in den Benutzereinstellungen anpassen.
 notifications_adm#:#notification_settings#:#Benachrichtigungseinstellungen
 notifications_adm#:#osd_error_refresh_interval_too_small#:#Das Abfrageintervall muss mindestens 3000 Millisekunden betragen.
 notifications_adm#:#osd_interval#:#Abfrageintervall
@@ -12934,6 +12950,13 @@ notifications_adm#:#osd_interval_desc#:#Abfrageintervall für Nachrichten in Mil
 notifications_adm#:#osd_play_sound#:#Ton abspielen
 notifications_adm#:#osd_play_sound_desc#:#Ton abspielen bei Erhalt einer neuen Benachrichtigung.
 notifications_adm#:#osd_settings#:#Pop-up-Benachrichtigungen
+notifications_adm#:#push_client_already_used#:#Push-Benachrichtigungen für diesen Browser werden bereits von einem anderen Nutzer genutzt.
+notifications_adm#:#push_client_edge_case#:#Möglicherweise hat der Edge Browser ihre Benachrichtigungen automatisch deaktiviert. Gehen Sie in die Browsereinstellungen um diese zu reaktivieren.
+notifications_adm#:#push_client_inactive#:#Push-Benachrichtigungen für diese Webseite sind deaktiviert. Öffnen sie die Browsereinstellungen um sie zu aktivieren.
+notifications_adm#:#push_client_ios_case#:#Wenn sie IOS (IPhone, IPad, IPod) nutzen werden keine Benachrichtigungen durch Webseiten unterstützt. Erstellen sie einen Web App Zugriff um Benachrichtigungen nutzen zu können.
+notifications_adm#:#push_settings#:#Push-Benachrichtigungen
+notifications_adm#:#push_subscription_successfull#:#Aktivierung der Push-Benachrichtigungen erfolgreich
+notifications_adm#:#push_subscription_successfull_desc#:#Dies ist eine Test Benachrichtigungen um die erfolgreiche Aktivierung der Push Benachrichtigungen zu bestätigen.
 obj#:#activation_visible_when_disabled#:#Sichtbarkeit
 obj#:#activation_visible_when_disabled_info#:#Die gewählten Objekte sind auch außerhalb des gewählten Zeitraums sichtbar, können aber nicht geöffnet werden.
 obj#:#availability_period_changed#:#Die zeitliche Verfügbarkeit wurde für die ausgewählten Objekte erfolgreich angepasst.
@@ -12964,6 +12987,10 @@ obj#:#obj_base_lang#:#Basissprache
 obj#:#obj_conf_delete_lang#:#Wollen Sie die Anzeige von Titel und Beschreibung für diese Sprachen wirklich beenden?
 obj#:#obj_cont_transl_deactivated#:#Die Unterstützung für mehrsprachige Inhalte wurde deaktiviert.
 obj#:#obj_copy_progress#:#Fortschritt des Kopierens
+obj#:#obj_copy_progress_estimate#:#Dauer wird geschätzt...
+obj#:#obj_copy_progress_failure#:#Kopieren fehlgeschlagen.
+obj#:#obj_copy_progress_success#:#Erfolgreich kopiert.
+obj#:#obj_copy_progress_to#:#Kopieren nach %s
 obj#:#obj_deactivate_content_lang#:#Mehrsprachigkeit für die Bearbeitung deaktivieren
 obj#:#obj_deactivate_content_transl_conf#:# Wollen Sie die Unterstützung für mehrsprachige Inhalte im Seiteneditor wirklich deaktivieren? Nur die Inhalte der Standardsprache bleiben verfügbar.
 obj#:#obj_deactivate_multilang#:#Mehrsprachigkeit deaktivieren
@@ -13027,7 +13054,7 @@ objref#:#objref_edit_title#:#Titel
 objref#:#objref_failure_target_type#:#Das Ziel des Links muss vom folgendem Typ sein:
 objref#:#objref_reuse_title#:#Titel des verlinkten Objekts übernehmen
 objref#:#objref_title_settings#:#Titel des verlinkten Objekts
-orgu#:#Staff#:#Mitarbeiter
+orgu#:#Staff#:#Team
 orgu#:#add_position#:#Position hinzufügen
 orgu#:#authorities#:#Befugnisse
 orgu#:#authority#:#Befugnisse
@@ -13038,7 +13065,7 @@ orgu#:#confirm_deletion_and_assign#:#Löschen und Benutzer zuweisen
 orgu#:#confirm_deletion_button#:#Löschen
 orgu#:#deassign_user_successful#:#Benutzer wurde erfolgreich ausgetragen.
 orgu#:#edit_translations#:#Titel und Beschreibung
-orgu#:#employee#:#Mitarbeiter
+orgu#:#employee#:#Teammitglied
 orgu#:#ext_id#:#Externe ID
 orgu#:#ext_id_updated#:#Die externe ID wurde erfolgreich aktualisiert.
 orgu#:#form_title_org_default_permissions_update#:#Standardrechte
@@ -13048,9 +13075,9 @@ orgu#:#import_terminated_with_errors#:#Der Import hat Fehler erkannt.
 orgu#:#import_terminated_with_warnings#:#Der Import hat Warnungen erzeugt
 orgu#:#import_xml_file#:#Import-Datei
 orgu#:#local_other_roles#:#Weitere lokale Rollen %s
-orgu#:#local_staff#:#Mitarbeiter %s
-orgu#:#msg_assignment_to_employee_done#:#Zuweisung zur Position Mitarbeiter durchgeführt
-orgu#:#msg_confirm_d_ua#:#Wollen Sie folgende Benutzer der Position Mitarbeiter in ihrer jeweiligen Organisationseinheit zuweisen?
+orgu#:#local_staff#:#Teammitglied %s
+orgu#:#msg_assignment_to_employee_done#:#Zuweisung zur Position Teammitglied durchgeführt
+orgu#:#msg_confirm_d_ua#:#Wollen Sie folgende Personen der Position Teammitglied in ihrer jeweiligen Organisationseinheit zuweisen?
 orgu#:#msg_confirm_deletion#:#Wollen Sie die folgende Position wirklich löschen?
 orgu#:#msg_confirm_remove_user#:#Möchten Sie den folgenden Benutzer wirklich aus der Position %s entfernen?
 orgu#:#msg_deleted#:#Gelöscht
@@ -13083,7 +13110,7 @@ orgu#:#orgu_add#:#Organisationseinheit hinzufügen
 orgu#:#orgu_adv_settings#:#Erweiterte Einstellungen
 orgu#:#orgu_already_deleted#:#Das Objekt wurde bereits gelöscht.
 orgu#:#orgu_enable_my_staff#:#Hauptmenüeintrag aktivieren
-orgu#:#orgu_enable_my_staff_info#:#Ein neuer Haupteintrag wird im Hauptmenü angezeigt. Er kann die Einträge Mitarbeiterliste, Einschreibungen, Zertifikate, Kompetenzen, Gespräche enthalten.
+orgu#:#orgu_enable_my_staff_info#:#Ein neuer Haupteintrag wird im Hauptmenü angezeigt. Er kann die Einträge Team, Kurse, Zertifikate, Kompetenzen und Gespräche enthalten.
 orgu#:#orgu_global_set_form#:#Globale Einstellungen
 orgu#:#orgu_global_set_positions#:#Nutzung von Positionen in Objekttypen
 orgu#:#orgu_global_set_positions_type_active#:#Positionen in:
@@ -13126,7 +13153,7 @@ orgu#:#over#:#über
 orgu#:#over_-1#:#Alle
 orgu#:#placeholder#:#...
 orgu#:#positions#:#Positionen
-orgu#:#rec_staff#:#Mitarbeiter %s und nachfolgend
+orgu#:#rec_staff#:#Teammitglied %s und nachfolgend
 orgu#:#remove_successful#:#Der Benutzer wurde erfolgreich entfernt.
 orgu#:#remove_user#:#Entfernen
 orgu#:#scope#:#in
@@ -13138,7 +13165,7 @@ orgu#:#simple_import#:#Einfacher XML-Import
 orgu#:#simple_user_import#:#XML-Benutzerzuweisung
 orgu#:#simple_xls#:#Einfacher Excel-Export
 orgu#:#simple_xml#:#Einfacher XML-Export
-orgu#:#superior#:#Vorgesetzter
+orgu#:#superior#:#Führungskraft
 orgu#:#user_assignments#:#Benutzerzuweisung
 orgu#:#user_assignments_recursive#:#Benutzerzuweisung Teilbaum
 orgu#:#user_changed_successful#:#Der Benutzer wurde erfolgreich umgeschrieben.
@@ -13188,7 +13215,7 @@ pdesk#:#bookmark_select_target#:#Bitte wählen Sie das Ziel.
 poll#:#poll_absolute#:#Aktuelle Stimmen
 poll#:#poll_activation_online_info#:#Wählen Sie diese Einstellung, um die Abstimmung für Benutzer verfügbar zumachen.
 poll#:#poll_add#:#Abstimmung anlegen
-poll#:#poll_anonymous_warning#:#Ihr Name wird in den Abstimmungsergebnissen nicht angezeigt.
+poll#:#poll_anonymous_warning#:#Ihre Stimme wurde einzeln erfasst, aber Ihr Name wird in den Abstimmungsergebnissen nicht angezeigt.
 poll#:#poll_answer#:#Antwort
 poll#:#poll_answer_selected_alt_text#:#Ausgewählt
 poll#:#poll_answers#:#Mögliche Antworten
@@ -13212,7 +13239,7 @@ poll#:#poll_max_number_of_answers#:#Maximale Antworten
 poll#:#poll_max_number_of_answers_info#:#Sie dürfen bis zu %s Antworten auswählen.
 poll#:#poll_mode#:#Modus
 poll#:#poll_mode_anonymous#:#Ohne Namen / Anonym
-poll#:#poll_mode_anonymous_info#:#Im Tab "Abstimmungsergebnisse" werden Namen der Teilnehmenden nicht aufgeführt.
+poll#:#poll_mode_anonymous_info#:#Im Tab "Abstimmungsergebnisse" werden Namen der Teilnehmenden nicht aufgeführt. Systeminterne IDs der Teilnehmenden werden allerding in der Datenbank gespeichert.
 poll#:#poll_mode_personal#:#Mit Namen
 poll#:#poll_mode_personal_info#:#Im Tab "Abstimmungsergebnisse" werden die Namen der Teilnehmenden mit ihren Antworten aufgeführt. Wer Zugriff auf diesen Tab hat, kann prüfen, wer welche Antwort gegeben hat.
 poll#:#poll_new#:#Neue Abstimmung anlegen
@@ -13701,7 +13728,7 @@ prtf#:#prtf_template_title#:#Portfoliovorlage
 prtf#:#prtf_unset_as_default#:#Nicht als Mein Profil verwenden
 prtf#:#prtf_unset_default_share_info#:#Die Änderungen wurden gespeichert. Bitte überprüfen Sie die aktuellen Freigaben für das Portfolio.
 prtf#:#prtf_use_page_layout#:#Seitenlayout benutzen
-prtf#:#prtf_visible_for_tutor#:#Einsehbar für Tutor
+prtf#:#prtf_visible_for_tutor#:#Einsehbar für Übungsleitung
 prtf#:#prtt_title_info#:#Bitte beachten Sie, dass dieser Titel auch für die aus der Vorlage erstellten Portfolios verwendet wird.
 prtt#:#prtt_activation_limited_visibility_info#:#Falls aktiv, ist die Portfoliovorlage auch außerhalb der Zugriffszeiten sichtbar.
 prtt#:#prtt_activation_online_info#:#Wählen Sie diese Einstellung, um die Portfoliovorlage für Benutzer verfügbar zu machen.
@@ -13764,10 +13791,10 @@ ps#:#ps_export_groups#:#Export der Persönlichen Daten aus Gruppen erlauben
 ps#:#ps_export_member#:#Mitglieder
 ps#:#ps_export_prgs#:#Persönliche Daten in Studienprogrammen anzeigen und exportieren
 ps#:#ps_export_settings#:#Einstellungen zum Export
-ps#:#ps_export_sub#:#Noch nicht freigeschaltete Benutzer
+ps#:#ps_export_sub#:#Noch nicht freigeschaltete Personen
 ps#:#ps_export_tutor#:#Kursbetreuung
-ps#:#ps_export_user_data#:#Benutzerdaten
-ps#:#ps_export_wait#:#Benutzer auf der Warteliste
+ps#:#ps_export_user_data#:#Personenbezogene Daten
+ps#:#ps_export_wait#:#Personen auf der Warteliste
 ps#:#ps_field_type#:#Datenfeldtyp
 ps#:#ps_files_deleted#:#Die Exportdateien wurden gelöscht.
 ps#:#ps_grp_user_fields#:#Persönliche Angaben zu dieser Gruppe
@@ -13806,7 +13833,7 @@ ps#:#ps_type_select#:#Auswahlliste
 ps#:#ps_type_select_long#:#Auswahlliste (feste Werte)
 ps#:#ps_type_text#:#Textfeld
 ps#:#ps_type_txt_long#:#Textfeld (beliebige Werte)
-ps#:#ps_user_selection#:#Benutzerauswahl
+ps#:#ps_user_selection#:#Personenkreis
 ps#:#ps_warning_modify#:#Achtung: mindestens ein Benutzer hat der Nutzungsvereinbarung bereits zugestimmt. Das Ändern der Einstellungen bewirkt, dass die Nutzungsvereinbarung zurückgesetzt wird.
 ps#:#rbac_log#:#Rechteeinstellungs-Log
 ps#:#rbac_log_age#:#Log-Einträge vorhalten
@@ -14821,6 +14848,7 @@ registration#:#reg_approve#:#Neuanmeldung mit Überprüfung
 registration#:#reg_approve_info#:#Alle neuen ILIAS-Konten müssen von der ILIAS-Administration freigeschaltet werden.
 registration#:#reg_approve_needs_recipient#:#Für die Registrierungsart "Anmeldung mit Überprüfung" sollte mindestens ein Benutzer festgelegt werden, der bei Neuanmeldungen benachrichtigt wird.
 registration#:#reg_available_roles#:#Verfügbare Rollen:
+registration#:#reg_confirmation_already_confirmed#:#Die Registrierung wurde bereits bestätigt.
 registration#:#reg_confirmation_hash_life_time#:#Gültigkeitsdauer
 registration#:#reg_confirmation_hash_life_time_expired#:#Der Bestätigungslink ist nicht mehr gültig. Bitte registrieren Sie sich erneut!
 registration#:#reg_confirmation_hash_life_time_info#:#Geben Sie die Gültigkeitsdauer des Bestätigungslinks (in Sekunden) an. Empfohlener Wert sind 1800 Sekunden.
@@ -15296,12 +15324,11 @@ search#:#add_members_header#:#Benutzer hinzufügen
 search#:#append_results#:#Ergebnisse anhängen
 search#:#btn_search#:#Suchen
 search#:#last_search_result#:#Letztes Suchergebnis
-search#:#lucene_all_occurrences#:#... %s weitere(s) Vorkommen
 search#:#lucene_and#:#UND
 search#:#lucene_cpu#:#Anzahl Threads
 search#:#lucene_create_ini#:#Konfigurationsdatei erstellen
 search#:#lucene_default_operator#:#Verknüpfung von Suchbegriffen
-search#:#lucene_default_operator_info#:#Bitte geben Sie das Standardverhalten für die Verknüpfung von Suchbegriffen an.
+search#:#lucene_default_operator_info#:#Verhalten bei Eingabe mehrerer Suchbegriffe: Sollen in den Suchergebnissen immer alle Begriffe vorkommen (UND) oder genügt das Vorkommen eines der Suchbegriffe (ODER)?
 search#:#lucene_download_ini#:#Konfigurationsdatei herunterladen
 search#:#lucene_err_ampersand#:#Anfragen mit dem Spezialzeichen && müssen folgende Form haben: term1 && term2.
 search#:#lucene_err_and_or_not#:#Anfragen mit AND/OR/NOT müssen folgende Form haben: term1 AND|OR|NOT|AND NOT term2.
@@ -15327,9 +15354,6 @@ search#:#lucene_log#:#Pfad zur Logdatei
 search#:#lucene_log_info#:#Bitte tragen Sie hier den absoluten Pfad zu einer Datei ein, in die Log-Nachrichten geschrieben werden. Wenn die Datei noch nicht existiert, wird sie automatisch erzeugt.
 search#:#lucene_max_fs#:#Maximale Dateigröße (in MB)
 search#:#lucene_max_fs_info#:#Definiert das Dateigrößenlimit, bis zu dem Dateien indexiert werden. Der Inhalt größerer Dateien wird nicht in den Index aufgenommen.
-search#:#lucene_max_sub#:#Anzahl von Unterobjekten
-search#:#lucene_max_sub_info#:#Bitte geben Sie die Anzahl von Unterobjekten (z. B. Forenthemen bei Foren oder Glossarbegriffe bei Glossaren) ein, die maximal angezeigt werden.
-search#:#lucene_more_hits_link#:#%s weitere Treffer...
 search#:#lucene_num_frag_info#:#Bitte geben Sie die Maximalanzahl von Textabschnitten ein, die zur Hervorhebung der Suchtreffer ausgegeben werden sollen.
 search#:#lucene_num_fragments#:#Anzahl Textabschnitte
 search#:#lucene_offline_filter#:#Online-Status
@@ -15348,16 +15372,18 @@ search#:#search_any#:#-- Beliebig --
 search#:#search_area#:#Suchbereich
 search#:#search_area_info#:#Bitte wählen Sie einen Bereich aus, innerhalb dem die Suche starten soll.
 search#:#search_auto_complete_length#:#Anzahl der Einträge in Auto-Complete-Liste
-search#:#search_cdate_filter#:#Suche nach Erstellungsdatum
-search#:#search_cdate_filter_info#:#Bei der Suche kann das Erstellungsdatum von Objekten berücksichtigt werden.
+search#:#search_cdate_filter#:#Erstellungsdatum
+search#:#search_cdate_filter_info#:#In den Suchergebnissen erlaubt ein Filter die Eingabe eines Zeitraums.
 search#:#search_choose_object_type#:#Bitte wählen Sie mindestens einen Objekttyp aus.
 search#:#search_content#:#Seiteninhalt
+search#:#search_copyright#:#Copyright
 search#:#search_created_after#:#Objekte erstellt nach dem...
 search#:#search_created_before#:#Objekte erstellt vor dem...
 search#:#search_created_on#:#Objekte erstellt am...
 search#:#search_crs_title#:#Kursname
+search#:#search_detailed_results_title#:#Detaillierte Ergebnisse in %s
 search#:#search_details_info#:#Detailsuche in den unten ausgewählten Objekttypen
-search#:#search_direct#:#Direktsuche
+search#:#search_direct#:#Nur Titel und Beschreibung durchsuchen
 search#:#search_err_user_not_exist#:#Es konnte kein entsprechender Benutzer gefunden werden.
 search#:#search_fast_info#:#Suche nach Titeln, Beschreibungen und Schlagwörtern
 search#:#search_field#:#Sucheingabefeld
@@ -15372,8 +15398,8 @@ search#:#search_for_role_members#:#Nach Rollen suchen
 search#:#search_for_users#:#Nach Benutzern suchen
 search#:#search_grp_title#:#Gruppenname
 search#:#search_item_filter_form#:#Suche nach Typ
-search#:#search_item_filter_form_info#:#Suche wird auf die ausgewählten Objekttypen beschränkt.
-search#:#search_like_info#:#Erlaubt die Suche in der ILIAS-Datenbank ohne Zusatzsoftware. Der Inhalt von Dateien (z. B. PDFs oder HTML-Lernmodule) wird nicht erfasst und deshalb auch nicht als Suchergebnis angezeigt.
+search#:#search_item_filter_form_info#:#Im Suchfilter werden nur die ausgewählten Arten von Inhalten angeboten.
+search#:#search_like_info#:#Es wird nur in der ILIAS-Datenbank gesucht. Zusatzsoftware ist nicht notwendig. Der Inhalt von Dateien oder Metadaten wird nicht erfasst. Nur Treffer in Titel und Beschreibung werden als Suchergebnis angezeigt.
 search#:#search_limit_reached#:#Ihre Suche ergab mehr als %s Treffer. Sie können die Abfrage weiter einschränken, um detailliertere Treffer zu erhalten.
 search#:#search_lucene#:#Lucene-Suche
 search#:#search_mime_excel#:#Excel-Dateien
@@ -15391,12 +15417,16 @@ search#:#search_no_match#:#Ihre Suche ergab keine Treffer.
 search#:#search_no_match_hint#:#Es wurden keine Treffer für Ihre Suchanfrage nach <b>%s</b> gefunden.<br />Vorschläge:<br /><br />• Vergewissern Sie sich, dass alle Wörter richtig geschrieben sind.<br />• Probieren Sie andere Suchbegriffe.<br />• Probieren Sie allgemeinere Suchbegriffe.<br />• Probieren Sie weniger Suchbegriffe.
 search#:#search_no_selection#:#Sie haben keine Auswahl getroffen.
 search#:#search_off#:#Aus
+search#:#search_readme_file#:#Readme-Datei
+search#:#search_results_show_subitems#:#Detaillierte Ergebnisse anzeigen
+search#:#search_results_too_many_subitems#:#Mehr Ergebnisse sind vorhanden, bitte präzisieren Sie ihre Suche.
 search#:#search_role_title#:#Rollenname
 search#:#search_select_search_area#:#Suchbereich ändern
-search#:#search_show_inactive_user#:#Inaktive Benutzer anzeigen
-search#:#search_show_inactive_user_info#:#In der Benutzersuche werden auch Benutzer angezeigt, deren Konto nicht aktiv ist.
-search#:#search_show_limited_user#:#Zeitlich begrenzte Benutzer anzeigen
-search#:#search_show_limited_user_info#:#In der Benutzersuche werden auch Benutzer mit zeitlichem begrenztem Zugang angezeigt, die entweder noch nicht oder nicht mehr auf ILIAS zugreifen können.
+search#:#search_server_further_information#:#Weitere Informationen zur Konfiguration des Lucene-Servers finden Sie in der Readme-Datei.
+search#:#search_show_inactive_user#:#Inaktive Konten anzeigen
+search#:#search_show_inactive_user_info#:#In der Personensuche werden auch inaktive Konten angezeigt.
+search#:#search_show_limited_user#:#Zeitlich begrenzte Konten anzeigen
+search#:#search_show_limited_user_info#:#In der Personensuche werden auch Konten mit zeitlichem begrenztem Zugang angezeigt, die entweder noch nicht oder nicht mehr auf ILIAS zugreifen können.
 search#:#search_sort_by#:#Sortierung:
 search#:#search_sort_creation_date_asc#:#Ältestes
 search#:#search_sort_creation_date_desc#:#Neuestes
@@ -15414,6 +15444,7 @@ search#:#search_user_extended#:#Erweiterte Benutzersuche
 search#:#search_user_search_form#:#Globale Benutzersuche
 search#:#search_user_search_info_form#:#Anmeldekonten können in der globalen Suche gefunden werden. Sofern die Lucene-Volltextsuche aktiviert ist, werden auch Profildaten in den Index aufgenommen.
 search#:#search_users#:#Benutzer suchen
+search#:#seas_search_type#:#Art der Suche
 search#:#select_orgu#:#Organisationseinheiten auswählen
 search#:#until#:#bis
 search#:#user_search_settings_section#:#Suche im Reiter 'Mitglieder'
@@ -17054,7 +17085,6 @@ trac#:#trac_lp_determination_info_crs_tutor#:#Wählen Sie diejenigen Objekte aus
 trac#:#trac_lp_determination_info_mob#:#Auswahl der Medienobjekte, anhand derer der Gesamtstatus des Mediacast ermittelt wird.
 trac#:#trac_lp_determination_info_sco#:#Auswahl der SCOx, anhand derer der Gesamtstatus des SCORM-Moduls ermittelt wird.
 trac#:#trac_lp_determination_tutor#:#Auswahl von Objekten, die den Lernfortschritt bestimmen
-trac#:#trac_lp_filter#:#Filter
 trac#:#trac_lp_learner_access#:#Eigenen Lernfortschritt einsehen
 trac#:#trac_lp_learner_access_info#:#Wenn aktiviert, können Benutzer ihren eigenen Lernfortschritt einsehen.
 trac#:#trac_lp_list_gui#:#Dashboard, Magazin, Suche
@@ -17142,7 +17172,7 @@ trac#:#trac_not_participated#:#Nicht teilgenommen
 trac#:#trac_not_registered#:#Nicht angemeldet
 trac#:#trac_object_link#:#Link zum Objekt
 trac#:#trac_object_name#:#Name des Objekts
-trac#:#trac_object_owner#:#Besitzer des Objekts
+trac#:#trac_object_owner#:#Objekt im Besitz von
 trac#:#trac_object_stat_access#:#Nutzungsintensität
 trac#:#trac_object_stat_admin#:#Datenverwaltung
 trac#:#trac_object_stat_daily#:#Tagesverlauf
@@ -17165,7 +17195,6 @@ trac#:#trac_read_count#:#Zugriffe
 trac#:#trac_read_count_spent_seconds#:#Bearbeitungszeit / Zugriffe
 trac#:#trac_reference#:#Referenzen
 trac#:#trac_reference_ids_column#:#Referenz-IDs
-trac#:#trac_refresh#:#Ansicht aktualisieren
 trac#:#trac_registered#:#Angemeldet
 trac#:#trac_release_materials#:#Gruppierung mit optionalen Materialien auflösen
 trac#:#trac_report_date#:#Datum des Reports

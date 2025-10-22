@@ -201,11 +201,6 @@ class PersonalProfileGUI
         }
     }
 
-    public function userSettingVisible(string $setting): bool
-    {
-        return $this->user_settings_config->isVisible($setting);
-    }
-
     /**
     * show profile form
     *
@@ -440,10 +435,8 @@ class PersonalProfileGUI
             return false;
         }
 
-        $this->user->setLogin($login);
-
         try {
-            $this->user->updateLogin($this->user->getLogin());
+            $this->user->updateLogin($login);
             return true;
         } catch (\ilUserException $e) {
             $this->tpl->setOnScreenMessage('failure', $this->lng->txt('form_input_not_valid'));
@@ -618,7 +611,12 @@ class PersonalProfileGUI
         bool $anonymized = false,
         string $key_suffix = ''
     ): void {
-        foreach ($this->profile->getVisibleFields(Context::User) as $field) {
+        foreach ($this->profile->getVisibleFields(
+            Context::User,
+            null,
+            [],
+            [FirstName::class, LastName::class]
+        ) as $field) {
             $value = $field->retrieveValueFromUser($this->user);
             if (!$anonymized && ($value === '' || $value === '-')) {
                 continue;

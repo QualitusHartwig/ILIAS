@@ -895,8 +895,6 @@ assessment#:#logs_wrong_test_password_provided#:#Participant entered wrong test 
 assessment#:#longmenu#:#Longmenu###10 11 2018 new variable
 assessment#:#longmenu_answeroptions_differ#:#This question does not work correctly, as there are not the same amount of gaps in the text as in the correction options.###26 08 2024 new variable
 assessment#:#longmenu_text#:#Long Menu Text###30 08 2015 new variable
-assessment#:#mailnottype#:#შეტყობინების გაგზავნა მაშინაც როდესაც მომხმარებელი ჩააბარებს ტესტს
-assessment#:#mailnottype_desc#:#Notify the owner of the test <strong>even if</strong> the number of test attempts has not been limited.###26 08 2024 new variable
 assessment#:#mainbar_button_label_questionlist#:#Questionlist###26 08 2024 new variable
 assessment#:#maintenance#:#შენარჩუნება
 assessment#:#manscoring#:#ხელით შეფასება
@@ -1477,12 +1475,7 @@ assessment#:#tst_finish_confirm_button#:# დიახ, მე მსურს �
 assessment#:#tst_finish_confirm_cancel_button#:#არა, დავბრუნდეთ წინამდებარე კითხვასთან
 assessment#:#tst_finish_confirmation_question#:#თქვენ აპირებთ ტესტის დასრულებას და დაშვებული ჩაბარებების მაქსიმალური რაოდენობის მიღწევას. თქვენ ვერ შეძლებთ ამ ტესტში ხელახლა შესვას პასუხების შესაცვლელად. Nამდვილად გსურთ ტესტის დასრულება?
 assessment#:#tst_finish_confirmation_question_no_attempts_left#:#You are going to finish this test and reach the maximum number of allowed test attempts. You won’t be able to enter this test again to change your answers. Do you really want to finish the test?###26 08 2024 new variable
-assessment#:#tst_finish_notification#:#ემაილი დამთავრებასთან დაკავშირებით
-assessment#:#tst_finish_notification_advanced#:#გადავაგზავნოთ დასრულებული ტესტის შედეგი მფლობელთან
-assessment#:#tst_finish_notification_content_type#:#Content of e-mail###27 01 2015 new variable
-assessment#:#tst_finish_notification_desc#:#Sends an e-mail to the test owner for every user that has completed the test.###27 01 2015 new variable
 assessment#:#tst_finish_notification_no#:#No e-mail###06 02 2015 new variable
-assessment#:#tst_finish_notification_simple#:#გადავაგზავნოთ მომხმარებლის სახელი და დასრულების თარიღი ტესტის მფლობელთან
 assessment#:#tst_finished#:#დასრულებული
 assessment#:#tst_form_dynamic_question_set_config#:#Continues Question Selection###24 10 2013 new variable
 assessment#:#tst_gap_analysis#:#Gap Analysis###26 09 2014 new variable
@@ -1490,7 +1483,6 @@ assessment#:#tst_general_properties#:#ზოგადი პარამეტ�
 assessment#:#tst_header_participant#:#Result:###24 10 2013 new variable
 assessment#:#tst_header_participant_no_answer#:#Question - not answered###26 08 2024 new variable
 assessment#:#tst_header_solution#:#Correct solution:###24 10 2013 new variable
-assessment#:#tst_heading_scoring#:#შეფასება
 assessment#:#tst_hide_info_tab#:#Hide Info Tab###26 08 2024 new variable
 assessment#:#tst_hide_info_tab_desc#:#Hides the tab ‘Info’ of the test.###26 08 2024 new variable
 assessment#:#tst_hide_pagecontents#:#Hide page content###26 08 2024 new variable
@@ -1557,7 +1549,6 @@ assessment#:#tst_instant_feedback_answer_specific#:#აჩვენე პას
 assessment#:#tst_instant_feedback_answer_specific_desc#:#If answer-specific feedback is selected, the predefined feedback will be shown, depending on the answers of the participant (if supported by the question type).###26 09 2014 new variable
 assessment#:#tst_instant_feedback_contents#:#Included Contents###10 11 2018 new variable
 assessment#:#tst_instant_feedback_desc#:#When questions are configured with feedback it is provided to participants during the test pass.###10 11 2018 new variable
-assessment#:#tst_instant_feedback_forced#:#Force Instant Feedback###30 08 2015 new variable
 assessment#:#tst_instant_feedback_results#:#აჩვენე პასუხები (მხოლოდ ქულები)
 assessment#:#tst_instant_feedback_results_desc#:#If results (in points) are selected, the reached points will be shown.###26 09 2014 new variable
 assessment#:#tst_instant_feedback_solution#:#აჩვენე პასუხები
@@ -1646,7 +1637,6 @@ assessment#:#tst_no_marks_defined#:#ქულები არ არის გ�
 assessment#:#tst_no_question_selected_for_moving_to_qpl#:#Please choose at least one question to be added to a question pool!###07 11 2014 new variable
 assessment#:#tst_no_question_selected_for_removal#:#გთხოვთY შეამოწმოთ სულ მცირე ერთი კითხვა რომ ამოშალოთ ის
 assessment#:#tst_no_scorable_qst_available#:#No scorable question available###24 10 2013 new variable
-assessment#:#tst_no_tries#:#არცერთი
 assessment#:#tst_non_avail_pool_msg_status_lost#:#This question pool is not available anymore. Synchronizing questions from this pool is not possible any longer. You can derive a new question pool from the questions contained in this test.###25 10 2016 new variable
 assessment#:#tst_non_avail_pool_msg_status_trashed#:#This question pool is trashed, when it gets removed from system permanently, the test is no longer able to synchronize questions from it.###10 11 2018 new variable
 assessment#:#tst_non_avail_pools_table#:#Non Available Questionpools###25 10 2016 new variable
@@ -1659,7 +1649,6 @@ assessment#:#tst_notify_manscoring_done_body_msg_topic#:#the manual scoring for 
 assessment#:#tst_nr_of_passes#:#ტესტის ჩაბარებების რაოდენობა
 assessment#:#tst_nr_of_tries#:#ჩაბარებების მაქსიმალური რაოდენობა
 assessment#:#tst_nr_of_tries_desc#:#Maximum number of passes a participant can take.###07 11 2014 new variable
-assessment#:#tst_nr_of_tries_of_user#:#დასრულებული ჩაბარებები
 assessment#:#tst_num_all_questions#:#Number of All Questions###07 11 2014 new variable
 assessment#:#tst_num_correct_answered_questions#:#Correct Answered Questions###07 11 2014 new variable
 assessment#:#tst_num_non_answered_questions_notseen#:#Non Answered Questions (never seen)###30 08 2015 new variable
@@ -1884,16 +1873,10 @@ assessment#:#tst_score_cut_question_desc#:#Participants may score negative resul
 assessment#:#tst_score_cut_test#:#ამოვჭრათ ტესტის უარყოფითი ქულები
 assessment#:#tst_score_cut_test_desc#:#Participants might score negative points in questions. Scored points of all questions are added up. Only if the overall result of the test is negative this overall result will be set to 0 points. With this setting negative points carry a lot of weight.###27 01 2015 new variable
 assessment#:#tst_score_cutting#:#უარყოფითი ქულების ამოჭრა
-assessment#:#tst_score_reporting#:#გადაცემის დაფიქსირება
-assessment#:#tst_score_reporting_date#:#დასრულების თარიღის დაფიქსირება
 assessment#:#tst_search_users#:#მონაწილეების ძიება
 assessment#:#tst_select_questionpool#:#გთხოვთ აირჩიოთ კითხვის ნაკადი შექმნილი კითხვების შესანახად
 assessment#:#tst_selected_user_data_deleted#:#არჩეულ მომხმარებელთა ტესტის მონაცემები წარმატებულად წაიშალა
-assessment#:#tst_sequence#:#რიგითობის დაყენება
-assessment#:#tst_sequence_fixed#:#კითხვების რიგითობადაყენებულია
-assessment#:#tst_sequence_postpone#:#კითხვების გადატანა შეიძლება ტესტის ბოლოსთვის
 assessment#:#tst_sequence_properties#:#რიგითობა
-assessment#:#tst_session_settings#:#სესიის პარამეტრები
 assessment#:#tst_set_offline_due_to_switched_question_set_type_setting#:#The test has been set to offline, because the test mode setting has been changed. You have to set a new test mode relating question config before the test can be set to online again.###24 10 2013 new variable
 assessment#:#tst_setting_offer_hints_info#:#If enabled, existing question specific hints are offered.
 assessment#:#tst_setting_offer_hints_label#:#Question Specific Hints
@@ -15447,6 +15430,7 @@ search#:#search_user_extended#:#მომხმარებლის გაფ�
 search#:#search_user_search_form#:#User Search###24 10 2013 new variable
 search#:#search_user_search_info_form#:#If enabled, users data will be indexed and is searchable.###24 10 2013 new variable
 search#:#search_users#:#მომხმარებლების ძიება
+search#:#seas_search_type#:#ძიების სახეობა
 search#:#select_orgu#:#Select Organisational Units###07 02 2020 new variable
 search#:#until#:#სად
 sess#:#il_sess_participant#:#Session Participants###10 11 2018 new variable

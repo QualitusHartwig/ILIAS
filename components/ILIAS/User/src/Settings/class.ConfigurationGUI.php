@@ -171,28 +171,32 @@ class ConfigurationGUI implements DataRetrieval
     private function getColumns(): array
     {
         $cf = $this->ui_factory->table()->column();
+        $icon_checked = $this->ui_factory->symbol()->icon()
+            ->custom('assets/images/standard/icon_checked.svg', '', 'small');
+        $icon_unchecked = $this->ui_factory->symbol()->icon()
+            ->custom('assets/images/standard/icon_unchecked.svg', '', 'small');
         return [
             'field' => $cf->text($this->lng->txt('user_field'))->withIsSortable(true),
             'changeable_by_user' => $cf->boolean(
                 $this->lng->txt(
                     PropertyAttributes::ChangeableByUser->value
                 ),
-                $this->ui_factory->symbol()->glyph()->checked(),
-                $this->ui_factory->symbol()->glyph()->unchecked()
+                $icon_checked,
+                $icon_unchecked
             )->withIsSortable(true),
             'changeable_in_local_user_administration' => $cf->boolean(
                 $this->lng->txt(
                     PropertyAttributes::ChangeableInLocalUserAdministration->value
                 ),
-                $this->ui_factory->symbol()->glyph()->checked(),
-                $this->ui_factory->symbol()->glyph()->unchecked()
+                $icon_checked,
+                $icon_unchecked
             )->withIsSortable(true),
             'export' => $cf->boolean(
                 $this->lng->txt(
                     PropertyAttributes::Export->value
                 ),
-                $this->ui_factory->symbol()->glyph()->checked(),
-                $this->ui_factory->symbol()->glyph()->unchecked()
+                $icon_checked,
+                $icon_unchecked
             )->withIsSortable(true)
         ];
     }

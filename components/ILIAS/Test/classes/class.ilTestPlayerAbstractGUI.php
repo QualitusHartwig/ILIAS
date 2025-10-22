@@ -24,6 +24,7 @@ use ILIAS\Test\Logging\TestParticipantInteractionTypes;
 use ILIAS\Test\Presentation\TestScreenGUI;
 use ILIAS\Test\Questions\Presentation\QuestionsOfAttemptTable;
 use ILIAS\Test\Results\Data\StatusOfAttempt;
+use ILIAS\Test\Settings\MainSettings\RedirectionModes;
 use ILIAS\TestQuestionPool\Questions\QuestionAutosaveable;
 use ILIAS\TestQuestionPool\Questions\QuestionPartiallySaveable;
 use ILIAS\Test\Presentation\WorkingTime;
@@ -335,14 +336,9 @@ abstract class ilTestPlayerAbstractGUI extends ilTestServiceGUI
     ): bool {
         $this->updateWorkingTime();
 
-        $formtimestamp = $this->testrequest->int('formtimestamp');
-        if (!$force
-            && ilSession::get('formtimestamp') !== null
-            && $formtimestamp === ilSession::get('formtimestamp')) {
+        if (!$this->checkAndUpdateSaveAllowedByFormTimestamp($force)) {
             return false;
         }
-
-        ilSession::set('formtimestamp', $formtimestamp);
 
         /*
             #21097 - exceed maximum passes
@@ -372,6 +368,22 @@ abstract class ilTestPlayerAbstractGUI extends ilTestServiceGUI
         }
 
         return $saved;
+    }
+
+    private function checkAndUpdateSaveAllowedByFormTimestamp(bool $force): bool
+    {
+        if ($force) {
+            return true;
+        }
+
+        $formtimestamp = $this->testrequest->int('formtimestamp');
+        if (ilSession::get('formtimestamp') !== null
+            && $formtimestamp === ilSession::get('formtimestamp')) {
+            return false;
+        }
+
+        ilSession::set('formtimestamp', $formtimestamp);
+        return true;
     }
 
     private function buildQuestionObject(): ?assQuestion
@@ -1020,31 +1032,6 @@ abstract class ilTestPlayerAbstractGUI extends ilTestServiceGUI
             $this->test_result_repository
         ))->performFinishTasks($this->process_locker, $status_of_attempt);
         $this->test_result_repository->updateTestResultCache($this->test_session->getActiveId());
-
-        $this->sendNewPassFinishedNotificationEmailIfActivated(
-            $this->test_session->getActiveId(),
-            $this->test_session->getPass()
-        );
-    }
-
-    protected function sendNewPassFinishedNotificationEmailIfActivated(int $active_id, int $pass)
-    {
-        $notification_type = $this->object->getMainSettings()->getFinishingSettings()->getMailNotificationContentType();
-
-        if ($notification_type === 0
-            || !$this->object->getMainSettings()->getFinishingSettings()->getAlwaysSendMailNotification()
-                && $pass !== $this->object->getNrOfTries() - 1) {
-            return;
-        }
-
-        switch ($this->object->getMainSettings()->getFinishingSettings()->getMailNotificationContentType()) {
-            case 1:
-                $this->object->sendSimpleNotification($active_id);
-                break;
-            case 2:
-                $this->object->sendAdvancedNotification($active_id);
-                break;
-        }
     }
 
     protected function afterTestPassFinishedCmd()
@@ -1057,12 +1044,17 @@ abstract class ilTestPlayerAbstractGUI extends ilTestServiceGUI
         }
 
         // redirect after test
+        $redirection_mode = $this->object->getMainSettings()->getFinishingSettings()->getRedirectionMode();
         $redirection_url = $this->object->getMainSettings()->getFinishingSettings()->getRedirectionUrl();
         if (empty($redirection_url)
             || $this->object->canShowTestResults($this->test_session)
-            || $this->object->getMainSettings()->getFinishingSettings()->getRedirectionMode() === ilObjTest::REDIRECT_NONE
-            || $this->object->isRedirectModeKiosk() && !$this->object->getKioskMode()) {
+            || $redirection_mode === RedirectionModes::NONE
+            || $redirection_mode === RedirectionModes::IF_KIOSK_ACTIVATED && !$this->object->getKioskMode()) {
             $this->redirectBackCmd();
+        }
+
+        if ($redirection_mode === RedirectionModes::ALWAYS_TO_LOGOUT) {
+            $redirection_url = ilStartUpGUI::logoutUrl();
         }
 
         ilUtil::redirect($redirection_url);

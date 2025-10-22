@@ -31,6 +31,8 @@ import TextareaFactory from './Textarea/textarea.factory.js';
 import MarkdownFactory from './Markdown/markdown.factory.js';
 import TreeSelectFactory from './TreeSelect/TreeSelectFactory.js';
 import JQueryEventListener from '../../../Core/src/JQueryEventListener.js';
+import Tagify from '@yaireo/tagify';
+import tag from './Tag/tag.js';
 
 il.UI = il.UI || {};
 il.UI.Input = il.UI.Input || {};
@@ -45,4 +47,7 @@ il.UI.Input = il.UI.Input || {};
     {txt: (s) => il.Language.txt(s)},
     document,
   );
+  Input.tagInput = Input.tag || {};
+  Input.tagInput.init = (input, config, value, autocompleteEndpoint, autocompleteToken) => tag(
+    Tagify, input, config, value, autocompleteEndpoint, autocompleteToken);
 }(il.UI.Input));

@@ -895,8 +895,6 @@ assessment#:#logs_wrong_test_password_provided#:#Sudionik je unio pogrešnu lozi
 assessment#:#longmenu#:#Dugi izbornik
 assessment#:#longmenu_answeroptions_differ#:#This question does not work correctly, as there are not the same amount of gaps in the text as in the correction options.###26 08 2024 new variable
 assessment#:#longmenu_text#:#Tekst dugog izbornika
-assessment#:#mailnottype#:#Pošalji obavijest čak i ako korisnik završi pojedini prolaz testa
-assessment#:#mailnottype_desc#:#Notify the owner of the test <strong>even if</strong> the number of test attempts has not been limited.###26 08 2024 new variable
 assessment#:#mainbar_button_label_questionlist#:#Questionlist###26 08 2024 new variable
 assessment#:#maintenance#:#Održavanje
 assessment#:#manscoring#:#Ručno bodovanje
@@ -1477,12 +1475,7 @@ assessment#:#tst_finish_confirm_button#:#Da, želim završiti test
 assessment#:#tst_finish_confirm_cancel_button#:#Ne, želim se vratiti na prethodno pitanje
 assessment#:#tst_finish_confirmation_question#:#Završavate ovaj test i dolazite do maksimalnog broja dozvoljenih prolaza testa. Nakon toga nećete moći ponovno ući u ovaj test kako biste promijenili svoje odgovore. Želite li zaista završiti test?
 assessment#:#tst_finish_confirmation_question_no_attempts_left#:#You are going to finish this test and reach the maximum number of allowed test attempts. You won’t be able to enter this test again to change your answers. Do you really want to finish the test?###26 08 2024 new variable
-assessment#:#tst_finish_notification#:#Obavijest
-assessment#:#tst_finish_notification_advanced#:#Pošalji potpuni rezultat testa po korisniku
-assessment#:#tst_finish_notification_content_type#:#Sadržaj e-pošte
-assessment#:#tst_finish_notification_desc#:#Pošalje e-poštu vlasniku testa za svakog korisnika koji je završio test.
 assessment#:#tst_finish_notification_no#:#Nema e-pošte
-assessment#:#tst_finish_notification_simple#:#Pošalji korisničko ime i datum završetka
 assessment#:#tst_finished#:#Završeno
 assessment#:#tst_form_dynamic_question_set_config#:#Kontinuirani izbor pitanja
 assessment#:#tst_gap_analysis#:#Analiza praznine
@@ -1490,7 +1483,6 @@ assessment#:#tst_general_properties#:#Opće postavke
 assessment#:#tst_header_participant#:#Vaš odgovor:
 assessment#:#tst_header_participant_no_answer#:#Question - not answered###26 08 2024 new variable
 assessment#:#tst_header_solution#:#Najbolje moguće rješenje:
-assessment#:#tst_heading_scoring#:#Broj bodova
 assessment#:#tst_hide_info_tab#:#Hide Info Tab###26 08 2024 new variable
 assessment#:#tst_hide_info_tab_desc#:#Hides the tab ‘Info’ of the test.###26 08 2024 new variable
 assessment#:#tst_hide_pagecontents#:#Hide page content###26 08 2024 new variable
@@ -1557,7 +1549,6 @@ assessment#:#tst_instant_feedback_answer_specific#:#Različite povratne informac
 assessment#:#tst_instant_feedback_answer_specific_desc#:#Klikom na tipku ‘Provjeri'ILIAS će pokazati određenu povratnu informaciju za svaki mogući odgovor koji je odabrao sudionik. Povratna informacija mora se pohraniti uz pitanje. Ovu vrstu povratne informacije ne podržavaju sve vrste pitanja.
 assessment#:#tst_instant_feedback_contents#:#Sadržaji povratne informacije
 assessment#:#tst_instant_feedback_desc#:#Kada su pitanja konfigurirana s povratnim informacijama, te informacije sudionicima stoje na raspolaganju tijekom testa.
-assessment#:#tst_instant_feedback_forced#:#Prikaži povratne informacije uvijek prilikom predaje odgovora
 assessment#:#tst_instant_feedback_results#:#Ostvareni bodovi
 assessment#:#tst_instant_feedback_results_desc#:#Klikom na tipku ‘Provjeri’ ILIAS će prikazati koliko je bodova postignuto danim odgovorom.
 assessment#:#tst_instant_feedback_solution#:#Prikaži najbolji mogući odgovor
@@ -1646,7 +1637,6 @@ assessment#:#tst_no_marks_defined#:#Nema definiranih ocjena. Molimo izradite bar
 assessment#:#tst_no_question_selected_for_moving_to_qpl#:#Molimo izaberite barem jedno pitanje koje želite dodati u bazen pitanja!
 assessment#:#tst_no_question_selected_for_removal#:#Molimo odaberite najmanje jedno pitanje za uklanjanje!
 assessment#:#tst_no_scorable_qst_available#:#Nije dostupno nijedno pitanje za ručno ocjenjivanje
-assessment#:#tst_no_tries#:#nema
 assessment#:#tst_non_avail_pool_msg_status_lost#:#Ovaj bazen pitanja više nije dostupan Sinkronizacija pitanja iz ovog bazena više nije moguća. Iz pitanja koja se već nalaze u testu možete izvesti novi bazen pitanja.
 assessment#:#tst_non_avail_pool_msg_status_trashed#:#Ovaj bazen pitanja je u košu za smeće. Ako se trajno ukloni iz sustava, test više neće biti u stanju sinkronizirati pitanja iz ovoga bazena.
 assessment#:#tst_non_avail_pools_table#:#Bazeni pitanja koji nisu dostupni
@@ -1659,7 +1649,6 @@ assessment#:#tst_notify_manscoring_done_body_msg_topic#:#Vaš je test ocijenjen 
 assessment#:#tst_nr_of_passes#:#Broja prolaza testa
 assessment#:#tst_nr_of_tries#:#Maks. broj prolaza
 assessment#:#tst_nr_of_tries_desc#:#Maksimalni broj prolaza koje sudionik može apsolvirati.
-assessment#:#tst_nr_of_tries_of_user#:#Već provedeni prolazi testa
 assessment#:#tst_num_all_questions#:#Broj sva pitanja
 assessment#:#tst_num_correct_answered_questions#:#Ispravno odgovoreno
 assessment#:#tst_num_non_answered_questions_notseen#:#Još nije pregledano
@@ -1884,16 +1873,10 @@ assessment#:#tst_score_cut_question_desc#:#Kod dodjele negativnih bodova za poje
 assessment#:#tst_score_cut_test#:#Negativan rezultat za cjelokupni test postavljen je na ‘0 bodova’
 assessment#:#tst_score_cut_test_desc#:#Po pitanju se mogu ostvariti negativni bodovi, Bodovi ostvarenih kod svih pitanja se zbrajaju. Ukupni rezultat postavit će se na 0 bodova samo ako je ukupan rezultat testa negativan. S ovom postavkom negativni bodovi imaju veliki značaj.
 assessment#:#tst_score_cutting#:#Negativni bodovi
-assessment#:#tst_score_reporting#:#Izvješće s rezultatima
-assessment#:#tst_score_reporting_date#:#Datum izvješća s rezultatima
 assessment#:#tst_search_users#:#Pretraži sudionike
 assessment#:#tst_select_questionpool#:#Molimo odaberite bazen pitanja u koji želite spremiti izrađeno pitanje
 assessment#:#tst_selected_user_data_deleted#:#Podaci o testu odabranog(ih) korisnika uspješno su uklonjeni
-assessment#:#tst_sequence#:#Redoslijed
-assessment#:#tst_sequence_fixed#:#Redoslijed pitanja je fiksan
-assessment#:#tst_sequence_postpone#:#Pitanja se mogu pomaknuti na kraj prolaza testa
 assessment#:#tst_sequence_properties#:#Provedba testa: Funkcionalnosti koje su dostupne sudionicim
-assessment#:#tst_session_settings#:#Postavke sesije
 assessment#:#tst_set_offline_due_to_switched_question_set_type_setting#:#Test je postavljen offline, jer je postavka načina rada testa promijenjena. Morate dodijeliti pitanja za test prije nego što ga opet možete postaviti online.
 assessment#:#tst_setting_offer_hints_info#:#Sudionici mogu zatražiti savjete kako bi odgovorili na pitanje. Sa svakim savjetom smanjuju se bodovi za točan odgovor.
 assessment#:#tst_setting_offer_hints_label#:#Savjeti (hints)
@@ -15447,6 +15430,7 @@ search#:#search_user_extended#:#Prošireno pretraživanje korisnika
 search#:#search_user_search_form#:#Pretražite u osobnim profilima
 search#:#search_user_search_info_form#:#Podaci u osobnim profilima korisnika indeksiraju se i mogu se koristiti za pretraživanje korisnika.
 search#:#search_users#:#Pretraži korisnike
+search#:#seas_search_type#:#Tip
 search#:#select_orgu#:#Select Organisational Units###04 06 2021 new variable
 search#:#until#:#do
 sess#:#il_sess_participant#:#Sudionici sesije

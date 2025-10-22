@@ -276,9 +276,9 @@ of ILIAS. The file contains the following fields:
 
 [//]: # (END Blog)
 
-[//]: # (BEGIN BookingTool)
+[//]: # (BEGIN BookingPool)
 
-* **Booking Tool**
+* **Booking Pool**
     * Authority to Sign off on Conceptual Changes: [simon.lowe](https://docu.ilias.de/go/usr/79091), [oliver.samoila](https://docu.ilias.de/go/usr/26160)
     * Authority to Sign off on Code Changes: [tjoussen](https://docu.ilias.de/go/usr/103745)
     * Authority to Curate Test Cases: [simon.lowe](https://docu.ilias.de/go/usr/79091), [tjoussen](https://docu.ilias.de/go/usr/103745)
@@ -288,7 +288,7 @@ of ILIAS. The file contains the following fields:
     * Assignee for Security Issues: [tjoussen](https://docu.ilias.de/go/usr/103745)
     * Unit-specific Guidelines, Rules, and Regulations: [LINK MISSING]('')
 
-[//]: # (END BookingTool)
+[//]: # (END BookingPool)
 
 [//]: # (BEGIN Calendar)
 
@@ -922,9 +922,9 @@ of ILIAS. The file contains the following fields:
 * **Learning Module SCORM (1.2 and 2004)**
     * Authority to Sign off on Conceptual Changes: [wischniak](https://docu.ilias.de/go/usr/21896)
     * Authority to Sign off on Code Changes: [qualitus.dahme](https://docu.ilias.de/go/usr/99160), [qualitus.hartwig](https://docu.ilias.de/go/usr/104063)
-    * Authority to Curate Test Cases: [tim.fehske](https://docu.ilias.de/go/usr/101255)
+    * Authority to Curate Test Cases: [emix](https://docu.ilias.de/go/usr/57311)
     * Authority to (De-)Assign Authorities: [wischniak](https://docu.ilias.de/go/usr/21896)
-	* Tester: n.n., Qualitus
+	* Tester: [emix](https://docu.ilias.de/go/usr/57311)
     * Assignee for Security Reports: [wischniak](https://docu.ilias.de/go/usr/21896)
     * Assignee for Security Issues: [wischniak](https://docu.ilias.de/go/usr/21896)
     * Unit-specific Guidelines, Rules, and Regulations: [LINK MISSING]('')
@@ -1585,12 +1585,13 @@ of ILIAS. The file contains the following fields:
 	* Authority to Sign off on Conceptual Changes: [dstrassner](https://docu.ilias.de/go/usr/48931)
     * Authority to Sign off on Code Changes: [mbecker](https://docu.ilias.de/go/usr/27266)
         , [skergomard](https://docu.ilias.de/go/usr/44474)
+        , [dstrassner](https://docu.ilias.de/go/usr/48931)
         , [tjoussen](https://docu.ilias.de/go/usr/103745)
     * Authority to Curate Test Cases: [dstrassner](https://docu.ilias.de/go/usr/48931)
     * Authority to (De-)Assign Authorities: [dstrassner](https://docu.ilias.de/go/usr/48931)
 	* Testcases: SIG E-Assessment
 	* Tester: [dehling](https://docu.ilias.de/go/usr/12725)
-        , [NDJ1508](https://docu.ilias.de/go/usr/93043)
+        , Testteam University of Hohenheim
         , [ksgrie](https://docu.ilias.de/go/usr/95947)
         , [simon.lowe](https://docu.ilias.de/go/usr/79091)
         , [rabah](https://docu.ilias.de/go/usr/40218)

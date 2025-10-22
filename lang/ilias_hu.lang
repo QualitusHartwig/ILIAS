@@ -895,8 +895,6 @@ assessment#:#logs_wrong_test_password_provided#:#A résztvevő rossz jelszót ad
 assessment#:#longmenu#:#Étlap
 assessment#:#longmenu_answeroptions_differ#:#This question does not work correctly, as there are not the same amount of gaps in the text as in the correction options.###26 08 2024 new variable
 assessment#:#longmenu_text#:#'Étlap'-szöveg
-assessment#:#mailnottype#:#Akkor is küldjön értesítést, amikor egy felhasználó a teszt egy lépését fejezi be.
-assessment#:#mailnottype_desc#:#Notify the owner of the test <strong>even if</strong> the number of test attempts has not been limited.###26 08 2024 new variable
 assessment#:#mainbar_button_label_questionlist#:#Questionlist###26 08 2024 new variable
 assessment#:#maintenance#:#Karbantartás
 assessment#:#manscoring#:#Manuális pontozás
@@ -1477,12 +1475,7 @@ assessment#:#tst_finish_confirm_button#:#Igen, be szeretném fejezni a tesztet.
 assessment#:#tst_finish_confirm_cancel_button#:#Nem, menjen vissza az előző kérdéshez.
 assessment#:#tst_finish_confirmation_question#:#Ha befejezi ezt a tesztet, eléri az engedélyezett tesztkitöltések maximális számát. Nem fog tudni visszatérni a tesztbe, hogy megváltoztassa válaszait. Biztos, hogy be szeretné fejezni a tesztet?
 assessment#:#tst_finish_confirmation_question_no_attempts_left#:#You are going to finish this test and reach the maximum number of allowed test attempts. You won’t be able to enter this test again to change your answers. Do you really want to finish the test?###26 08 2024 new variable
-assessment#:#tst_finish_notification#:#Értesítés
-assessment#:#tst_finish_notification_advanced#:#Az összes teszteredmény küldése
-assessment#:#tst_finish_notification_content_type#:#E-mail tartalma
-assessment#:#tst_finish_notification_desc#:#Minden alkalommal e-mail küldése a teszt tulajdonosának, amikor egy résztvevő befejezi a teszt kitöltését.
 assessment#:#tst_finish_notification_no#:#Nincs e-mail
-assessment#:#tst_finish_notification_simple#:#Felhasználónév és záró dátum küldése
 assessment#:#tst_finished#:#Befejezve
 assessment#:#tst_form_dynamic_question_set_config#:#Folyamatos kérdéskiválasztás
 assessment#:#tst_gap_analysis#:#Gap analízis (rés elemzés)
@@ -1490,7 +1483,6 @@ assessment#:#tst_general_properties#:#Általános beállítások
 assessment#:#tst_header_participant#:#Az Ön válasza:
 assessment#:#tst_header_participant_no_answer#:#Question - not answered###26 08 2024 new variable
 assessment#:#tst_header_solution#:#Legjobb megoldás:
-assessment#:#tst_heading_scoring#:#Pontozás
 assessment#:#tst_hide_info_tab#:#Hide Info Tab###26 08 2024 new variable
 assessment#:#tst_hide_info_tab_desc#:#Hides the tab ‘Info’ of the test.###26 08 2024 new variable
 assessment#:#tst_hide_pagecontents#:#Hide page content###26 08 2024 new variable
@@ -1557,7 +1549,6 @@ assessment#:#tst_instant_feedback_answer_specific#:#Válaszlehetőségenkénti v
 assessment#:#tst_instant_feedback_answer_specific_desc#:#Az <i>Ellenőrzés</i> gombra kattintva előre meghatározott visszajelzés jelenik meg a felhasználó által kiválasztott akármelyik válaszadási lehetőségre. A kérdéssel együtt kell elkészíteni az összes válaszhoz tartozó a visszajelzést. Nem minden kérdéstípus esetén lehetséges válaszfüggő visszajelzés.
 assessment#:#tst_instant_feedback_contents#:#Belefoglalt tartalmak
 assessment#:#tst_instant_feedback_desc#:#Amikor a kérdéseket visszajelzéssel állítják be, az a résztvevőknek a teszt kitöltése alatt jelenik meg.
-assessment#:#tst_instant_feedback_forced#:#Azonnali visszajelzés kikényszerítése
 assessment#:#tst_instant_feedback_results#:#Elért pontszámok
 assessment#:#tst_instant_feedback_results_desc#:#Az <i>Ellenőrzés</i> gombra kattintva megjelenítik az erre a kérdésre adott válaszra kapott pontszám.
 assessment#:#tst_instant_feedback_solution#:#Legjobb lehetséges válasz megjelenítése
@@ -1646,7 +1637,6 @@ assessment#:#tst_no_marks_defined#:#Nincsenek érdemjegyek definiálva, adjon me
 assessment#:#tst_no_question_selected_for_moving_to_qpl#:#Legalább egy kérdést válasszon, ami kérdésgyűjteményhez kíván adni!
 assessment#:#tst_no_question_selected_for_removal#:#Jelöljön ki legalább egy kérdést az eltávolításhoz!
 assessment#:#tst_no_scorable_qst_available#:#Nincs elérhető pontozandó kérdés
-assessment#:#tst_no_tries#:#0
 assessment#:#tst_non_avail_pool_msg_status_lost#:#Ez a kérdésgyűjtemény többé nem érhető el, ezért kérdései szinkronizációja nem lehetséges. Új kérdésgyűjteményt származtathat a teszt kérdéseiből.
 assessment#:#tst_non_avail_pool_msg_status_trashed#:#Ez a kérdésgyűjtemény jelenleg a lomtárban van. Ha a rendszerből végleg eltávolítják, a teszt nem tud majd utána kérdéseket szinkronizálni belőle.
 assessment#:#tst_non_avail_pools_table#:#Nem elérhető kérdésgyűjtemények
@@ -1659,7 +1649,6 @@ assessment#:#tst_notify_manscoring_done_body_msg_topic#:#ezúton tájékoztatjuk
 assessment#:#tst_nr_of_passes#:#Tesztkitöltések száma
 assessment#:#tst_nr_of_tries#:#Próbálkozások maximális száma
 assessment#:#tst_nr_of_tries_desc#:#Egy résztvevő maximális kitöltéseinek száma.
-assessment#:#tst_nr_of_tries_of_user#:#Eddigi kitöltések
 assessment#:#tst_num_all_questions#:#Összes kérdés száma
 assessment#:#tst_num_correct_answered_questions#:#Hibátlanul megválaszoltak
 assessment#:#tst_num_non_answered_questions_notseen#:#Még meg sem nyitottak
@@ -1884,16 +1873,10 @@ assessment#:#tst_score_cut_question_desc#:#Előfordulhat, hogy egy résztvevők 
 assessment#:#tst_score_cut_test#:#Negatív pontszámú végeredmény 0-ra módosítása
 assessment#:#tst_score_cut_test_desc#:#Az összes kérdésre elért válasz pontszáma - melyek között lehet negatív is - összeadódik. A végeredmény, az összpontszám azonban nem lehet negatív, azt 0-ra módosítjuk. Ebben az esetben a negatív pontszámok nagy hangsúlyt kapnak.
 assessment#:#tst_score_cutting#:#Negatív pontszámok
-assessment#:#tst_score_reporting#:#Jelentés a ponteredményekről
-assessment#:#tst_score_reporting_date#:#Eredmény megjelenítésének dátuma
 assessment#:#tst_search_users#:#Résztvevők keresése
 assessment#:#tst_select_questionpool#:#Válasszon ki egy kérdésgyűjteményt a létrehozott kérdés mentéséhez!
 assessment#:#tst_selected_user_data_deleted#:#A kiválasztott felhasználó(k) tesztadatai sikeresen eltávolította.
-assessment#:#tst_sequence#:#Sorrend
-assessment#:#tst_sequence_fixed#:#A kérdéssorrend rögzített
-assessment#:#tst_sequence_postpone#:#Kérdések elhalaszthatók a tesztkitöltés végére
 assessment#:#tst_sequence_properties#:#Teszt felügyelete: Felhasználók számára elérhető funkcionalitások
-assessment#:#tst_session_settings#:#Munkamenet-beállítások
 assessment#:#tst_set_offline_due_to_switched_question_set_type_setting#:#A teszt offline lett, mert a teszt-mód beállítása megváltozott. Új teszt-módot szükséges beállítani a kérdésbeállításnak megfelelően, mielőtt a teszt ismét online-ra állítható.
 assessment#:#tst_setting_offer_hints_info#:#A résztvevők a kérdés megválaszolásához segítségeket kérhetnek. A megszerezhető pontszám minden segítségkéréssel csökken.
 assessment#:#tst_setting_offer_hints_label#:#Segítség
@@ -4631,7 +4614,6 @@ common#:#mails_at_the_ilias_installation#:#%1$s új levelet kapott a(z) %2$s ILI
 common#:#mails_pl#:#levél/levelek
 common#:#main_menu#:#Főmenü
 common#:#mainbar_aria_label#:#Főmenü
-common#:#mainbar_more_label#:#More
 common#:#mainbar_more_label#:#Több
 common#:#manage_members#:#Tagok kezelése
 common#:#marked_entries#:#Megjelölt bejegyzések
@@ -15448,6 +15430,7 @@ search#:#search_user_extended#:#Részletes felhasználókeresés
 search#:#search_user_search_form#:#Felhasználói profilokban keresés
 search#:#search_user_search_info_form#:#A felhasználói profilok adatai indexeltek és a felhasználók számára kereshetőek.
 search#:#search_users#:#Felhasználók keresése
+search#:#seas_search_type#:#Keresési típus
 search#:#select_orgu#:#Válasszon szervezeti egységeket
 search#:#until#:#eddig
 sess#:#il_sess_participant#:#Esemény résztvevői

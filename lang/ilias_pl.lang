@@ -895,8 +895,6 @@ assessment#:#logs_wrong_test_password_provided#:#Uczestnik wprowadził nieprawid
 assessment#:#longmenu#:#Longmenu
 assessment#:#longmenu_answeroptions_differ#:#This question does not work correctly, as there are not the same amount of gaps in the text as in the correction options.###26 08 2024 new variable
 assessment#:#longmenu_text#:#Tekst ‘Long Menu’
-assessment#:#mailnottype#:#Transmisja odbywa się również po zakończeniu poszczególnych przebiegów testu.
-assessment#:#mailnottype_desc#:#Notify the owner of the test <strong>even if</strong> the number of test attempts has not been limited.###26 08 2024 new variable
 assessment#:#mainbar_button_label_questionlist#:#Questionlist###26 08 2024 new variable
 assessment#:#maintenance#:#Konserwacja
 assessment#:#manscoring#:#Ręczna punktacja
@@ -1477,12 +1475,7 @@ assessment#:#tst_finish_confirm_button#:#Tak, chcę skończyć test
 assessment#:#tst_finish_confirm_cancel_button#:#Nie, powrót do poprzedniej odpowiedzi
 assessment#:#tst_finish_confirmation_question#:#Kończysz test i wyczerpałeś wszystkie próby. Już nie będziesz mógł powtórzyć tego testu aby zmienić odpowiedzi. Na pewno chcesz skończyć test?
 assessment#:#tst_finish_confirmation_question_no_attempts_left#:#You are going to finish this test and reach the maximum number of allowed test attempts. You won’t be able to enter this test again to change your answers. Do you really want to finish the test?###26 08 2024 new variable
-assessment#:#tst_finish_notification#:#Mail po zakończeniu
-assessment#:#tst_finish_notification_advanced#:#Wyślij wynik testu do uczestnika testu
-assessment#:#tst_finish_notification_content_type#:#Treść wiadomości
-assessment#:#tst_finish_notification_desc#:#Właściciel testu otrzyma dla każdego uczestnika, który ukończył test, wiadomość mailową zawierającą następujące informacje.
 assessment#:#tst_finish_notification_no#:#Brak wiadomości
-assessment#:#tst_finish_notification_simple#:#Tylko nazwa użytkownika oraz data ukończenia
 assessment#:#tst_finished#:#Ukończone
 assessment#:#tst_form_dynamic_question_set_config#:#Bieżący wybór pytań
 assessment#:#tst_gap_analysis#:#Analiza GAP
@@ -1490,7 +1483,6 @@ assessment#:#tst_general_properties#:#Cechy ogólne
 assessment#:#tst_header_participant#:#Twoja odpowiedź:
 assessment#:#tst_header_participant_no_answer#:#Question - not answered###26 08 2024 new variable
 assessment#:#tst_header_solution#:#Najlepsze rozwiązanie:
-assessment#:#tst_heading_scoring#:#Punktacja
 assessment#:#tst_hide_info_tab#:#Hide Info Tab###26 08 2024 new variable
 assessment#:#tst_hide_info_tab_desc#:#Hides the tab ‘Info’ of the test.###26 08 2024 new variable
 assessment#:#tst_hide_pagecontents#:#Hide page content###26 08 2024 new variable
@@ -1557,7 +1549,6 @@ assessment#:#tst_instant_feedback_answer_specific#:#Pokaż właściwą do odpowi
 assessment#:#tst_instant_feedback_answer_specific_desc#:#Po kliknięciu opcji 'Zażądaj komunikatu zwrotnego' ILIAS wyświetli każdej udzielonej odpowiedzi odpowiedni, zapisany komunikat zwrotny. Nie wszystkie typy pytań obsługują ten rodzaj komunikatów zwrotnych. Komunikaty zwrotne należy zapisać przy odpowiedzi w zakładce 'Komunikat zwrotny'.
 assessment#:#tst_instant_feedback_contents#:#Included Contents
 assessment#:#tst_instant_feedback_desc#:#When questions are configured with feedback it is provided to participants during the test pass.
-assessment#:#tst_instant_feedback_forced#:#Wyświetl komunikat zwrotny zawsze przy udzieleniu odpowiedzi
 assessment#:#tst_instant_feedback_results#:#Pokaż wyniki (tylko punkty)
 assessment#:#tst_instant_feedback_results_desc#:#Jeśli uczestnicy klikną przy odpowiadaniu na pytanie na opcję  'Zażądaj komunikatu zwrotnego', ILIAS wyświetli liczbę punktów otrzymanych za tę odpowiedź.
 assessment#:#tst_instant_feedback_solution#:#Pokaż rozwiązania
@@ -1646,7 +1637,6 @@ assessment#:#tst_no_marks_defined#:#Brak zdefiniowanych pozycji wyboru, utwórz 
 assessment#:#tst_no_question_selected_for_moving_to_qpl#:#Wybierz co najmniej jedno pytanie, które chcesz umieścić w puli pytań!
 assessment#:#tst_no_question_selected_for_removal#:#Wybierz co najmniej jedno pytanie do usunięcia!
 assessment#:#tst_no_scorable_qst_available#:#Pytania z ręczną punktacją nie są dostępne
-assessment#:#tst_no_tries#:#brak
 assessment#:#tst_non_avail_pool_msg_status_lost#:#<b>Ta pula pytań nie jest już dostępna.</b><br />Nie ma już możliwości przeprowadzenia synchronizacji pytań z tej puli pytań. Z pytań znajdujących się już w teście możesz utworzyć nową pulę pytań.
 assessment#:#tst_non_avail_pool_msg_status_trashed#:#<b>Pula pytań znajduje się w koszu.</b><br />Jeśli pula jest stale usuwana przez system, test nie może ponownie zsynchronizować pytań z puli.
 assessment#:#tst_non_avail_pools_table#:#Niedostępne pule pytań
@@ -1659,7 +1649,6 @@ assessment#:#tst_notify_manscoring_done_body_msg_topic#:#przekazano ręczną pun
 assessment#:#tst_nr_of_passes#:#Ilość wykonań testu
 assessment#:#tst_nr_of_tries#:#Maks. ilość prób
 assessment#:#tst_nr_of_tries_desc#:#Maksymalna liczba przebiegów testu, w których uczestnik może brać udział.
-assessment#:#tst_nr_of_tries_of_user#:#Liczba wykonanych prób
 assessment#:#tst_num_all_questions#:#Liczba wszystkich pytań
 assessment#:#tst_num_correct_answered_questions#:#Prawidłowa odpowiedź
 assessment#:#tst_num_non_answered_questions_notseen#:#Jeszcze nie otwarte
@@ -1884,16 +1873,12 @@ assessment#:#tst_score_cut_question_desc#:#W przypadku naliczania punktów ujemn
 assessment#:#tst_score_cut_test#:#Wyzeruj ujemne punkty dla sumy wyników wszystkich pytań
 assessment#:#tst_score_cut_test_desc#:#W każdym pytaniu można otrzymać punkty ujemny. Liczba punktów uzyskanych we wszystkich pytaniach jest sumowana. Dopiero gdy się okaże, że ten wynik jest negatywny, zerowana jest suma wszystkich punktów uzyskanych w teście. To ustawienie sprawia, że punkty ujemny mają bardzo duży wpływ na wynik końcowy testu.
 assessment#:#tst_score_cutting#:#Wyzeruj ujemne punkty
-assessment#:#tst_score_reporting#:#Raport wyników
-assessment#:#tst_score_reporting_date#:#Data raportu wyników
 assessment#:#tst_search_users#:#Szukaj uczestnika
 assessment#:#tst_select_questionpool#:#Wybierz pulę pytań dla zapamiętania utworzonego pytania
 assessment#:#tst_selected_user_data_deleted#:#Usunięcie danych testu wybranych użytkowników powiodło się
-assessment#:#tst_sequence#:#Kolejność pytań
 assessment#:#tst_sequence_fixed#:#Kolejność pytań została ustalona
 assessment#:#tst_sequence_postpone#:#Uczeń może odłożyć pytanie na koniec testu
 assessment#:#tst_sequence_properties#:#Cechy sekwencji
-assessment#:#tst_session_settings#:#Ustawienia sesji
 assessment#:#tst_set_offline_due_to_switched_question_set_type_setting#:#Test jest w trybie offline, ponieważ zmieniły się ustawienia dotyczące wyboru pytań testowych. Ponownie przyporządkuj do testu pytania. Test będzie można następnie ponownie ustawić w trybie online.
 assessment#:#tst_setting_offer_hints_info#:#Uczestnicy mogą zażądać podpowiedzi, aby odpowiedzieć na pytanie. Każda udzielona podpowiedź zmniejsza punkty za prawidłowe rozwiązanie.
 assessment#:#tst_setting_offer_hints_label#:#Podpowiedzi
@@ -15447,6 +15432,7 @@ search#:#search_user_extended#:#Zaawansowane wyszukanie użytkownika
 search#:#search_user_search_form#:#Szukaj w osobistych profilach
 search#:#search_user_search_info_form#:#Dane użytkownika są indeksowane w osobistych profilach i mogą być wykorzystywane do szukanie użytkowników za pomocą funkcji wyszukiwania globalnego.
 search#:#search_users#:#Szukaj użytkownika
+search#:#seas_search_type#:#Typ wyszukiwania
 search#:#select_orgu#:#Select Organisational Units###07 02 2020 new variable
 search#:#until#:#aż do
 sess#:#il_sess_participant#:#Session Participants

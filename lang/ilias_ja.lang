@@ -895,8 +895,6 @@ assessment#:#logs_wrong_test_password_provided#:#受講者は間違ったテス�
 assessment#:#longmenu#:#Longmenu
 assessment#:#longmenu_answeroptions_differ#:#This question does not work correctly, as there are not the same amount of gaps in the text as in the correction options.###26 08 2024 new variable
 assessment#:#longmenu_text#:#長いメニューテキスト
-assessment#:#mailnottype#:#ユーザがテスト終了しても通知を送る
-assessment#:#mailnottype_desc#:#Notify the owner of the test <strong>even if</strong> the number of test attempts has not been limited.###26 08 2024 new variable
 assessment#:#mainbar_button_label_questionlist#:#Questionlist###26 08 2024 new variable
 assessment#:#maintenance#:#メンテナンス
 assessment#:#manscoring#:#手動採点
@@ -1477,12 +1475,7 @@ assessment#:#tst_finish_confirm_button#:#はい、テストを終了します
 assessment#:#tst_finish_confirm_cancel_button#:#いいえ、前の問題へ戻ります
 assessment#:#tst_finish_confirmation_question#:#このテストを終了すると最大受験可能回数に達します。解答を変更しようとしても再度入力する事はできなくなります。本当にこのテストを終了しますか?
 assessment#:#tst_finish_confirmation_question_no_attempts_left#:#You are going to finish this test and reach the maximum number of allowed test attempts. You won’t be able to enter this test again to change your answers. Do you really want to finish the test?###26 08 2024 new variable
-assessment#:#tst_finish_notification#:#通知
-assessment#:#tst_finish_notification_advanced#:#完了テスト結果を送信
-assessment#:#tst_finish_notification_content_type#:#e-mailの内容
-assessment#:#tst_finish_notification_desc#:#テスト完了のユーザごとにテストオーナーへe-mailを送付する
 assessment#:#tst_finish_notification_no#:#e-mailしない
-assessment#:#tst_finish_notification_simple#:#ユーザ名と終了日を送る
 assessment#:#tst_finished#:#終了
 assessment#:#tst_form_dynamic_question_set_config#:#問題選択の継続
 assessment#:#tst_gap_analysis#:#ギャップ分析
@@ -1490,7 +1483,6 @@ assessment#:#tst_general_properties#:#全般プロパティ
 assessment#:#tst_header_participant#:#結果:
 assessment#:#tst_header_participant_no_answer#:#Question - not answered###26 08 2024 new variable
 assessment#:#tst_header_solution#:#正解:
-assessment#:#tst_heading_scoring#:#採点
 assessment#:#tst_hide_info_tab#:#Hide Info Tab###26 08 2024 new variable
 assessment#:#tst_hide_info_tab_desc#:#Hides the tab ‘Info’ of the test.###26 08 2024 new variable
 assessment#:#tst_hide_pagecontents#:#Hide page content###26 08 2024 new variable
@@ -1557,7 +1549,6 @@ assessment#:#tst_instant_feedback_answer_specific#:#各解答の特定のフィ�
 assessment#:#tst_instant_feedback_answer_specific_desc#:#クリックボタンのクリックでILIASは受験者の選択したオプション全解答の特定のフィードバックを表示します。フィードバックは問題に沿って準備する必要があります。この特定のフィードバックは全問題タイプをサポートするものではありません。
 assessment#:#tst_instant_feedback_contents#:#コンテンツを含む
 assessment#:#tst_instant_feedback_desc#:#質問がフィードバックで構成されている時はテスト実行中受験者へ提供されます。
-assessment#:#tst_instant_feedback_forced#:#即時フィードバックを強制
 assessment#:#tst_instant_feedback_results#:#達成点
 assessment#:#tst_instant_feedback_results_desc#:#クリックボタンをクリックするとILIASはこの問題解答で何点達成されたかを表示します。
 assessment#:#tst_instant_feedback_solution#:#最適な解答案を表示
@@ -1646,7 +1637,6 @@ assessment#:#tst_no_marks_defined#:#マークがないので、少なくとも�
 assessment#:#tst_no_question_selected_for_moving_to_qpl#:#問題集へ追加する問題を一つは選択してください!
 assessment#:#tst_no_question_selected_for_removal#:#削除するには最低でも一つチェックしてください!
 assessment#:#tst_no_scorable_qst_available#:#採点可能な問題なし
-assessment#:#tst_no_tries#:#該当者なし
 assessment#:#tst_non_avail_pool_msg_status_lost#:#この問題集はもう利用できません。この問題集から問題の同期はもうできません。このテスト内の問題コンテナから新しい問題集を得ることができます。
 assessment#:#tst_non_avail_pool_msg_status_trashed#:#システムから完全に削除される時にこの問題集は破棄されてテストは問題と同期することが不可能になります。
 assessment#:#tst_non_avail_pools_table#:#利用可能な問題集がありません
@@ -1659,7 +1649,6 @@ assessment#:#tst_notify_manscoring_done_body_msg_topic#:#次のテストには�
 assessment#:#tst_nr_of_passes#:#試験数
 assessment#:#tst_nr_of_tries#:#最大受験回数
 assessment#:#tst_nr_of_tries_desc#:#受験者が可能な最大受験回数
-assessment#:#tst_nr_of_tries_of_user#:#完了した回数
 assessment#:#tst_num_all_questions#:#全問題数
 assessment#:#tst_num_correct_answered_questions#:#正解問題
 assessment#:#tst_num_non_answered_questions_notseen#:#まだ未表示です。
@@ -1884,16 +1873,10 @@ assessment#:#tst_score_cut_question_desc#:#個別回答オプションの割当�
 assessment#:#tst_score_cut_test#:#テスト全体に対して負の結果を"0点"に設定します。
 assessment#:#tst_score_cut_test_desc#:#受験者が負の結果になる可能性のある問題があります。全ての問題の点数は累積されます。テストの全体結果が負の場合に限りこの全体結果は0点に設定されます。この設定では負の点数が多くの重みにつながります。
 assessment#:#tst_score_cutting#:#負の点数
-assessment#:#tst_score_reporting#:#採点報告
-assessment#:#tst_score_reporting_date#:#採点報告日
 assessment#:#tst_search_users#:#受験者を検索
 assessment#:#tst_select_questionpool#:#作成問題を保存する問題集を選択してください
 assessment#:#tst_selected_user_data_deleted#:#選択したユーザのテストデータは正しく削除されました
-assessment#:#tst_sequence#:#シーケンス
-assessment#:#tst_sequence_fixed#:#質問順は固定です
-assessment#:#tst_sequence_postpone#:#試験問題の解答を後回し可能
 assessment#:#tst_sequence_properties#:#テスト管理:受験者が利用可能な機能
-assessment#:#tst_session_settings#:#セッション設定
 assessment#:#tst_set_offline_due_to_switched_question_set_type_setting#:#テストモード設定が変更されたためテストはオフラインになっています。テストを再度オンラインにする前に問題に関係する新規のテストモード構成を設定する必要があります。
 assessment#:#tst_setting_offer_hints_info#:#受験者は問題解答のヒントを要求します。表示される各ヒントは最高点が減るようになります。
 assessment#:#tst_setting_offer_hints_label#:#ヒント
@@ -15447,6 +15430,7 @@ search#:#search_user_extended#:#拡張ユーザ検索
 search#:#search_user_search_form#:#パーソナルフロファイルを検索
 search#:#search_user_search_info_form#:#有効にするとユーザデータが索引付けされて検索可能になります。
 search#:#search_users#:#ユーザを検索
+search#:#seas_search_type#:#検索タイプ
 search#:#select_orgu#:#Organisational Unitを選択
 search#:#until#:#最大
 sess#:#il_sess_participant#:#セッション参加者

@@ -73,7 +73,7 @@ class MailAttachmentTableGUI implements \ILIAS\UI\Component\Table\DataRetrieval,
                 $this->lng->txt('attachment'),
                 $this->getColumnDefinition(),
             )
-            ->withId(self::class . '_' . $this->mode->name)
+            ->withId(str_replace('\\', '', self::class) . '_' . $this->mode->name)
             ->withOrder(new \ILIAS\Data\Order('filename', \ILIAS\Data\Order::ASC))
             ->withActions($this->getActions())
             ->withRequest($this->http_request);
@@ -170,8 +170,9 @@ class MailAttachmentTableGUI implements \ILIAS\UI\Component\Table\DataRetrieval,
         array $visible_column_ids,
         \ILIAS\Data\Range $range,
         \ILIAS\Data\Order $order,
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): \Generator {
         foreach ($this->getRecords($range, $order) as $item) {
             $record = [
@@ -187,8 +188,11 @@ class MailAttachmentTableGUI implements \ILIAS\UI\Component\Table\DataRetrieval,
         }
     }
 
-    public function getTotalRowCount(?array $filter_data, ?array $additional_parameters): ?int
-    {
+    public function getTotalRowCount(
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
+    ): ?int {
         return \count($this->records);
     }
 }

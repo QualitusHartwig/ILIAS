@@ -206,6 +206,10 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
         parent::afterUpdate();
     }
 
+    protected function getDidacticTemplateIdFromQuery(): int
+    {
+        return $this->std_request->getDidacticTemplateId();
+    }
 
     public function forwardToPageObject(): string
     {
@@ -1138,6 +1142,14 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
             }
         }
 
+        foreach ($ids as $ref_id) {
+            if (!in_array(ilObject::_lookupType($ref_id, true), ["crs", "grp", "fold", "file"])) {
+                $this->lng->loadLanguageModule("cont");
+                $this->tpl->setOnScreenMessage('failure', $this->lng->txt("cont_only_crs_grp_fold_download"), true);
+                $this->ctrl->redirect($this, "");
+            }
+        }
+
         $download_job = new ilDownloadContainerFilesBackgroundTask(
             $GLOBALS['DIC']->user()->getId(),
             $ids,
@@ -1401,7 +1413,6 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
                         'add',
                         $ilObjDataCache->lookupObjId((int) $folder_ref_id)
                     );
-                    ilChangeEvent::_catchupWriteEvents($newNode_data['obj_id'], $ilUser->getId());
                     // END PATCH ChangeEvent: Record cut event.
                 }
             }
@@ -1419,6 +1430,9 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
                     $rbacadmin->adjustMovedObjectPermissions($ref_id, $old_parent);
 
                     ilConditionHandler::_adjustMovedObjectConditions($ref_id);
+                    $availability = new ilObjectActivation();
+                    $availability->read($ref_id);
+                    $availability->update($ref_id, $folder_ref_id);
 
                     // BEGIN ChangeEvent: Record cut event.
                     $node_data = $tree->getNodeData($ref_id);
@@ -1435,7 +1449,6 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
                         'add',
                         $ilObjDataCache->lookupObjId((int) $folder_ref_id)
                     );
-                    ilChangeEvent::_catchupWriteEvents($node_data['obj_id'], $ilUser->getId());
                     // END PATCH ChangeEvent: Record cut event.
                 }
 
@@ -1489,7 +1502,6 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
                         'add',
                         $ilObjDataCache->lookupObjId((int) $folder_ref_id)
                     );
-                    ilChangeEvent::_catchupWriteEvents($node_data['obj_id'], $ilUser->getId());
                     // END PATCH ChangeEvent: Record link event.
                 }
 
@@ -1735,6 +1747,9 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
                 $rbacadmin->adjustMovedObjectPermissions($ref_id, $old_parent);
 
                 ilConditionHandler::_adjustMovedObjectConditions($ref_id);
+                $availability = new ilObjectActivation();
+                $availability->read($ref_id);
+                $availability->update($ref_id, $this->object->getRefId());
 
                 // BEGIN ChangeEvent: Record cut event.
                 $node_data = $tree->getNodeData($ref_id);
@@ -1751,7 +1766,6 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
                     'add',
                     $this->object->getId()
                 );
-                ilChangeEvent::_catchupWriteEvents($node_data['obj_id'], $ilUser->getId());
                 // END PATCH ChangeEvent: Record cut event.
             }
         } // END CUT
@@ -1783,7 +1797,6 @@ class ilContainerGUI extends ilObjectGUI implements ilDesktopItemHandling
                     'add',
                     $this->object->getId()
                 );
-                ilChangeEvent::_catchupWriteEvents($node_data['obj_id'], $ilUser->getId());
                 // END PATCH ChangeEvent: Record link event.
             }
 

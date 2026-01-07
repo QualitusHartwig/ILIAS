@@ -598,7 +598,6 @@ class ilObjFileGUI extends ilObject2GUI
             global $DIC;
             $ilUser = $DIC['ilUser'];
             ilChangeEvent::_recordWriteEvent($this->object->getId(), $ilUser->getId(), 'update');
-            ilChangeEvent::_catchupWriteEvents($this->object->getId(), $ilUser->getId());
         }
         // END ChangeEvent: Record update event.
 

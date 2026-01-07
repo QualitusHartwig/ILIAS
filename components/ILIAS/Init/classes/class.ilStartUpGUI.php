@@ -31,6 +31,7 @@ use ILIAS\DataProtection\Consumer as DataProtection;
 use ILIAS\components\Authentication\Logout\ConfigurableLogoutTarget;
 use ILIAS\LegalDocuments\Conductor;
 use ILIAS\components\Authentication\Pages\AuthPageEditorContext;
+use ILIAS\AuthApache\AuthFrontendCredentialsApache;
 
 /**
  * @ilCtrl_Calls ilStartUpGUI: ilAccountRegistrationGUI, ilPasswordAssistanceGUI, ilLoginPageGUI, ilDashboardGUI
@@ -308,7 +309,7 @@ class ilStartUpGUI implements ilCtrlBaseClassInterface, ilCtrlSecurityInterface
         $credentials->setPassword($soapPw);
         $credentials->tryAuthenticationOnLoginPage();
 
-        $frontend = new ilAuthFrontendCredentialsApache($this->httpRequest, $this->ctrl);
+        $frontend = new AuthFrontendCredentialsApache($this->httpRequest, $this->ctrl);
         $frontend->tryAuthenticationOnLoginPage();
 
         $tpl = self::initStartUpTemplate('tpl.login.html');
@@ -663,7 +664,7 @@ class ilStartUpGUI implements ilCtrlBaseClassInterface, ilCtrlSecurityInterface
     {
         $this->getLogger()->debug('Trying apache authentication');
 
-        $credentials = new ilAuthFrontendCredentialsApache($this->httpRequest, $this->ctrl);
+        $credentials = new AuthFrontendCredentialsApache($this->httpRequest, $this->ctrl);
         $credentials->initFromRequest();
 
         $provider_factory = new ilAuthProviderFactory();
@@ -1527,7 +1528,14 @@ class ilStartUpGUI implements ilCtrlBaseClassInterface, ilCtrlSecurityInterface
                 $this->dic->logger()->user(),
                 (new \ILIAS\Data\Factory())->clock()
             );
-            $dual_opt_in_service->verifyHashAndActivateUser($reg_hash);
+            $user = $dual_opt_in_service->verifyHashAndActivateUser($reg_hash);
+
+            $this->mainTemplate->setOnScreenMessage(
+                \ILIAS\UICore\GlobalTemplate::MESSAGE_TYPE_SUCCESS,
+                $this->lng->txt('reg_account_confirmation_successful'),
+                true
+            );
+            $this->ctrl->redirectToURL(sprintf('./login.php?cmd=force_login&lang=%s', $user->getLanguage()));
         } catch (DualOptInException $exception) {
             $this->mainTemplate->setOnScreenMessage(
                 \ILIAS\UICore\GlobalTemplate::MESSAGE_TYPE_FAILURE,
@@ -1543,13 +1551,6 @@ class ilStartUpGUI implements ilCtrlBaseClassInterface, ilCtrlSecurityInterface
             );
             $this->ctrl->redirectToURL(sprintf('./login.php?cmd=force_login&lang=%s', $this->lng->getLangKey()));
         }
-
-        $this->mainTemplate->setOnScreenMessage(
-            \ILIAS\UICore\GlobalTemplate::MESSAGE_TYPE_SUCCESS,
-            $this->lng->txt('reg_account_confirmation_successful'),
-            true
-        );
-        $this->ctrl->redirectToURL(sprintf('./login.php?cmd=force_login&lang=%s', $user->getLanguage()));
     }
 
     /**

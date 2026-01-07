@@ -52,8 +52,9 @@ class GroupingRetrieval implements DataRetrieval
         array $visible_column_ids,
         Range $range,
         Order $order,
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): Generator {
         $grouping_ids = $this->getAllGroupingIDs();
 
@@ -97,8 +98,11 @@ class GroupingRetrieval implements DataRetrieval
         return ilObjCourseGrouping::_getVisibleGroupings($this->content_obj_id);
     }
 
-    public function getTotalRowCount(?array $filter_data, ?array $additional_parameters): ?int
-    {
+    public function getTotalRowCount(
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
+    ): ?int {
         return count($this->getAllGroupingIDs());
     }
 
@@ -133,9 +137,9 @@ class GroupingRetrieval implements DataRetrieval
 
         $ordering_callable_without_direction = match ($order_field) {
             GroupingHandler::COL_TITLE, GroupingHandler::COL_DESCRIPTION, GroupingHandler::COL_UNIQUE_FIELD =>
-                fn($a, $b) => $a[$order_field] ?? '' <=> $b[$order_field] ?? '',
+                fn($a, $b) => ($a[$order_field] ?? '') <=> ($b[$order_field] ?? ''),
             GroupingHandler::COL_SOURCE =>
-                fn($a, $b) => $a[GroupingHandler::COL_SOURCE]?->getLabel() ?? '' <=> $b[GroupingHandler::COL_SOURCE]?->getLabel() ?? '',
+                fn($a, $b) => ($a[GroupingHandler::COL_SOURCE]?->getLabel() ?? '') <=> ($b[GroupingHandler::COL_SOURCE]?->getLabel() ?? ''),
             GroupingHandler::COL_ASSIGNED_OBJS =>
                 function ($a, $b) {
                     $a_items = ($a[GroupingHandler::COL_ASSIGNED_OBJS] ?? null)?->getItems() ?? [];

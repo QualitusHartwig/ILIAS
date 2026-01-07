@@ -1788,7 +1788,7 @@ class ilPageObjectGUI
         $wb_path = ilFileUtils::getWebspaceDir("output") . "/";
         $enlarge_path = ilUtil::getImagePath("media/enlarge.svg");
         $params = array('mode' => $mode, 'enlarge_path' => $enlarge_path,
-            'link_params' => "ref_id=" . $this->requested_ref_id,'fullscreen_link' => "",
+            'link_params' => "ref_id=" . $this->requested_ref_id,'fullscreen_link' => $this->getFullscreenLink(),
                         'enable_html_mob' => ilObjMediaObject::isTypeAllowed("html") ? "y" : "n",
             'ref_id' => $this->requested_ref_id, 'webspace_path' => $wb_path);
         $output = $this->xsl->process($xml, $params);
@@ -1806,6 +1806,22 @@ class ilPageObjectGUI
         $tpl->printToStdout();
         exit;
     }
+
+    public function showPageFullscreen(): void
+    {
+        $tpl = new ilGlobalTemplate("tpl.fullscreen.html", true, true, "components/ILIAS/COPage");
+        $this->setTemplate($tpl);
+        $this->addResourcesToTemplate($tpl);
+        $tpl->addCss(ilUtil::getStyleSheetLocation());
+        $tpl->addCss(ilObjStyleSheet::getContentStylePath($this->getStyleId()));
+        $this->setTemplateOutput(false);
+        $this->setHeader("");
+        $ret = $this->showPage();
+        $tpl->setVariable("MEDIA_CONTENT", "<div>" . $ret . "</div>");
+        $tpl->printToStdout();
+        exit;
+    }
+
 
     /**
      * download source code paragraph
@@ -2057,9 +2073,6 @@ class ilPageObjectGUI
         $this->lng->toJS("cont_ed_delete_item");
         $this->lng->toJS("copg_edit_iframe_title");
         $this->lng->toJS("copg_par_format_selection");
-        // workaroun: we need this js for the new editor version, e.g. for new section form to work
-        // @todo: solve this in a smarter way
-        $this->tpl->addJavaScript("assets/js/AdvancedSelectionList.js");
         \ilCalendarUtil::initDateTimePicker();
         // ilModalGUI::initJS();        // due to permission repo picker in sections, waits for new tree/repo picker
     }

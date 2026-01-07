@@ -24,7 +24,6 @@ use ILIAS\Test\Access\AccessQuestionImage;
 use ILIAS\Test\Access\SimpleAccess;
 use ILIAS\Test\Access\Readable;
 use ILIAS\Test\Results\Data\Repository;
-use ILIAS\Test\Settings\ScoreReporting\ScoreSettingsDatabaseRepository;
 use ILIAS\Test\Settings\ScoreReporting\ScoreReportingTypes;
 use ILIAS\Data\Result;
 use ILIAS\Data\Result\Error;
@@ -107,20 +106,20 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
         }
 
         switch ($permission) {
-            case "visible":
-            case "read":
+            case 'visible':
+            case 'read':
                 if (!ilObjTestAccess::lookupCreationComplete($obj_id) &&
                     !$is_admin) {
-                    $this->access->addInfoItem(ilAccessInfo::IL_NO_OBJECT_ACCESS, $this->lng->txt("tst_warning_test_not_complete"));
+                    $this->access->addInfoItem(ilAccessInfo::IL_NO_OBJECT_ACCESS, $this->lng->txt('tst_warning_test_not_complete'));
                     return false;
                 }
                 break;
         }
 
         switch ($cmd) {
-            case "eval_stat":
+            case 'eval_stat':
                 if (!ilObjTestAccess::lookupCreationComplete($obj_id)) {
-                    $this->access->addInfoItem(ilAccessInfo::IL_NO_OBJECT_ACCESS, $this->lng->txt("tst_warning_test_not_complete"));
+                    $this->access->addInfoItem(ilAccessInfo::IL_NO_OBJECT_ACCESS, $this->lng->txt('tst_warning_test_not_complete'));
                     return false;
                 }
                 break;
@@ -138,7 +137,8 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
             ilConditionHandler::OPERATOR_PASSED,
             ilConditionHandler::OPERATOR_FAILED,
             ilConditionHandler::OPERATOR_FINISHED,
-            ilConditionHandler::OPERATOR_NOT_FINISHED
+            ilConditionHandler::OPERATOR_NOT_FINISHED,
+            ilConditionHandler::OPERATOR_RESULT_RANGE_PERCENTAGE
         ];
     }
 
@@ -166,6 +166,17 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
             case ilConditionHandler::OPERATOR_NOT_FINISHED:
                 return !$test_result_repository->hasFinished($a_usr_id, $a_trigger_obj_id);
 
+            case ilConditionHandler::OPERATOR_RESULT_RANGE_PERCENTAGE:
+                $percentage_thresholds = self::deserializePercentageThresholds($a_value);
+                if ($percentage_thresholds === false) {
+                    return false;
+                }
+                return $test_result_repository->reachedPercentage(
+                    $a_usr_id,
+                    $a_trigger_obj_id,
+                    $percentage_thresholds['min_percentage'],
+                    $percentage_thresholds['max_percentage']
+                );
             default:
                 return true;
         }
@@ -177,10 +188,27 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
         $DIC->language()->loadLanguageModule('assessment');
 
         return [
-            ["permission" => "write", "cmd" => "questionsTabGateway", "lang_var" => "tst_edit_questions"],
-            ["permission" => "write", "cmd" => "ILIAS\Test\Settings\MainSettings\SettingsMainGUI::showForm", "lang_var" => "settings"],
-            ["permission" => "read", "cmd" => "ILIAS\Test\Presentation\TestScreenGUI::testScreen", "lang_var" => "tst_run", "default" => true],
-            ["permission" => "score_anon", "cmd" => "ILIAS\Test\Scoring\Manual\TestScoringByQuestionGUI::showManScoringByQuestionParticipantsTable", "lang_var" => "manscoring", "default" => true],
+            [
+                'permission' => 'write',
+                'cmd' => 'questionsTabGateway',
+                'lang_var' => 'tst_edit_questions'
+            ],
+            [
+                'permission' => 'write',
+                'cmd' => 'ILIAS\Test\Settings\MainSettings\SettingsMainGUI::showForm',
+                'lang_var' => 'settings'
+            ],
+            [
+                'permission' => 'read',
+                'cmd' => 'ILIAS\Test\Presentation\TestScreenGUI::testScreen',
+                'lang_var' => 'tst_run',
+                'default' => true
+            ],
+            [
+                'permission' => 'score_anon',
+                'cmd' => 'ILIAS\Test\Scoring\Manual\ConsecutiveScoringGUI::view',
+                'lang_var' => 'manscoring'
+            ],
         ];
     }
 
@@ -201,8 +229,8 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
         global $DIC;
         $db = $DIC->database();
         $result = $db->queryF(
-            "SELECT complete FROM tst_tests WHERE obj_fi=%s",
-            ['integer'],
+            'SELECT complete FROM tst_tests WHERE obj_fi=%s',
+            [ilDBConstants::T_INTEGER],
             [$a_obj_id]
         );
         return $result->numRows() > 0 && (bool) $db->fetchAssoc($result)['complete'];
@@ -221,13 +249,13 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
         $ilDB = $DIC['ilDB'];
         $test_id = false;
         $result = $ilDB->queryF(
-            "SELECT test_id FROM tst_tests WHERE obj_fi = %s",
-            ['integer'],
+            'SELECT test_id FROM tst_tests WHERE obj_fi = %s',
+            [ilDBConstants::T_INTEGER],
             [$object_id]
         );
         if ($result->numRows()) {
             $row = $ilDB->fetchAssoc($result);
-            $test_id = $row["test_id"];
+            $test_id = $row['test_id'];
         }
         return $test_id;
     }
@@ -244,15 +272,13 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
         global $DIC;
         $ilDB = $DIC['ilDB'];
 
-        $query = "
-			SELECT DISTINCT t.obj_fi
-			FROM tst_tests t
-			INNER JOIN tst_rnd_quest_set_qpls r
-			ON t.test_id = r.test_fi
-			WHERE r.pool_fi = %s
-		";
+        $query = 'SELECT DISTINCT t.obj_fi' . PHP_EOL
+            . 'FROM tst_tests t' . PHP_EOL
+            . 'INNER JOIN tst_rnd_quest_set_qpls r' . PHP_EOL
+            . 'ON t.test_id = r.test_fi' . PHP_EOL
+            . 'WHERE r.pool_fi = %s' . PHP_EOL;
 
-        $result = $ilDB->queryF($query, ['integer'], [$qpl_id]);
+        $result = $ilDB->queryF($query, [ilDBConstants::T_INTEGER], [$qpl_id]);
 
         $tests = [];
         while ($row = $ilDB->fetchAssoc($result)) {
@@ -277,7 +303,7 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
 
         $result_active = $ilDB->queryF(
             'SELECT * FROM tst_active WHERE active_id = %s',
-            ['integer'],
+            [ilDBConstants::T_INTEGER],
             [$active_id]
         );
         $row_active = $ilDB->fetchAssoc($result_active);
@@ -295,15 +321,16 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
         $uname = ilObjUser::_lookupName($row_active['user_fi']);
 
         $result_test = $ilDB->queryF(
-            "SELECT obj_fi FROM tst_tests WHERE test_id = %s",
-            ["integer"],
+            'SELECT obj_fi FROM tst_tests WHERE test_id = %s',
+            [ilDBConstants::T_INTEGER],
             [$row_active['test_fi']]
         );
         $row_test = $ilDB->fetchAssoc($result_test);
-        $obj_id = $row_test["obj_fi"];
+        $obj_id = $row_test['obj_fi'];
 
-        if (ilObjTest::_lookupAnonymity($obj_id)) {
-            return $lng->txt("anonymous");
+        $test_obj = new ilObjTest($obj_id, false);
+        if ($test_obj->getAnonymity()) {
+            return $lng->txt('anonymous');
         }
 
         if ($uname['firstname'] . $uname['lastname'] === '') {
@@ -326,7 +353,7 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
 
         $result = $ilDB->queryF(
             'SELECT user_fi FROM tst_active WHERE active_id = %s',
-            ['integer'],
+            [ilDBConstants::T_INTEGER],
             [$active_id]
         );
         $row = $ilDB->fetchAssoc($result);
@@ -341,14 +368,14 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
         global $DIC;
         $ilAccess = $DIC['ilAccess'];
 
-        $t_arr = explode("_", $target);
+        $t_arr = explode('_', $target);
 
-        if ($t_arr[0] != "tst" || ((int) $t_arr[1]) <= 0) {
+        if ($t_arr[0] != 'tst' || ((int) $t_arr[1]) <= 0) {
             return false;
         }
 
-        if ($ilAccess->checkAccess("read", "", (int) $t_arr[1]) ||
-            $ilAccess->checkAccess("visible", "", (int) $t_arr[1])) {
+        if ($ilAccess->checkAccess('read', '', (int) $t_arr[1]) ||
+            $ilAccess->checkAccess('visible', '', (int) $t_arr[1])) {
             return true;
         }
         return false;
@@ -389,7 +416,7 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
         if ((new ilCertificateActiveValidator())->validate()) {
             self::$certificate_preloader = new ilCertificateObjectsForUserPreloader(new ilUserCertificateRepository());
             self::$certificate_preloader->preLoad($DIC['ilUser']->getId(), $obj_ids);
-            self::$settings_result_summaries_by_obj_id = (new ScoreSettingsDatabaseRepository($DIC['ilDB']))
+            self::$settings_result_summaries_by_obj_id = TestDIC::dic()['settings.scoring.repository']
                 ->getSettingsResultSummaryByObjIds($obj_ids);
         }
     }
@@ -415,5 +442,22 @@ class ilObjTestAccess extends ilObjectAccess implements ilConditionHandling
         }
 
         return false;
+    }
+
+    /**
+     * @return array{min_percentage: float, max_percentage: float}|false
+     */
+    private static function deserializePercentageThresholds(string $value): array|false
+    {
+        $value_arr = unserialize($value);
+
+        if ($value_arr === false) {
+            return false;
+        }
+
+        return [
+            'min_percentage' => (float) ($value_arr['min_percentage'] ?? 0.0) / 100,
+            'max_percentage' => (float) ($value_arr['max_percentage'] ?? 0.0) / 100
+        ];
     }
 }

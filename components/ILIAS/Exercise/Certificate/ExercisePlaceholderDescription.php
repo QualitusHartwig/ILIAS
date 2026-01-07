@@ -43,6 +43,7 @@ class ExercisePlaceholderDescription implements ilCertificatePlaceholderDescript
         ?ilUserDefinedFieldsPlaceholderDescription $userDefinedFieldPlaceHolderDescriptionObject = null,
         ?Profile $profile = null
     ) {
+        global $DIC;
         if (null === $language) {
             $language = $DIC->language();
             $language->loadLanguageModule('certificate');

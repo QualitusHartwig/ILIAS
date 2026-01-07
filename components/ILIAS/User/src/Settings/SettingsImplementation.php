@@ -170,7 +170,7 @@ class SettingsImplementation implements Settings
     public function settingAvailableToUser(
         string $definition_class
     ): bool {
-        return Context::User->isSettingAvailableInType(
+        return Context::User->isSettingAvailable(
             $this->getSettingByDefinitionClass($definition_class)
         );
     }
@@ -178,6 +178,15 @@ class SettingsImplementation implements Settings
     public function getSettingValueFor(int $user_id, string $key): ?string
     {
         return $this->user_settings_data_repository->getFor($user_id)[$key] ?? null;
+    }
+
+    public function getExportableSettings(): array
+    {
+        $context = Context::Export;
+        return array_filter(
+            $this->user_settings_configuration_repository->get(),
+            fn(Setting $v): bool => $context->isSettingAvailable($v)
+        );
     }
 
     /**
@@ -336,7 +345,7 @@ class SettingsImplementation implements Settings
         return array_values(
             array_filter(
                 $settings,
-                static fn(Setting $v): bool => $context->isSettingAvailableInType($v)
+                static fn(Setting $v): bool => $context->isSettingAvailable($v)
             )
         );
     }

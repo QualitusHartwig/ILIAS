@@ -90,8 +90,9 @@ readonly class ServerTable implements \ILIAS\UI\Component\Table\DataRetrieval
         array $visible_column_ids,
         \ILIAS\Data\Range $range,
         \ILIAS\Data\Order $order,
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): \Generator {
         foreach ($this->getRecords($range, $order) as $server) {
             $title = $server['name'];
@@ -125,8 +126,11 @@ readonly class ServerTable implements \ILIAS\UI\Component\Table\DataRetrieval
         }
     }
 
-    public function getTotalRowCount(?array $filter_data, ?array $additional_parameters): ?int
-    {
+    public function getTotalRowCount(
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
+    ): ?int {
         return \count($this->servers);
     }
 
@@ -212,7 +216,7 @@ readonly class ServerTable implements \ILIAS\UI\Component\Table\DataRetrieval
                 $this->lng->txt('ldap_servers'),
                 $this->getColumnDefinition(),
             )
-            ->withId(self::class)
+            ->withId(str_replace('\\', '', self::class))
             ->withOrder(new \ILIAS\Data\Order('title', \ILIAS\Data\Order::ASC))
             ->withActions($this->getActions())
             ->withRequest($this->http_request);

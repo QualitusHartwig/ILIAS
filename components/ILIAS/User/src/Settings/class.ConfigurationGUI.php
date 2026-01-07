@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace ILIAS\User\Settings;
 
-use ILIAS\User\LocalDIC;
 use ILIAS\User\RedirectOnMissingWrite;
 use ILIAS\User\PropertyAttributes;
 use ILIAS\UI\Factory as UIFactory;
@@ -61,9 +60,9 @@ class ConfigurationGUI implements DataRetrieval
         private readonly ServerRequestInterface $request,
         private readonly RequestWrapper $request_wrapper,
         private readonly HttpService $http,
-        private readonly Repository $user_settings_repository
+        private readonly ConfigurationRepository $user_settings_config_repo
     ) {
-        $this->available_settings = $this->user_settings_repository->get();
+        $this->available_settings = $this->user_settings_config_repo->get();
 
         $url_builder = new URLBuilder(new URI(ILIAS_HTTP_PATH . '/' . $this->ctrl->getLinkTargetByClass(self::class, 'action')));
         [
@@ -123,8 +122,8 @@ class ConfigurationGUI implements DataRetrieval
             return;
         }
 
-        $this->user_settings_repository->storeConfiguration($data['setting']);
-        $this->available_settings = $this->user_settings_repository->get();
+        $this->user_settings_config_repo->storeConfiguration($data['setting']);
+        $this->available_settings = $this->user_settings_config_repo->get();
         $this->tpl->setOnScreenMessage('success', $this->lng->txt('usr_settings_saved'));
         $this->showCmd();
     }
@@ -134,8 +133,9 @@ class ConfigurationGUI implements DataRetrieval
         array $visible_column_ids,
         Range $range,
         Order $order,
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): \Generator {
         $this->sortRows($order);
         foreach ($this->available_settings as $setting) {
@@ -147,8 +147,9 @@ class ConfigurationGUI implements DataRetrieval
     }
 
     public function getTotalRowCount(
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): ?int {
         return count($this->available_settings);
     }
@@ -208,7 +209,7 @@ class ConfigurationGUI implements DataRetrieval
         return $this->ui_factory->modal()->roundtrip(
             $this->lng->txt('edit_setting'),
             null,
-            $this->user_settings_repository->getByIdentifier(
+            $this->user_settings_config_repo->getByIdentifier(
                 $identifier
             )->getForm(
                 $this->lng,

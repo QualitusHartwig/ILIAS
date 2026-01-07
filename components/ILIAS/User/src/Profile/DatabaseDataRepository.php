@@ -81,7 +81,7 @@ class DatabaseDataRepository implements DataRepository
     {
         $query = $this->db->query(
             'SELECT * FROM ' . self::USER_BASE_TABLE
-                . " WHERE {$this->db->in('usr_id', $user_ids)}"
+                . " WHERE {$this->db->in('usr_id', $user_ids, false, \ilDBConstants::T_INTEGER)}"
         );
 
         $prepared_query = $this->db->prepare('SELECT field_id, value FROM '
@@ -91,7 +91,7 @@ class DatabaseDataRepository implements DataRepository
             yield $this->buildFromData(
                 $base_data,
                 $this->db->fetchAll(
-                    $this->db->execute($prepared_query, $base_data->usr_id),
+                    $this->db->execute($prepared_query, [$base_data->usr_id]),
                     \ilDBConstants::FETCHMODE_OBJECT
                 )
             );
@@ -169,6 +169,10 @@ class DatabaseDataRepository implements DataRepository
                 'is_self_registered' => [\ilDBConstants::T_INTEGER, $system_information['is_self_registered'] ? 1 : 0],
                 'last_update' => [\ilDBConstants::T_TIMESTAMP, date('Y-m-d H:i:s')],
                 'create_date' => [\ilDBConstants::T_TIMESTAMP, $system_information['create_date']],
+                'last_visited' => [
+                    \ilDBConstants::T_TEXT,
+                    $system_information['last_visited'] === [] ? null : serialize($system_information['last_visited'])
+                ]
             ]
         );
 
@@ -220,6 +224,20 @@ class DatabaseDataRepository implements DataRepository
         );
     }
 
+    public function storeLastVisitedFor(
+        int $usr_id,
+        array $last_visited
+    ): void {
+        $this->db->manipulateF(
+            'UPDATE ' . self::USER_BASE_TABLE . ' SET last_visited = %s WHERE usr_id = %s',
+            [\ilDBConstants::T_TEXT, \ilDBConstants::T_INTEGER],
+            [
+                $last_visited === [] ? null : serialize($last_visited),
+                $usr_id
+            ]
+        );
+    }
+
     /**
      * @return list<\ILIAS\User\Search\AutocompleteItem>
      */
@@ -255,6 +273,42 @@ class DatabaseDataRepository implements DataRepository
             );
         }
         return $results;
+    }
+
+    public function getProfileDataQuery(
+        array $select_fields
+    ): DataQuery {
+        return new DataQuery(
+            $this->db,
+            self::USER_BASE_TABLE,
+            self::USER_VALUES_TABLE,
+            $select_fields
+        );
+    }
+
+    /**
+     * @return array{cnt: int, set: array{string, mixed}}
+     */
+    public function getCountAndRecordsForQuery(
+        DataQuery $query,
+        int $offset,
+        int $limit
+    ): array {
+        $prepared_query = $query->withAdditionalSelectAndJoinForUdfAndMultiValueFields();
+        $cnt = $this->db->fetchObject(
+            $this->db->query($prepared_query->buildCntQueryString())
+        )->cnt ?? 0;
+
+        if ($offset >= $cnt) {
+            $offset = 0;
+        }
+
+        $this->db->setLimit($limit, $offset);
+
+        return [
+            'cnt' => $cnt,
+            'set' => $this->retrieveRecordsFromQuery($prepared_query)
+        ];
     }
 
     private function buildFromData(
@@ -330,6 +384,7 @@ class DatabaseDataRepository implements DataRepository
             'is_self_registered' => $base_data->is_self_registered === 1,
             'last_update' => $base_data->last_update ?? '',
             'create_date' => $base_data->create_date ?? '',
+            'last_visited' => $this->buildLastVisited($base_data->last_visited)
         ]);
     }
 
@@ -417,5 +472,32 @@ class DatabaseDataRepository implements DataRepository
                     ? $autocomplete_query->getSearchTermQueryString() : null
             ]
         );
+    }
+
+    private function buildLastVisited(?string $last_visited): array
+    {
+        if ($last_visited === null) {
+            return [];
+        }
+
+        $unserialized = unserialize($last_visited, ['allowed_classes' => false]);
+
+        if (!is_array($unserialized)) {
+            return [];
+        }
+
+        return $unserialized;
+    }
+
+    private function retrieveRecordsFromQuery(DataQuery $query): array
+    {
+        $statement = $this->db->query($query->buildRecordsQueryString());
+
+        $result = [];
+        while (($row = $this->db->fetchAssoc($statement)) !== null) {
+            $row['usr_id'] = (int) $row['usr_id'];
+            $result[] = $query->explodeArrayValues($row);
+        }
+        return $result;
     }
 }

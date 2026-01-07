@@ -64,8 +64,9 @@ class RegistrationCodesTable implements DataRetrieval
         array $visible_column_ids,
         Range $range,
         Order $order,
-        ?array $filter_data,
-        ?array $additional_parameters,
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): Generator {
         $records = $this->getRecords($range, $order, $filter_data);
         foreach ($records as $record) {
@@ -103,8 +104,11 @@ class RegistrationCodesTable implements DataRetrieval
     /**
      * @param array{code: string, role: int, generated: string, access_limitation: string} $filter_data
      */
-    public function getTotalRowCount(?array $filter_data, ?array $additional_parameters): ?int
-    {
+    public function getTotalRowCount(
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
+    ): ?int {
         return $this->code_repository->getTotalCodeCount(
             (new CodeFilter())->withData($filter_data)
         );
@@ -208,11 +212,15 @@ class RegistrationCodesTable implements DataRetrieval
                         break;
 
                     case 'absolute':
-                        $result[$k]['alimit'] = $this->lng->txt('reg_access_limitation_mode_absolute_target') .
-                            ': ' .
-                            $date_format->applyTo(
-                                (new DateTimeImmutable('@' . $code['alimitdt']))->setTimezone(
-                                    new DateTimeZone($this->actor->getTimeZone())
+                        $result[$k]['alimit'] = $this->lng->txt('reg_access_limitation_mode_absolute_target')
+                            . ': '
+                            . (
+                                $code['alimitdt'] === null
+                                ? '-'
+                                : $this->actor->getDateFormat()->applyTo(
+                                    (new DateTimeImmutable($code['alimitdt']))->setTimezone(
+                                        new DateTimeZone($this->actor->getTimeZone())
+                                    )
                                 )
                             );
                         break;

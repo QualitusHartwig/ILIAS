@@ -86,7 +86,8 @@ class ilContactGUI implements ilCtrlSecurityInterface
             $this->ui_factory,
             $this->lng,
             $DIC->uiService(),
-            $this->http
+            $this->http,
+            $this->linkToProfile(...)
         );
         $this->lng->loadLanguageModule('buddysystem');
     }
@@ -109,7 +110,7 @@ class ilContactGUI implements ilCtrlSecurityInterface
 
         $forward_class = $this->ctrl->getNextClass($this) ?? '';
 
-        $this->umail->persistToStage($this->user->getId(), [], '', '', '', '', '', false);
+        $this->umail->persistToStage($this->user->getId(), '', '', '', '', '', null, false);
 
         switch (strtolower($forward_class)) {
             case strtolower(ilMailSearchCoursesGUI::class):
@@ -432,12 +433,12 @@ class ilContactGUI implements ilCtrlSecurityInterface
             $mail_data = $this->umail->appendSearchResult($logins, 'to');
             $this->umail->persistToStage(
                 (int) $mail_data['user_id'],
-                $mail_data['attachments'],
                 $mail_data['rcp_to'],
                 $mail_data['rcp_cc'],
                 $mail_data['rcp_bcc'],
                 $mail_data['m_subject'],
                 $mail_data['m_message'],
+                $mail_data['attachments'],
                 $mail_data['use_placeholders'],
                 $mail_data['tpl_ctx_id'],
                 $mail_data['tpl_ctx_params']
@@ -637,5 +638,21 @@ class ilContactGUI implements ilCtrlSecurityInterface
             $url->withParameter($p, $param),
             $token
         );
+    }
+
+    private function linkToProfile(int $user, string $label): string
+    {
+        $public_profile = ilObjUser::_lookupPref($user, 'public_profile');
+        if (($this->user->isAnonymous() || $public_profile !== 'y') && $public_profile !== 'g') {
+            return $label;
+        }
+
+        $this->ctrl->setParameterByClass(PublicProfileGUI::class, 'user', (string) $user);
+        $profile_target = $this->ctrl->getLinkTargetByClass(
+            PublicProfileGUI::class,
+            'getHTML'
+        );
+
+        return $this->ui_renderer->render($this->ui_factory->link()->standard($label, $profile_target));
     }
 }

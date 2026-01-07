@@ -335,6 +335,7 @@ class ilInitialisation
                 $c->language()->txt("upload_svg_rejection_message"),
                 $c->language()->txt("upload_svg_rejection_message_script"),
                 $c->language()->txt("upload_svg_rejection_message_base64"),
+                $c->language()->txt("upload_svg_rejection_message_foreign_object"),
                 $c->language()->txt("upload_svg_rejection_message_elements")
             ));
 
@@ -1510,7 +1511,9 @@ class ilInitialisation
                 continue;
             }
             $plugin = $component_factory->getPlugin($pl->getId());
-            $c['ui.renderer'] = $plugin->exchangeUIRendererAfterInitialization($c);
+            $closure = $plugin->exchangeUIRendererAfterInitialization($c);
+            $c->offsetUnset('ui.renderer');
+            $c['ui.renderer'] = $closure;
 
             foreach ($c->keys() as $key) {
                 if (strpos($key, "ui.factory") === 0) {

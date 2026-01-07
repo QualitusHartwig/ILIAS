@@ -267,6 +267,13 @@ class ilObjWorkspaceFolderGUI extends ilObject2GUI
         $this->tabs_gui->activateSubTab("settings");
     }
 
+    public function clear(): void
+    {
+        $this->tpl->setOnScreenMessage('success', $this->lng->txt("msg_clear_clipboard"), true);
+        $this->session_repo->clearClipboard();
+        $this->ctrl->redirect($this);
+    }
+
     public function cut(): void
     {
         $item_ids = $this->std_request->getItemIds();
@@ -857,7 +864,7 @@ class ilObjWorkspaceFolderGUI extends ilObject2GUI
         $tpl->setContent($cgui->getHTML());
     }
 
-    public function cancelDeletion()
+    public function cancelDeletion(): void
     {
         $this->session_repo->clearClipboard();
         parent::cancelDelete();

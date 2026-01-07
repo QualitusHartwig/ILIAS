@@ -20,19 +20,15 @@ The Legacy-UIComponents-Service has been lingering and causing problems for user
 ## Removal
 
 ### ILIAS 9
-* Advanced Selection List
-* Buttons (Exceptions exist due to usage in subsequent UI-components. With their removal, the exception will also be removed.)
 * Character Selector
 * Checkbox List Overlay
 
 ### ILIAS 10
 * Glyph
-* Grouped List
 * Lightbox
 * Modal
 * Overlay
 * Panel
-* Split Button
 * Tooltip
 
 ### ILIAS 11

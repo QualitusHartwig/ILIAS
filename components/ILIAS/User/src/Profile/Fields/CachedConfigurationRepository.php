@@ -20,7 +20,6 @@ declare(strict_types=1);
 
 namespace ILIAS\User\Profile\Fields;
 
-use ILIAS\User\Profile\DataRepository;
 use ILIAS\Data\UUID\Factory as UUIDFactory;
 
 class CachedConfigurationRepository implements ConfigurationRepository
@@ -180,7 +179,7 @@ class CachedConfigurationRepository implements ConfigurationRepository
             return;
         }
         $this->db->manipulate(
-            'DELETE FROM ' . DataRepository::USER_VALUES_TABLE
+            'DELETE FROM ' . self::USER_FIELD_CONFIGURATION_TABLE
                 . " WHERE field_id={$this->db->quote($field->getIdentifier(), \ilDBConstants::T_TEXT)}"
         );
         $this->db->manipulate(

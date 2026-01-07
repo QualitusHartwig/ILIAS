@@ -62,7 +62,7 @@ class MailingListsMembersTable implements UI\Component\Table\DataRetrieval
                 ),
                 $columns,
             )
-            ->withId(self::class . '_' . $this->mailing_list->getId())
+            ->withId(str_replace('\\', '', self::class) . '_' . $this->mailing_list->getId())
             ->withOrder(new \ILIAS\Data\Order('login', \ILIAS\Data\Order::ASC))
             ->withActions($actions)
             ->withRequest($this->request);
@@ -141,8 +141,9 @@ class MailingListsMembersTable implements UI\Component\Table\DataRetrieval
         array $visible_column_ids,
         Data\Range $range,
         Data\Order $order,
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): \Generator {
         $records = $this->getRecords($range, $order);
 
@@ -153,8 +154,9 @@ class MailingListsMembersTable implements UI\Component\Table\DataRetrieval
     }
 
     public function getTotalRowCount(
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): ?int {
         $this->initRecords();
 

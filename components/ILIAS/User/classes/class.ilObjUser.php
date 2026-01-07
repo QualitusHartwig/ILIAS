@@ -17,6 +17,7 @@
  *********************************************************************/
 
 use ILIAS\User\LocalDIC;
+use ILIAS\User\Context;
 use ILIAS\User\Profile\Data;
 use ILIAS\User\Profile\DataRepository as ProfileDataRepository;
 use ILIAS\User\Profile\Fields\ConfigurationRepository as ProfileConfigurationRepository;
@@ -77,6 +78,7 @@ class ilObjUser extends ilObject
     private string $last_profile_prompt = '';	// timestamp
     private string $first_login = '';	// timestamp
     private bool $profile_incomplete = false;
+    private array $last_visited = [];
 
     private Data $profile_data;
     private ProfileDataRepository $profile_data_repository;
@@ -234,6 +236,7 @@ class ilObjUser extends ilObject
         $this->auth_mode = $data['auth_mode'];
         $this->ext_account = $data['ext_account'] ?? '';
         $this->is_self_registered = $data['is_self_registered'];
+        $this->last_visited = $data['last_visited'];
     }
 
     private function buildSystemInformationArrayForDB(): array
@@ -263,6 +266,7 @@ class ilObjUser extends ilObject
             'is_self_registered' => $this->is_self_registered,
             'last_update' => $this->last_update,
             'create_date' => $this->create_date,
+            'last_visited' => $this->last_visited
         ];
     }
 
@@ -317,7 +321,7 @@ class ilObjUser extends ilObject
         ];
     }
 
-    public function updateLogin(string $login): bool
+    public function updateLogin(string $login, Context $context): bool
     {
         if ($login === '' || $login === $this->profile_data->getAlias()) {
             return false;
@@ -325,8 +329,10 @@ class ilObjUser extends ilObject
 
         $last_history_entry = $this->getLastHistoryData();
 
-        if (!$this->profile_configuration_repository
-            ->getByClass(Alias::class)->isChangeableByUser()) {
+        if (!$context->isFieldChangeable(
+            $this->profile_configuration_repository->getByClass(Alias::class),
+            $this
+        )) {
             throw new ilUserException($this->lng->txt('permission_denied'));
         }
 
@@ -393,7 +399,7 @@ class ilObjUser extends ilObject
     public function deletePref(string $key): void
     {
         $this->settings_data_repository->deleteSingleFor($this->id, $key);
-        unset($this->user_settings[$keyword]);
+        unset($this->user_settings[$key]);
     }
 
     public function writePrefs(): void
@@ -486,7 +492,15 @@ class ilObjUser extends ilObject
 
         ilSession::_destroyByUserId($this->getId());
         ilLDAPRoleGroupMapping::_getInstance()->deleteUser($this->getId());
-        $this->rbac_admin->removeUser($this->getId());
+
+        /**
+         * skergomard, 2025-12-01: Ok, this is not right, but we can sadly not change this
+         * as the User is initialized before RbacAdmin, so that the corresponding property
+         * that actually does exist, is never initialized in this class.
+         */
+        /** @var ILIAS\DI\Container $DIC */
+        global $DIC;
+        $DIC['rbacadmin']->removeUser($this->getId());
         (ilOrgUnitUserAssignmentQueries::getInstance())->deleteAllAssignmentsOfUser($this->getId());
 
         $mailbox = new ilMailbox($this->getId());
@@ -997,6 +1011,17 @@ class ilObjUser extends ilObject
         return $this->last_update;
     }
 
+    public function getLastVisited(): array
+    {
+        return $this->last_visited;
+    }
+
+    public function updateLastVisited(array $last_visited): void
+    {
+        $this->last_visited = $last_visited;
+        $this->profile_data_repository->storeLastVisitedFor($this->id, $last_visited);
+    }
+
     /**
      * set date the user account was activated
      * null indicates that the user has not yet been activated
@@ -1173,9 +1198,9 @@ class ilObjUser extends ilObject
         return false;
     }
 
-    public function getPasswordAge(): int
+    public function getPasswordAgeInDays(): int
     {
-        return (int) (time() - $this->getLastPasswordChangeTS() / 86400);
+        return (int) floor((time() - $this->getLastPasswordChangeTS()) / 86400);
     }
 
     public function setLastPasswordChangeToNow(): void
@@ -3054,13 +3079,13 @@ class ilObjUser extends ilObject
     }
 
     public static function _getPersonalPicturePath(
-        int $a_usr_id,
-        string $a_size = 'small',
-        bool $a_force_pic = false
+        int $usr_id,
+        string $size = 'small',
+        bool $force_pic = false
     ): string {
-        $define = new ilUserAvatarResolver($a_usr_id);
-        $define->setForcePicture($a_force_pic);
-        $define->setSize($a_size);
+        $define = new ilUserAvatarResolver($usr_id);
+        $define->setForcePicture($force_pic);
+        $define->setSize($size);
         return $define->getLegacyPictureURL();
     }
 

@@ -299,12 +299,12 @@ class ilMailingListsGUI implements ilCtrlSecurityInterface
             $mail_data = $this->umail->appendSearchResult(array_values($lists), 'to');
             $this->umail->persistToStage(
                 (int) $mail_data['user_id'],
-                $mail_data['attachments'],
                 $mail_data['rcp_to'],
                 $mail_data['rcp_cc'],
                 $mail_data['rcp_bcc'],
                 $mail_data['m_subject'],
                 $mail_data['m_message'],
+                $mail_data['attachments'],
                 $mail_data['use_placeholders'],
                 $mail_data['tpl_ctx_id'],
                 $mail_data['tpl_ctx_params']
@@ -606,7 +606,7 @@ class ilMailingListsGUI implements ilCtrlSecurityInterface
             $user_select = $this->ui_factory->input()->field()->select(
                 $this->lng->txt('mail_entry_of_contacts'),
                 $options
-            );
+            )->withRequired(true);
 
             $this->ctrl->setParameter($this, 'ml_id', $this->mlists->getCurrentMailingList()->getId());
             $form = $this->ui_factory->input()->container()->form()->standard(

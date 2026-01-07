@@ -84,7 +84,7 @@ SQL
 
         while ($row = $res->fetchRow(\ilDBConstants::FETCHMODE_OBJECT)) {
             $this->db->manipulateF(
-                'INSERT INTO reg_dual_opt_in (id, usr_id, reg_hash, creation_date) VALUES (%s, %s, %s)',
+                'INSERT INTO reg_dual_opt_in (id, usr_id, reg_hash, creation_date) VALUES (%s, %s, %s, %s)',
                 [
                     \ilDBConstants::T_TEXT,
                     \ilDBConstants::T_INTEGER,

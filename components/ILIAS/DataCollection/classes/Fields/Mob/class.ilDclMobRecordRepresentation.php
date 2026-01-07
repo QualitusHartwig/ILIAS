@@ -52,7 +52,7 @@ class ilDclMobRecordRepresentation extends ilDclFileRecordRepresentation
         $mob = new ilObjMediaObject($value);
         $med = $mob->getMediaItem('Standard');
 
-        if (!$med || $med->getLocation() === "") {
+        if (!$med || $med->getLocation() === "" || !$this->getField()->getFileSystem()->has(ilObjMediaObject::_getRelativeDirectory($mob->getId()) . '/' . $med->getLocation())) {
             return "";
         }
 
@@ -110,16 +110,7 @@ class ilDclMobRecordRepresentation extends ilDclFileRecordRepresentation
             }
         }
 
-        $width = "200px";
-        $height = "auto";
-        if ($field->getProperty(ilDclBaseFieldModel::PROP_WIDTH) > 0) {
-            $width = $field->getProperty(ilDclBaseFieldModel::PROP_WIDTH) . "px";
-        }
-        if ($field->getProperty(ilDclBaseFieldModel::PROP_HEIGHT) > 0) {
-            $height = $field->getProperty(ilDclBaseFieldModel::PROP_HEIGHT) . "px";
-        }
-        $content = $this->renderer->render($components);
-        return "<div style='width:$width; height:$height;'>$content</div>";
+        return $this->renderer->render($components);
     }
 
     public function parseFormInput($value)

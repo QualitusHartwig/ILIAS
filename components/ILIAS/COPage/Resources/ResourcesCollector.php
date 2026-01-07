@@ -18,14 +18,14 @@
 
 namespace ILIAS\COPage;
 
+use ILIAS\COPage\PC\PCDefinition;
+
 /**
  * Collects all js/css/onload resources necessary for page rendering
- *
- * @author Alexander Killing <killing@leifos.de>
  */
 class ResourcesCollector
 {
-    protected $pc_definition;
+    protected PCDefinition $pc_definition;
     protected string $output_mode = "";
     protected array $js_files = [];
     protected array $css_files = [];
@@ -65,7 +65,6 @@ class ResourcesCollector
         // (for all other modes they are included automatically)
         if ($this->output_mode == \ilPageObjectGUI::OFFLINE) {
             $this->js_files[] = \iljQueryUtil::getLocaljQueryPath();
-            $this->js_files[] = \iljQueryUtil::getLocaljQueryUIPath();
             $this->js_files[] = 'assets/js/Basic.js';
             $this->js_files[] = 'assets/js/mathjax_config.js';
             $this->js_files[] = 'node_modules/mathjax/es5/tex-chtml-full.js';

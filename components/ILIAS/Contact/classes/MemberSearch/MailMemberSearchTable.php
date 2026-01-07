@@ -60,7 +60,7 @@ class MailMemberSearchTable implements UI\Component\Table\DataRetrieval
                 $this->lng->txt('members'),
                 $columns,
             )
-            ->withId(self::class . '_' . $this->ref_id)
+            ->withId(str_replace('\\', '', self::class) . '_' . $this->ref_id)
             ->withOrder(new \ILIAS\Data\Order('login', \ILIAS\Data\Order::ASC))
             ->withActions($actions)
             ->withRequest($this->request);
@@ -147,8 +147,9 @@ class MailMemberSearchTable implements UI\Component\Table\DataRetrieval
         array $visible_column_ids,
         Data\Range $range,
         Data\Order $order,
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): \Generator {
         $records = $this->getRecords($range, $order);
 
@@ -159,8 +160,9 @@ class MailMemberSearchTable implements UI\Component\Table\DataRetrieval
     }
 
     public function getTotalRowCount(
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): ?int {
         $this->initRecords();
 

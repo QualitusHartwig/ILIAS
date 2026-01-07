@@ -35,10 +35,11 @@ use ILIAS\ILIASObject\Properties\Translations\CachedRepository as TranslationsRe
  */
 class ilObjectDataSet extends ilDataSet
 {
-    protected LocalDIC $obj_dic;
-    protected ResourceStorage $storage;
-    protected Aggregator $properties_aggregator;
-    protected TranslationsRepository $translations_repository;
+    private ResourceStorage $storage;
+    private Aggregator $properties_aggregator;
+    private TranslationsRepository $translations_repository;
+
+    public static ?string $base_lang = null;
 
     public function __construct()
     {
@@ -252,18 +253,13 @@ class ilObjectDataSet extends ilDataSet
     private function copyTileToTempFolderForExport(string $rid): string
     {
         $i = $this->storage->manage()->find($rid);
-        $stream = $this->storage->consume()->stream(
-            $i
-        );
-        $title = $this->storage->manage()->getCurrentRevision($i)->getTitle();
-
-        $temp_dir = implode(
-            DIRECTORY_SEPARATOR,
-            [ILIAS_DATA_DIR, CLIENT_ID, 'temp', uniqid('tmp')]
-        );
-        mkdir($temp_dir);
-        file_put_contents($temp_dir . DIRECTORY_SEPARATOR . $title, $stream->getStream()->getContents());
-        return $temp_dir;
+        $resource = $this->storage->manage()->getResource($i);
+        $path_in_container = "/dsDir_" . $this->dircnt . "/" . $resource->getCurrentRevision()->getTitle();
+        $path_in_container = $this->export->isContainerExport()
+            ? $this->export->getPathToComponentExpDirInContainerWithLeadingSetNumber() . $path_in_container
+            : $this->export->getPathToComponentExpDirInContainer() . $path_in_container;
+        $this->export->getExportWriter()->writeFilesByResourceId($rid, $path_in_container);
+        return $path_in_container;
     }
     /**
      * Determine the dependent sets of data
@@ -302,29 +298,43 @@ class ilObjectDataSet extends ilDataSet
         switch ($entity) {
             case 'transl_entry':
                 $new_id = $this->getNewObjId($mapping, $rec['ObjId']);
-                if ($new_id > 0) {
-                    $transl = $this->translations_repository->getFor($new_id);
-                    $this->translations_repository->store(
-                        $transl->withLanguage(
-                            new Language(
-                                $rec['LangCode'],
-                                $rec['Title'],
-                                $rec['Description'],
-                                (bool) $rec['LangDefault']
-                            )
+                if ($new_id <= 0) {
+                    break;
+                }
+
+                $is_base_lang = $rec['LangCode'] === self::$base_lang;
+
+                $transl = $this->translations_repository->getFor($new_id);
+                $this->translations_repository->store(
+                    $transl->withLanguage(
+                        new Language(
+                            $rec['LangCode'],
+                            $rec['Title'],
+                            $rec['Description'],
+                            (bool) $rec['LangDefault'],
+                            $rec['LangCode'] === self::$base_lang
                         )
-                    );
+                    )
+                );
+                if ($is_base_lang) {
+                    self::$base_lang = null;
                 }
                 break;
 
             case 'transl':
                 $new_id = $this->getNewObjId($mapping, $rec['ObjId']);
-                if ($new_id > 0) {
-                    $transl = $this->translations_repository->getFor($new_id);
-                    $this->translations_repository->store(
-                        $transl->withBaseLanguage($rec['MasterLang'])
-                    );
+                if ($new_id <= 0) {
+                    break;
                 }
+                $transl = $this->translations_repository->getFor($new_id);
+                if ($transl->getLaguageForCode($rec['LangCode']) === null) {
+                    self::$base_lang = $rec['LangCode'];
+                    break;
+                }
+
+                $this->translations_repository->store(
+                    $transl->withBaseLanguage($rec['LangCode'])
+                );
                 break;
 
             case 'service_settings':

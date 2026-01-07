@@ -1,9 +1,3 @@
-import ACTIONS from '../actions/paragraph-action-types.js';
-import PAGE_ACTIONS from '../../page/actions/page-action-types.js';
-import TinyWrapper from './tiny-wrapper.js';
-import TINY_CB from './tiny-wrapper-cb-types.js';
-import AutoSave from './auto-save.js';
-
 /**
  * This file is part of ILIAS, a powerful learning management system
  * published by ILIAS open source e-Learning e.V.
@@ -19,6 +13,12 @@ import AutoSave from './auto-save.js';
  * https://github.com/ILIAS-eLearning
  *
  ******************************************************************** */
+
+import ACTIONS from '../actions/paragraph-action-types.js';
+import PAGE_ACTIONS from '../../page/actions/page-action-types.js';
+import TinyWrapper from './tiny-wrapper.js';
+import TINY_CB from './tiny-wrapper-cb-types.js';
+import AutoSave from './auto-save.js';
 
 /**
  * paragraph ui
@@ -237,19 +237,21 @@ export default class ParagraphUI {
           break;
       }
     });
+  }
 
-    // characteristic selection
-    document.querySelectorAll('#ilAdvSelListTable_style_selection li').forEach((li) => {
-      let cl;
-      li.removeAttribute('onclick');
-      li.addEventListener('click', (event) => {
-        cl = li.querySelector('.ilCOPgEditStyleSelectionItem').querySelector('h1,h2,h3,div').classList[0];
-        this.log(cl);
-        cl = cl.split('_');
-        cl = cl[cl.length - 1];
-        this.setParagraphClass(cl);
-      });
-    });
+  /**
+   * E.g. "ilc_text_block_Classname" -> "Classname"
+   */
+  getCharacteristicFromClass(cl) {
+    let characteristic;
+    const prefix = 'ilc_text_block_';
+    if (cl.startsWith(prefix)) {
+      characteristic = cl.slice(prefix.length);
+    } else {
+      const cl_arr = cl.split('_');
+      characteristic = cl_arr[cl_arr.length - 1];
+    }
+    return characteristic;
   }
 
   //

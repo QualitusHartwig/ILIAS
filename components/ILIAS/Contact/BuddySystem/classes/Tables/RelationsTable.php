@@ -46,11 +46,15 @@ use Generator;
 
 class RelationsTable
 {
+    /**
+     * @param Closure(int, string): string $link_to_profile
+     */
     public function __construct(
         private readonly UIFactory $create,
         private readonly ilLanguage $lng,
         private readonly ilUIService $ui_service,
-        private readonly Http $http
+        private readonly Http $http,
+        private readonly Closure $link_to_profile,
     ) {
     }
 
@@ -118,18 +122,23 @@ class RelationsTable
         $rows = $this->rows($data, array_keys($single_actions));
         $return = [];
         $return[] = $filter;
-        $return[] = $this->create->table()->data(
-            new TableRows($rows),
-            $this->lng->txt('buddy_tbl_title_relations'),
-            [
-                'public_name' => $this->create->table()->column()->text($this->lng->txt('name')),
-                'login' => $this->create->table()->column()->text($this->lng->txt('login')),
-                'state-text' => $this->create->table()->column()
-                    ->text($this->lng->txt('buddy_tbl_state_actions_col_label')),
-            ]
-        )->withRequest($this->http->request())->withActions(
-            array_merge($single_actions, $multi_actions)
-        );
+        $return[] = $this->create
+            ->table()
+            ->data(
+                new TableRows($rows),
+                $this->lng->txt('buddy_tbl_title_relations'),
+                [
+                    'public_name' => $this->create->table()->column()->text($this->lng->txt('name')),
+                    'login' => $this->create->table()->column()->text($this->lng->txt('login')),
+                    'state-text' => $this->create->table()->column()
+                                                 ->text($this->lng->txt('buddy_tbl_state_actions_col_label')),
+                ]
+            )
+            ->withId('buddy_relations_table')
+            ->withRequest($this->http->request())
+            ->withActions(
+                array_merge($single_actions, $multi_actions)
+            );
 
         return $return;
     }
@@ -214,7 +223,7 @@ class RelationsTable
      */
     private function rows(array $data, array $actions): Closure
     {
-        return static function (
+        return function (
             DataRowBuilder $row_builder,
             array $visible_column_ids,
             Range $range,
@@ -224,6 +233,8 @@ class RelationsTable
             $times = current($order) === 'ASC' ? 1 : -1;
             usort($data, fn(array $a, array $b): int => $times * strcasecmp($a[key($order)], $b[key($order)]));
             foreach ($data as $row) {
+                $row['public_name'] = ($this->link_to_profile)($row['user_id'], $row['public_name']);
+                $row['login'] = ($this->link_to_profile)($row['user_id'], $row['login']);
                 $transitions = array_map(fn($s): string => $row['state'] . '->' . $s, $row['points']);
                 yield array_reduce(
                     $actions,

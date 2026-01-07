@@ -48,9 +48,24 @@ interface DataRepository
         int $usr_id,
         string $login
     ): void;
+    public function storeLastVisitedFor(
+        int $usr_id,
+        array $last_visited
+    );
     public function searchUsers(
         SettingsDataRepository $settings_data_repository,
         ProfileFieldsConfigurationRepository $profile_fields_config_repo,
         AutocompleteQuery $search_term
+    ): array;
+
+    public function getProfileDataQuery(array $select_fields): DataQuery;
+
+    /**
+     * @return array{cnt: int, set: array{string, mixed}}
+     */
+    public function getCountAndRecordsForQuery(
+        DataQuery $query,
+        int $offset,
+        int $limit
     ): array;
 }

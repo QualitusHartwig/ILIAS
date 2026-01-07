@@ -61,7 +61,7 @@ class AuthPageLanguagesOverviewTable implements UI\Component\Table\DataRetrieval
         return $this->ui_factory
             ->table()
             ->data($this, $this->lng->txt($this->context->pageLanguageIdentifier(true)), $columns)
-            ->withId(self::class . '_' . $this->context->value)
+            ->withId(str_replace('\\', '', self::class) . '_' . $this->context->value)
             ->withOrder(new \ILIAS\Data\Order('language', \ILIAS\Data\Order::ASC))
             ->withActions($actions)
             ->withRequest($this->request);
@@ -172,8 +172,9 @@ class AuthPageLanguagesOverviewTable implements UI\Component\Table\DataRetrieval
         array $visible_column_ids,
         Data\Range $range,
         Data\Order $order,
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): \Generator {
         $records = $this->getRecords($range, $order);
 
@@ -185,8 +186,9 @@ class AuthPageLanguagesOverviewTable implements UI\Component\Table\DataRetrieval
     }
 
     public function getTotalRowCount(
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): ?int {
         $this->initRecords();
 

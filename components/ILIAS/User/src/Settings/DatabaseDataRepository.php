@@ -87,10 +87,10 @@ class DatabaseDataRepository implements DataRepository
             self::TABLE_NAME,
             [
                 'usr_id' => [\ilDBConstants::T_INTEGER, $user_id],
-                'keyword' => [\ilDBConstants::T_TEXT],
+                'keyword' => [\ilDBConstants::T_TEXT, $key],
             ],
             [
-                'value' => [\ilDBConstants::T_TEXT,$value]
+                'value' => [\ilDBConstants::T_TEXT, $value]
             ]
         );
     }

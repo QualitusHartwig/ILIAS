@@ -127,6 +127,9 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, Ques
         $this->resultunits[$result->getResult()][$unit->getId()] = $unit;
     }
 
+    /**
+     * @return assFormulaQuestionUnit[]
+     */
     public function getResultUnits(assFormulaQuestionResult $result): array
     {
         if (!isset($this->resultunits[$result->getResult()])) {
@@ -327,7 +330,7 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, Ques
         $text = $this->getQuestion();
 
         foreach ($this->fetchAllVariables($this->getQuestion()) as $varObj) {
-            if (isset($userdata[$varObj->getVariable()]) && strlen($userdata[$varObj->getVariable()])) {
+            if (isset($userdata[$varObj->getVariable()]) && $userdata[$varObj->getVariable()] !== '') {
                 $varObj->setValue($userdata[$varObj->getVariable()]);
             }
 
@@ -335,7 +338,7 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, Ques
 
             $val = '';
             if ($varObj->getValue() !== null) {
-                $val = (strlen($varObj->getValue()) > 8) ? strtoupper(sprintf("%e", $varObj->getValue())) : $varObj->getValue();
+                $val = (strlen((string) $varObj->getValue()) > 8) ? strtoupper(sprintf("%e", $varObj->getValue())) : $varObj->getValue();
             }
 
             $text = preg_replace('/\$' . substr($varObj->getVariable(), 1) . '(?![0-9]+)/', $val . ' ' . $unit . '\1', $text);
@@ -387,13 +390,11 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, Ques
                         if (is_array($userdata)) {
                             foreach ($result_units as $unit) {
                                 if (isset($userdata[$result]["unit"]) && $userdata[$result]["unit"] == $unit->getId()) {
-                                    $units = $unit->getUnit();
+                                    $units = $unit->getSanitizedUnit();
                                 }
                             }
-                        } else {
-                            if ($resObj->getUnit()) {
-                                $units = $resObj->getUnit()->getUnit();
-                            }
+                        } elseif ($resObj->getUnit()) {
+                            $units = $resObj->getUnit()->getSanitizedUnit();
                         }
                     } else {
                         $units = '<select name="result_' . $result . '_unit">';
@@ -407,7 +408,7 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, Ques
                                     $units .= ' selected="selected"';
                                 }
                             }
-                            $units .= '>' . $unit->getUnit() . '</option>';
+                            $units .= '>' . $unit->getSanitizedUnit() . '</option>';
                         }
                         $units .= '</select>';
                     }
@@ -847,7 +848,11 @@ class assFormulaQuestion extends assQuestion implements iQuestionCondition, Ques
 
         $points = 0;
         foreach ($this->getResults() as $result) {
-            $unit_id = $user_solution[$result->getResult() . '_unit'] ?? null;
+            $result_unit = $result->getResult() . '_unit';
+            $unit_id = isset($user_solution[$result_unit]) && is_numeric($user_solution[$result_unit])
+                ? (int) $user_solution[$result_unit]
+                : null;
+
             $points += $result->getReachedPoints(
                 $this->getVariables(),
                 $this->getResults(),

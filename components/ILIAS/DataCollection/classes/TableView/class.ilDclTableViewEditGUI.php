@@ -254,7 +254,6 @@ class ilDclTableViewEditGUI
             $this->tableview->setRoles($data['settings']['role_limitation']['roles'] ?? []);
             if ($create) {
                 $this->tableview->setTableId($this->table->getId());
-                $this->tableview->setOrder($this->table->getNewTableviewOrder());
                 $this->tpl->setOnScreenMessage($this->tpl::MESSAGE_TYPE_SUCCESS, $this->lng->txt('dcl_msg_tableview_created'), true);
                 $this->tableview->create();
             } else {
@@ -346,7 +345,6 @@ class ilDclTableViewEditGUI
     protected function delete(): void
     {
         $this->tableview->delete();
-        $this->table->sortTableViews();
         $this->tpl->setOnScreenMessage('success', $this->lng->txt('dcl_msg_tableview_deleted'), true);
         $this->cancel();
     }
@@ -381,7 +379,6 @@ class ilDclTableViewEditGUI
         $new_tableview = new ilDclTableView();
         $new_tableview->setTableId($this->table->getId());
         $new_tableview->cloneStructure($this->tableview, []);
-        $this->table->sortTableViews();
         $this->tpl->setOnScreenMessage('success', $this->lng->txt("dcl_tableview_copy"), true);
         $this->cancel();
     }

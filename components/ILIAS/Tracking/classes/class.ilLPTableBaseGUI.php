@@ -32,7 +32,7 @@ use ILIAS\HTTP\Services as HttpService;
  */
 class ilLPTableBaseGUI extends ilTable2GUI
 {
-    public const HIT_LIMIT = 5000;
+    public const int HIT_LIMIT = 5000;
     protected RefineryFactory $refinery;
     protected HttpService $http;
 
@@ -190,20 +190,6 @@ class ilLPTableBaseGUI extends ilTable2GUI
                 $obj->writeToSession();
             }
 
-            if ($this->requested_tmpl_create !== "") {
-                $this->ctrl->setParameter(
-                    $this->parent_obj,
-                    "tbltplcrt",
-                    $this->requested_tmpl_create
-                );
-            }
-            if ($this->requested_tmpl_delete !== "") {
-                $this->ctrl->setParameter(
-                    $this->parent_obj,
-                    "tbltpldel",
-                    $this->requested_tmpl_delete
-                );
-            }
             $this->ctrl->redirect($this->parent_obj, $this->parent_cmd);
         } else {
             // e.g. repository selector
@@ -656,7 +642,6 @@ class ilLPTableBaseGUI extends ilTable2GUI
             $item = $this->getFilterItemByPostVar($id);
             switch ($id) {
                 case "title":
-                case "country":
                 case "gender":
                 case "city":
                 case "language":
@@ -671,7 +656,7 @@ class ilLPTableBaseGUI extends ilTable2GUI
                 case "zipcode":
                 case "email":
                 case "matriculation":
-                case "sel_country":
+                case "country":
                 case "query":
                 case "type":
                 case "area":
@@ -1029,11 +1014,10 @@ class ilLPTableBaseGUI extends ilTable2GUI
     ): array {
         $cols = $privacy_fields = array();
 
-        $this->profile->skipGroup(AvailableSections::Interests);
         if ($a_in_course === 1) {
-            $ufs = $this->profile->getVisibleFields(Context::Course);
+            $ufs = $this->profile->getVisibleFields(Context::Course, null, [AvailableSections::Interests]);
         } elseif ($a_in_group === 1) {
-            $ufs = $this->profile->getVisibleFields(Context::Group);
+            $ufs = $this->profile->getVisibleFields(Context::Group, null, [AvailableSections::Interests]);
         } else {
             $ufs = $this->profile->getFields();
         }
@@ -1138,6 +1122,9 @@ class ilLPTableBaseGUI extends ilTable2GUI
             )) {
                 // other user profile fields
                 foreach ($ufs as $fd) {
+                    if ($fd->isCustom()) {
+                        continue;
+                    }
                     $f = $fd->getIdentifier();
                     if (!isset($cols[$f]) && $f !== "username" && !$fd->hiddenInLists()) {
                         $cols[$f] = array(

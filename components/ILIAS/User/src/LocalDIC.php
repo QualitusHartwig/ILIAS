@@ -121,7 +121,9 @@ class LocalDIC extends PimpleContainer
                         $DIC['ui.renderer'],
                         $DIC['refinery']
                     ),
-                    new Standard\Roles(),
+                    new Standard\Roles(
+                        $DIC['ilObjDataCache']
+                    ),
                     new Standard\OrganisationalUnits(),
                     new Standard\Interests(
                         $DIC['ilCtrl']
@@ -147,6 +149,7 @@ class LocalDIC extends PimpleContainer
                     new Standard\Hobby(),
                     new Standard\ReferralComment(),
                     new Standard\Matriculation(),
+                    new Standard\ClientIP(),
                     \ilMapUtil::isActivated() ? new Standard\Location() : null
                 ])
             );

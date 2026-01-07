@@ -62,15 +62,5 @@ interface Type
      * @return array|null Returning null will lead to the deletion of all
      * current values.
      */
-    public function prepareUserInputForStorage(mixed $input): ?array;
-
-    /**
-     * If you have a value that has a $key => $value structure, e.g. because you
-     * implemented ad select-input that returns $key, but needs $value for
-     * presentation, it needs to return the $value, if the input is $key or $value.
-     */
-    public function buildPresentationValueFromUserValue(
-        array $input,
-        ?string $data
-    ): string;
+    public function prepareUserInputForStorage(mixed $input, ?string $data): ?array;
 }

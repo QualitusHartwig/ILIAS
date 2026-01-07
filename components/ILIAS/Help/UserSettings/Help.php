@@ -116,7 +116,7 @@ class Help implements SettingDefinition
         mixed $input
     ): \ilObjUser {
         if ($this->help->areTooltipsActive()) {
-            $user->setPref('hide_help_tt', (string) (int) $input);
+            $user->setPref('hide_help_tt', $input === true || $input === '1' ? '0' : '1');
         }
         return $user;
     }

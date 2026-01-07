@@ -128,7 +128,7 @@ class ilMailOptions
 
     public function mayManageInvididualSettings(): bool
     {
-        return $this->settings->get('show_mail_settings') === '1';
+        return $this->settings->get('show_mail_settings', '0') === '1';
     }
 
     protected function read(): void

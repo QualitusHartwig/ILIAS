@@ -42,13 +42,13 @@ class ProfileImplementation implements Profile
      * @return array<\ILIAS\User\Profile\Fields\Field>
      */
     public function getFields(
-        array $groups_to_skip = [],
+        array $sections_to_skip = [],
         array $fields_to_skip = []
     ): array {
         return array_reduce(
             $this->user_fields,
-            function (array $c, ProfileField $v) use ($groups_to_skip, $fields_to_skip): array {
-                if (!in_array($v->getSection(), $groups_to_skip)
+            function (array $c, ProfileField $v) use ($sections_to_skip, $fields_to_skip): array {
+                if (!in_array($v->getSection(), $sections_to_skip)
                     && !in_array(get_class($v->getDefinition()), $fields_to_skip)) {
                     $c[$v->getIdentifier()] = $v;
                 }
@@ -64,14 +64,14 @@ class ProfileImplementation implements Profile
     public function getVisibleFields(
         Context $context,
         ?\ilObjUser $user = null,
-        array $groups_to_skip = [],
+        array $sections_to_skip = [],
         array $fields_to_skip = []
     ): array {
         return array_filter(
             $this->user_fields,
-            fn(ProfileField $v) => !in_array($v->getSection(), $groups_to_skip)
-                    && !in_array(get_class($v->getDefinition()), $fields_to_skip)
-                    && $context->isFieldVisibleInType($v, $user)
+            fn(ProfileField $v) => !in_array($v->getSection(), $sections_to_skip)
+                    && !in_array($v->getDefinition()::class, $fields_to_skip)
+                    && $context->isFieldVisible($v, $user)
                 ? true : false
         );
     }
@@ -79,6 +79,11 @@ class ProfileImplementation implements Profile
     public function getFieldByIdentifier(string $identifier): ?ProfileField
     {
         return $this->profile_fields_repository->getByIdentifier($identifier);
+    }
+
+    public function getFieldByClass(string $class): ?ProfileField
+    {
+        return $this->profile_fields_repository->getByClass($class);
     }
 
     public function addFieldsToForm(
@@ -103,10 +108,11 @@ class ProfileImplementation implements Profile
     public function addFormValuesToUser(
         \ilPropertyFormGUI $form,
         Context $context,
-        \ilObjUser $user
+        \ilObjUser $user,
+        array $skip_fields = []
     ): \ilObjUser {
         return array_reduce(
-            $this->getVisibleFields($context, $user),
+            $this->getVisibleFields($context, $user, [], $skip_fields),
             static function (\ilObjUser $c, ProfileField $v) use ($form, $context, $user): \ilObjUser {
                 if ($form->getItemByPostVar($v->getIdentifier())->getDisabled()) {
                     return $c;
@@ -268,8 +274,8 @@ class ProfileImplementation implements Profile
             $fields,
             function (\ilPropertyFormGUI $form, ProfileField $v) use ($context, $user, $do_require): \ilPropertyFormGUI {
                 $input = $v->getLegacyInput($this->lng, $context, $user);
-                $input->setDisabled(!$context->isFieldChangeableInType($v, $user));
-                $input->setRequired($do_require && $v->isRequired());
+                $input->setDisabled(!$context->isFieldChangeable($v, $user));
+                $input->setRequired($do_require && $input->getRequired());
                 $form->addItem($input);
                 return $form;
             },

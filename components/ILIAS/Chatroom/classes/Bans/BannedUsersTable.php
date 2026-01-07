@@ -62,7 +62,7 @@ class BannedUsersTable implements UI\Component\Table\DataRetrieval
         return $this->ui_factory
             ->table()
             ->data($this, $this->lng->txt('ban_table_title'), $columns)
-            ->withId(self::class . '_' . $this->room_id)
+            ->withId(str_replace('\\', '', self::class) . '_' . $this->room_id)
             ->withOrder(new \ILIAS\Data\Order('datetime', \ILIAS\Data\Order::DESC))
             ->withActions($actions)
             ->withRequest($this->request);
@@ -157,8 +157,9 @@ class BannedUsersTable implements UI\Component\Table\DataRetrieval
         array $visible_column_ids,
         Data\Range $range,
         Data\Order $order,
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): \Generator {
         $records = $this->getRecords($range, $order);
 
@@ -169,8 +170,9 @@ class BannedUsersTable implements UI\Component\Table\DataRetrieval
     }
 
     public function getTotalRowCount(
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): ?int {
         $this->initRecords();
 

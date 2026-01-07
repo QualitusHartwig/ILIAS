@@ -32,10 +32,8 @@ use ILIAS\ILIASObject\Properties\Properties as ObjectProperties;
 use ILIAS\UI\Component\Modal\Interruptive as InterruptiveModal;
 use ILIAS\UI\Component\Input\Field\Section;
 use ILIAS\UI\Component\Input\Field\Checkbox;
-use ILIAS\UI\Component\Input\Field\OptionalGroup;
 use ILIAS\UI\Component\Input\Container\Form\Standard as StandardForm;
 use ILIAS\Refinery\Factory as Refinery;
-use ILIAS\Refinery\Transformation as TransformationInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ILIAS\Refinery\Constraint;
 
@@ -74,7 +72,6 @@ class SettingsMainGUI extends TestSettingsGUI
 
     public function __construct(
         private readonly \ilGlobalTemplateInterface $tpl,
-        private readonly \ilToolbarGUI $toolbar,
         private readonly \ilCtrlInterface $ctrl,
         private readonly \ilAccessHandler $access,
         private readonly \ilLanguage $lng,
@@ -127,62 +124,10 @@ class SettingsMainGUI extends TestSettingsGUI
         $this->object_data_cache->deleteCachedEntry($this->test_object->getId());
     }
 
-    private function showOldIntroduction(): void
-    {
-        $this->toolbar->addComponent(
-            $this->ui_factory->link()->standard(
-                $this->lng->txt('back'),
-                $this->ctrl->getLinkTargetByClass(self::class, 'showForm')
-            )
-        );
-
-        $this->tpl->setContent(
-            ilRTE::_replaceMediaObjectImageSrc(
-                $this->main_settings->getIntroductionSettings()->getIntroductionText(),
-                1
-            )
-        );
-    }
-
-    private function showOldConcludingRemarks(): void
-    {
-        $this->toolbar->addComponent(
-            $this->ui_factory->link()->standard(
-                $this->lng->txt('back'),
-                $this->ctrl->getLinkTargetByClass(self::class, 'showForm')
-            )
-        );
-
-        $this->tpl->setContent(
-            ilRTE::_replaceMediaObjectImageSrc(
-                $this->main_settings->getFinishingSettings()->getConcludingRemarksText(),
-                1
-            )
-        );
-    }
-
     private function showForm(?StandardForm $form = null, ?InterruptiveModal $modal = null): void
     {
         if ($form === null) {
             $form = $this->buildForm();
-        }
-
-        if ($this->main_settings->getIntroductionSettings()->getIntroductionText() !== '') {
-            $this->toolbar->addComponent(
-                $this->ui_factory->link()->standard(
-                    $this->lng->txt('show_old_introduction'),
-                    $this->ctrl->getLinkTargetByClass(self::class, 'showOldIntroduction')
-                )
-            );
-        }
-
-        if ($this->main_settings->getFinishingSettings()->getConcludingRemarksText() !== '') {
-            $this->toolbar->addComponent(
-                $this->ui_factory->link()->standard(
-                    $this->lng->txt('show_old_concluding_remarks'),
-                    $this->ctrl->getLinkTargetByClass(self::class, 'showOldConcludingRemarks')
-                )
-            );
         }
 
         $rendered_modal = '';
@@ -347,11 +292,9 @@ class SettingsMainGUI extends TestSettingsGUI
     {
         return $this->refinery->custom()->constraint(
             function (array $vs): bool {
-                if ($vs[self::PARTICIPANTS_FUNCTIONALITY_SETTINGS_LABEL]['postponed_questions_behaviour'] === true
-                    && $vs[self::QUESTION_BEHAVIOUR_SETTINGS_LABEL]['lock_answers']['lock_answer_on_next_question']) {
-                    return false;
-                }
-                return true;
+                return $vs[self::PARTICIPANTS_FUNCTIONALITY_SETTINGS_LABEL]['postponed_questions_behaviour'] === false
+                    || !($vs[self::QUESTION_BEHAVIOUR_SETTINGS_LABEL]['lock_answers']['lock_answer_on_next_question']
+                        ?? $this->main_settings->getQuestionBehaviourSettings()->getLockAnswerOnNextQuestionEnabled());
             },
             $this->lng->txt('tst_settings_conflict_postpone_and_lock')
         );
@@ -438,8 +381,7 @@ class SettingsMainGUI extends TestSettingsGUI
         );
 
         $settings = new MainSettings(
-            $this->test_object->getTestId(),
-            $this->test_object->getId(),
+            $this->main_settings->getId(),
             $general_settings,
             $introduction_settings,
             $access_settings,
@@ -641,7 +583,6 @@ class SettingsMainGUI extends TestSettingsGUI
     private function getFinishingSettingsForStorage(array $section): SettingsFinishing
     {
         $redirect_after_finish = $section['redirect_after_finish'];
-        $finish_notification = $section['finish_notification'];
         return $this->main_settings->getFinishingSettings()
             ->withShowAnswerOverview($section['show_answer_overview'])
             ->withConcludingRemarksEnabled($section['show_concluding_remarks'])

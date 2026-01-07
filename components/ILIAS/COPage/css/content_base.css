@@ -26,7 +26,8 @@
 	left:0;
 }
 
-#iltinymenu div.ilTinyMenuSection p, #iltinymenu .il-copg-button-group p {
+/* see #41844 and #46127 */
+#copg-editor-slate-content p, #iltinymenu .il-copg-button-group p {
 	background-color: transparent;
 }
 

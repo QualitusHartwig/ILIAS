@@ -403,8 +403,8 @@ class ilAuthProviderLTI extends \ilAuthProvider implements \ilAuthProviderInterf
             $user_obj->setTimeLimitFrom(time() - 60);
             $user_obj->setTimeLimitUntil(time() + (int) $ilClientIniFile->readVariable("session", "expire"));
         }
-        $user_obj->update();
         $user_obj->refreshLogin();
+        $user_obj->update();
 
         $GLOBALS['DIC']->rbac()->admin()->assignUser($consumer->getRole(), $user_obj->getId());
         $this->getLogger()->debug('Assigned user to: ' . $consumer->getRole());
@@ -529,7 +529,7 @@ class ilAuthProviderLTI extends \ilAuthProvider implements \ilAuthProviderInterf
         return $userObj->getId();
     }
 
-    protected function handleLocalRoleAssignments(int $user_id, ilLTIPlatform $consumer, int $target_ref_id, int $default_rol_id = null): bool
+    protected function handleLocalRoleAssignments(int $user_id, ilLTIPlatform $consumer, int $target_ref_id, ?int $default_rol_id = null): bool
     {
         global $DIC;
         $this->getLogger()->info('$target_ref_id: ' . $target_ref_id);

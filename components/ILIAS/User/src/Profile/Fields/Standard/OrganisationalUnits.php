@@ -60,12 +60,12 @@ class OrganisationalUnits implements FieldDefinition
         return false;
     }
 
-    public function requiredForcedTo(): ?bool
+    public function visibleInRegistrationForcedTo(): ?bool
     {
         return false;
     }
 
-    public function searchableForcedTo(): ?bool
+    public function requiredForcedTo(): ?bool
     {
         return false;
     }

@@ -99,7 +99,7 @@ class QuestionsBrowserTable implements DataRetrieval
                 $this->lng->txt('qpl_settings_subtab_taxonomies')
             )->withIsOptional(false, true),
             'feedback' => $column_factory->boolean(
-                $this->lng->txt('feedback'),
+                $this->lng->txt('tst_feedback'),
                 $iconYes,
                 $iconNo
             )->withIsOptional(true, false),
@@ -144,8 +144,9 @@ class QuestionsBrowserTable implements DataRetrieval
         array $visible_column_ids,
         Range $range,
         Order $order,
-        ?array $filter_data,
-        ?array $additional_parameters
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
     ): \Generator {
         $timezone = new \DateTimeZone($this->current_user->getTimeZone());
         foreach ($this->loadRecords($filter_data ?? [], $order, $range) as $record) {
@@ -163,11 +164,14 @@ class QuestionsBrowserTable implements DataRetrieval
         }
     }
 
-    public function getTotalRowCount(?array $filter_data, ?array $additional_parameters): int
-    {
+    public function getTotalRowCount(
+        mixed $additional_viewcontrol_data,
+        mixed $filter_data,
+        mixed $additional_parameters
+    ): int {
         $filter_data ??= [];
         $this->addFiltersToQuestionList($filter_data);
-        return $this->question_list->getTotalRowCount($filter_data, $additional_parameters);
+        return $this->question_list->getTotalRowCount($additional_viewcontrol_data, $filter_data, $additional_parameters);
     }
 
     public function loadRecords(array $filters = [], ?Order $order = null, ?Range $range = null): array

@@ -205,6 +205,11 @@ class Pons
         return $this->latest_gui;
     }
 
+    public function setGeneralLanguagePrefix(string $prefix): void
+    {
+        $this->translator->setGeneralPrefix($prefix);
+    }
+
     /**
      * @description this is only for convenience, but the constructor is still public and testing is possible as well
      */

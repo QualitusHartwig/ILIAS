@@ -308,7 +308,7 @@ class ilLMPageObjectGUI extends ilLMObjectGUI
                             $href = "";
                             if (ilUserUtil::hasPublicProfile($target_id)) {
                                 $href = $this->ctrl->getLinkTargetByClass(
-                                    PublicProfileGUI::class,
+                                    [ilPublicProfileBaseClassGUI::class, PublicProfileGUI::class],
                                     "getHTML",
                                     "",
                                     false,

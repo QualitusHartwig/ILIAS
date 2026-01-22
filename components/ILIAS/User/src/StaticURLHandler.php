@@ -21,8 +21,10 @@ declare(strict_types=1);
 namespace ILIAS\User;
 
 use ILIAS\User\LocalDIC;
+use ILIAS\User\Account\DeleteAccountGUI;
 use ILIAS\User\Profile\PersonalProfileGUI;
 use ILIAS\User\Profile\PublicProfileGUI;
+use ILIAS\User\Settings\PersonalSettingsGUI;
 use ILIAS\User\Settings\StartingPoint\Repository as StartingPointRepository;
 use ILIAS\Data\ReferenceId;
 use ILIAS\LegalDocuments\Conductor as LegalDocumentsConductor;
@@ -139,7 +141,7 @@ class StaticURLHandler extends BaseHandler implements Handler
             && $this->user->hasDeletionFlag()) {
             $context->ctrl()->setTargetScript('ilias.php');
             return $context->ctrl()->getLinkTargetByClass(
-                [\ilDashboardGUI::class, \ilPersonalSkillsGUI::class],
+                [\ilDashboardGUI::class, PersonalSettingsGUI::class, DeleteAccountGUI::class],
                 'deleteOwnAccountStep2'
             );
         }

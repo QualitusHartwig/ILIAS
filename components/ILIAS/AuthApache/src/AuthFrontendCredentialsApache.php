@@ -20,8 +20,9 @@ declare(strict_types=1);
 
 namespace ILIAS\AuthApache;
 
-use Psr\Http\Message\ServerRequestInterface;
 use ilAuthFrontendCredentials;
+use ILIAS\HTTP\GlobalHttpState;
+use ILIAS\Refinery\Factory;
 use ilUtil;
 use ilSetting;
 use ilContext;
@@ -33,14 +34,13 @@ use ILIAS\ApacheAuth\UsernameProvider\UsernameResolver;
 
 class AuthFrontendCredentialsApache extends ilAuthFrontendCredentials
 {
-    private ServerRequestInterface $http_request;
-    private ilCtrlInterface $ctrl;
-    private ilSetting $settings;
+    private readonly ilSetting $settings;
 
-    public function __construct(ServerRequestInterface $http_request, ilCtrlInterface $ctrl)
-    {
-        $this->http_request = $http_request;
-        $this->ctrl = $ctrl;
+    public function __construct(
+        private readonly GlobalHttpState $http,
+        private readonly Factory $refinery,
+        private readonly ilCtrlInterface $ctrl
+    ) {
         $this->settings = new ilSetting('apache_auth');
         parent::__construct();
     }
@@ -51,15 +51,6 @@ class AuthFrontendCredentialsApache extends ilAuthFrontendCredentials
      */
     public function tryAuthenticationOnLoginPage(): void
     {
-        $cmd = (string) ($this->http_request->getQueryParams()['cmd'] ?? '');
-        if ($cmd === '') {
-            $cmd = (string) ($this->http_request->getParsedBody()['cmd'] ?? '');
-        }
-
-        if ($cmd === 'force_login') {
-            return;
-        }
-
         if (!$this->getSettings()->get('apache_enable_auth', '0')) {
             return;
         }
@@ -70,30 +61,36 @@ class AuthFrontendCredentialsApache extends ilAuthFrontendCredentials
 
         if ((\defined('IL_CERT_SSO') && \IL_CERT_SSO === true) ||
             !ilContext::supportsRedirects() ||
-            isset($this->http_request->getQueryParams()['passed_sso'])) {
+            $this->http->wrapper()->query()->has('passed_sso')) {
             return;
         }
 
-        $path = (string) ($this->http_request->getServerParams()['REQUEST_URI'] ?? '');
-        if (str_starts_with($path, '/')) {
-            $path = substr($path, 1);
+        $redirect_url = ilUtil::getHtmlPath('./sso/index.php?force_mode_apache=1');
+
+        if ($this->http->wrapper()->query()->has('target')) {
+            $url = (string) ($this->http->request()->getServerParams()['REQUEST_URI'] ?? '');
+            if (str_starts_with($url, '/')) {
+                $url = substr($url, 1);
+            }
+
+            if (!str_starts_with($url, 'http')) {
+                $parts = parse_url(ILIAS_HTTP_PATH);
+                $url = $parts['scheme'] . '://' . $parts['host'] . '/' . $url;
+            }
+
+            $uri = new \ILIAS\Data\URI($url);
+            /*
+             * If `tryAuthenticationOnLoginPage` is called and a permanent-link "target" is provided,
+             * we ensure using `goto.php` as landing page after successful authentication
+             */
+            $uri = $uri->withPath(str_replace(['login.php', 'ilias.php'], 'goto.php', $uri->getPath()));
+            $redirect_url = ilUtil::appendUrlParameterString(
+                $redirect_url,
+                'r=' . urlencode($this->refinery->uri()->toString()->transform($uri))
+            );
         }
 
-        if (!str_starts_with($path, 'http')) {
-            $parts = parse_url(ILIAS_HTTP_PATH);
-            $path = $parts['scheme'] . '://' . $parts['host'] . '/' . $path;
-        }
-
-        $this->ctrl->redirectToURL(
-            ilUtil::getHtmlPath(
-                './sso/index.php?' . http_build_query([
-                    'force_mode_apache' => 1,
-                    'r' => $path,
-                    'cookie_path' => IL_COOKIE_PATH,
-                    'ilias_path' => ILIAS_HTTP_PATH,
-                ])
-            )
-        );
+        $this->ctrl->redirectToURL($redirect_url);
     }
 
     protected function getSettings(): ilSetting
@@ -105,13 +102,13 @@ class AuthFrontendCredentialsApache extends ilAuthFrontendCredentials
     {
         $mapping_field_name = $this->getSettings()->get('apache_auth_username_direct_mapping_fieldname', '');
 
-        $this->logger->dump($this->http_request->getServerParams(), ilLogLevel::DEBUG);
+        $this->logger->dump($this->http->request()->getServerParams(), ilLogLevel::DEBUG);
         $this->logger->debug($mapping_field_name);
 
         switch ($this->getSettings()->get('apache_auth_username_config_type')) {
             case AuthProviderApache::APACHE_AUTH_TYPE_DIRECT_MAPPING:
-                if (isset($this->http_request->getServerParams()[$mapping_field_name])) {
-                    $this->setUsername($this->http_request->getServerParams()[$mapping_field_name]);
+                if (isset($this->http->request()->getServerParams()[$mapping_field_name])) {
+                    $this->setUsername($this->http->request()->getServerParams()[$mapping_field_name]);
                 }
                 break;
 
@@ -121,14 +118,19 @@ class AuthFrontendCredentialsApache extends ilAuthFrontendCredentials
                     require CollectUsernameProvidersObjective::PATH()
                 ), $this->logger);
 
-                $this->setUsername($resolver->resolve($this->http_request)->asString());
+                $this->setUsername($resolver->resolve($this->http->request())->asString());
                 break;
         }
     }
 
     public function hasValidTargetUrl(): bool
     {
-        $target_url = trim((string) ($this->http_request->getQueryParams()['r'] ?? ''));
+        $target_url = trim(
+            $this->http->wrapper()->query()->retrieve('r', $this->refinery->byTrying([
+                $this->refinery->kindlyTo()->string(),
+                $this->refinery->always(''),
+            ]))
+        );
         if ($target_url === '') {
             return false;
         }
@@ -148,6 +150,8 @@ class AuthFrontendCredentialsApache extends ilAuthFrontendCredentials
 
     public function getTargetUrl(): string
     {
-        return ilUtil::appendUrlParameterString(trim($this->http_request->getQueryParams()['r']), 'passed_sso=1');
+        $target_url = trim($this->http->wrapper()->query()->retrieve('r', $this->refinery->kindlyTo()->string()));
+
+        return ilUtil::appendUrlParameterString($target_url, 'passed_sso=1');
     }
 }

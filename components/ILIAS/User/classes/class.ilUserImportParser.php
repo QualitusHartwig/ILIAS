@@ -413,7 +413,9 @@ class ilUserImportParser extends ilSaxParser
                 }
                 $this->user_obj->setLanguage($a_attribs['Language'] ?? '');
                 $this->user_obj->setImportId($a_attribs['Id'] ?? '');
-                $this->action = (is_null($a_attribs['Action'])) ? 'Insert' : $a_attribs['Action'];
+                $this->action = isset($a_attribs['Action'])
+                    ? $a_attribs['Action']
+                    : 'Insert';
                 $this->current_user_password = null;
                 $this->current_user_password_type = null;
                 $this->currActive = null;

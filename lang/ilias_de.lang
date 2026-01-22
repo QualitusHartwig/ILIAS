@@ -1166,6 +1166,7 @@ assessment#:#question_summary#:#Übersicht Testdurchlauf
 assessment#:#question_summary_btn#:#Übersicht Testdurchlauf
 assessment#:#question_title#:#Fragentitel
 assessment#:#question_type#:#Fragetyp
+assessment#:#questionlist_cannot_be_altered#:#Die Fragenliste kann nicht verändert werden da der Test Teilnehmerdatensätze enthält.
 assessment#:#questionpool_not_entered#:#Bitte geben Sie einen Namen für den Fragenpool an!
 assessment#:#questionpool_not_selected#:#Bitte wählen Sie einen Fragenpool aus!
 assessment#:#questions#:#Fragen
@@ -3823,7 +3824,7 @@ common#:#cron_users_without_login_del_create_date_thr#:#Schwellenwert
 common#:#cron_users_without_login_del_create_date_thr_info#:#Alle Anmeldekonten, deren Erstellung länger her ist als der hier definierte Schwellenwert, werden für eine Löschung berücksichtigt.
 common#:#cron_users_without_login_del_role_whitelist#:#Berücksichtigte Rollen
 common#:#cron_users_without_login_del_role_whitelist_info#:#Nur Benutzer mit einer der ausgewählten globalen Rollen werden gelöscht. Hat ein Benutzer eine der nicht ausgewählten Rollen inne, bleibt das ILIAS-Konto weiter bestehen.
-common#:#cronjob_last_start#:#Letzter Start des Cron-Jobs
+common#:#cronjob_last_start#:#Letzte automatische Ausführung des Cron-Jobs-Scripts
 common#:#cronjob_last_start_unknown#:#Konnte nicht ermittelt werden
 common#:#crs#:#Kurs
 common#:#crs_activation_start_invalid#:#Der Start und der Endtermin sind nicht gültig.
@@ -6152,10 +6153,8 @@ content#:#cont_Headline2#:#Überschrift 2
 content#:#cont_Headline3#:#Überschrift 3
 content#:#cont_Information#:#Information
 content#:#cont_Interaction#:#Interaktion
-content#:#cont_Link#:#Link
 content#:#cont_List#:#Liste
 content#:#cont_Literature#:#Literatur
-content#:#cont_Media#:#Medien (Standard)
 content#:#cont_Mnemonic#:#Merksatz
 content#:#cont_Numbers#:#Zahlen
 content#:#cont_Poly#:#Polygon
@@ -6265,6 +6264,8 @@ content#:#cont_chapters_after_pages#:#Beachten Sie, dass innerhalb einer Ebene z
 content#:#cont_chapters_and_pages#:#Kapitel und Seiten
 content#:#cont_chapters_only#:#Nur Kapitel
 content#:#cont_char_format#:#Zeichenformat
+content#:#cont_char_link#:#Link
+content#:#cont_char_media#:#Medien (Standard)
 content#:#cont_char_style_acc#:#Akzentuiert
 content#:#cont_char_style_code#:#Code
 content#:#cont_char_style_com#:#Kommentar
@@ -8741,8 +8742,8 @@ dcl#:#dcl_no_fields_yet#:#Es wurden noch keine Felder für diese Tabelle erstell
 dcl#:#dcl_no_read_access_on_any_standard_view#:#Sie haben auf keine Standard-Tabellenansicht Lesezugriff.
 dcl#:#dcl_no_search_results_found_for#:#Es wurden keine Module gefunden mit:
 dcl#:#dcl_no_such_reference#:#Der folgende Wert ist in der Referenztabelle nicht vorhanden:
-dcl#:#dcl_no_table_found#:#Keine sichbare Tabelle verfügbar!
-dcl#:#dcl_no_tableview_found#:#Keine sichbare Tabellenansicht verfügbar!
+dcl#:#dcl_no_table_found#:#Keine sichtbare Tabelle verfügbar!
+dcl#:#dcl_no_tableview_found#:#Keine sichtbare Tabellenansicht verfügbar!
 dcl#:#dcl_not_checked#:#Nicht ausgewählt
 dcl#:#dcl_not_supported_in_import#:#Dieser Feldtyp wird beim Import nicht unterstützt.
 dcl#:#dcl_notification_activate#:#Benachrichtigung aktivieren
@@ -8808,8 +8809,6 @@ dcl#:#dcl_std_field_not_importable#:# - Standardfelder sind nicht importierbar.
 dcl#:#dcl_std_filter#:#Filtervorbelegung
 dcl#:#dcl_supported_filetypes#:#Erlaubte Dateiendungen
 dcl#:#dcl_supported_filetypes_desc#:#Sie können hier kommagetrennt Dateiendungen angeben. Zum Beispiel: pdf, docx
-dcl#:#dcl_switch_table#:#Tabelle wechseln
-dcl#:#dcl_switch_view#:#Ansicht ändern
 dcl#:#dcl_table#:#Tabelle
 dcl#:#dcl_table_id#:#Tabellen ID
 dcl#:#dcl_table_list_fields#:#Felder der ausgewählten Tabelle
@@ -8845,7 +8844,7 @@ dcl#:#dcl_text_email_title#:#Titel
 dcl#:#dcl_text_email_title_info#:#Titel für die URL oder E-Mail-Adresse (optional).
 dcl#:#dcl_text_selection#:#Text per Auswahl
 dcl#:#dcl_text_selection_desc#:#Ausvorgegebenen Optionen kann eine Auswahl getroffen werden,
-dcl#:#dcl_title_standardview#:#Standard-Ansicht
+dcl#:#dcl_title_standard#:#Standard
 dcl#:#dcl_unique#:#Gleiche Einträge verhindern
 dcl#:#dcl_unique_desc#:#Identische Einträge sind in diesem Feld nicht erlaubt.
 dcl#:#dcl_unique_exception#:#Der eingegebene Wert wird schon von einem anderen Eintrag verwendet.
@@ -11520,6 +11519,7 @@ mail#:#mail_add_folder#:#Neuen Ordner erstellen
 mail#:#mail_add_recipient#:#Bitte geben Sie an, wer die Mail erhalten soll. Geben Sie ILIAS-Anmeldenamen oder gültige E-Mail-Adressen an.
 mail#:#mail_add_subfolder#:#Unterordner hinzufügen
 mail#:#mail_add_subject#:#Bitte geben Sie einen Betreff ein
+mail#:#mail_adopt_selected_attachements#:#Ausgewählte Anhänge übernehmen
 mail#:#mail_all_in_trash#:#Alle im Papierkorb
 mail#:#mail_allow_external#:#Externe E-Mails
 mail#:#mail_allow_external_info#:#Die Zustellung von externen E-Mails (via SMTP) zulassen. Falls nicht aktiviert, wird der Versand von externen E-Mails (via SMTP) global unterdrückt.
@@ -11630,6 +11630,8 @@ mail#:#mail_member_notification#:#Teilnehmerbenachrichtigung
 mail#:#mail_members_of_mailing_list#:#Mitglieder der Verteilerliste „%s“
 mail#:#mail_members_search_continue#:#Weiter
 mail#:#mail_message_send#:#Die Mail wurde versandt.
+mail#:#mail_mode_switch_label#:#Zwischen „Persönliche Mail” und „Serienbrief” umschalten
+mail#:#mail_mode_switch_locked#:#Sie können nicht zu „%s” wechseln.
 mail#:#mail_move_error#:#Beim Versuch, Ihre E-Mail zu verschieben, ist ein Fehler aufgetreten.
 mail#:#mail_move_to#:#Verschieben nach:
 mail#:#mail_move_to_folder_btn_label#:#Mail verschieben
@@ -11772,6 +11774,7 @@ mail#:#only_inbox_trash_info#:#Falls aktiviert, werden ausschließlich Mails gel
 mail#:#orphaned_mail_body#:#Es existieren alte oder verwaiste Mails in den folgenden Ordnern. Beachten Sie, dass diese Mails in kürze automatisch gelöscht werden.
 mail#:#orphaned_mail_subject#:#Benachrichtigung über alte Mails
 mail#:#placeholders_advise#:#Persönliche Platzhalter werden nur für Personen im „An”-Feld ersetzt. Personen im „CC”-Feld und „BCC”-Feld erhalten die Mail mit nicht-ersetzten Platzhaltern.
+mail#:#regular_mail#:#Persönliche Mail
 mail#:#search_content#:#Suchergebnis
 mail#:#search_recipients#:#Personen suchen
 mail#:#second_email_missing_info#:#Auswahl nicht möglich, da keine zweite E-Mail-Adresse eingetragen wurde
@@ -11780,6 +11783,7 @@ mail#:#send_mail_admins#:#Administration
 mail#:#send_mail_members#:#Mitglied
 mail#:#send_mail_to#:#Mail an
 mail#:#send_mail_tutors#:#Kursbetreuung
+mail#:#serial_letter#:#Serienbrief
 mail#:#show_mail_settings#:#Einstellungen anzeigen
 mail#:#show_mail_settings_info#:#Aktiviert die Anzeige der Mail-Einstellungen im Bereich 'Einstellungen' oder 'Mail'. Benutzer können die Mail-Einstellungen nur ändern, wenn die Konfiguration des Benutzer-Profils dies erlaubt. Wenn Benutzer nicht berechtigt sind, die Mail-Einstellung ihrer Profils zu ändern, dann gelten die globalen Einstellungen. Dies gilt auch dann, wenn Benutzer in der Vergangenheit die Berechtigung zum Ändern der Mail-Einstellungen hatten und persönliche Einstellungen vorgenommen haben.
 mail#:#system_notification_installation_changed_by#:#Geändert durch
@@ -12770,6 +12774,7 @@ mme#:#item_updated#:#Eintrag gespeichert
 mme#:#main#:#Hauptmenü
 mme#:#mm_translation_lang#:#Sprache
 mme#:#mm_translation_trans#:#Übersetzung
+mme#:#mme_lost_items#:#Nicht zugeordnet
 mme#:#move_to_item#:#Zu Einträge verschieben
 mme#:#move_to_top_item#:#In Haupteinträge verschieben
 mme#:#msg_languages_added#:#Sprachen hinzugefügt
@@ -12958,6 +12963,7 @@ news#:#news_news_item_visibility_info#:#Öffentliche Neuigkeiten können von au�
 news#:#news_news_items#:#Neuigkeit(en)
 news#:#news_no_js_click_here#:#Werden die Neuigkeiten nicht angezeigt, klicken Sie bitte hier.
 news#:#news_no_news_items#:#Es sind keine Neuigkeiten für Sie vorhanden.
+news#:#news_not_available#:#Neuigkeit nicht verfügbar
 news#:#news_notifications#:#Benachrichtigungen
 news#:#news_notifications_public#:#Öffentliche Benachrichtigungen
 news#:#news_notifications_public_info#:#Wenn diese Option gewählt wird, können Benachrichtigungen auch außerhalb von ILIAS über den persönlichen Newsfeed empfangen werden. Beachten Sie bitte, dass diese Benachrichtigungen ohne Authentifizierung zugänglich sind.

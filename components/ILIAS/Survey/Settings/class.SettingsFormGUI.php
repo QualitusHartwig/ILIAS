@@ -375,7 +375,7 @@ class SettingsFormGUI
 
         // anonymization
         if ($feature_config->supportsAccessCodes()) {
-            $codes = new \ilCheckboxInputGUI($lng->txt("survey_access_codes"), "acc_codes");
+            $codes = new \ilCheckboxInputGUI($lng->txt("survey_access_code"), "acc_codes");
             $codes->setInfo($lng->txt("survey_access_codes_info"));
             $codes->setChecked(!$survey->isAccessibleWithoutCode());
             $form->addItem($codes);

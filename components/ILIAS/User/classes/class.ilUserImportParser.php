@@ -1495,7 +1495,15 @@ class ilUserImportParser extends ilSaxParser
                     break;
                 }
 
-                $this->udf_data[$field_id] = strip_tags($this->cdata, ilRTESettings::_getUsedHTMLTags('textarea'));
+                $data = json_decode(
+                    strip_tags($this->cdata),
+                    true
+                ) ?? $this->cdata;
+                if ($data === '') {
+                    break;
+                }
+
+                $this->udf_data[$field_id] = $data;
 
                 break;
             case 'AccountInfo':
@@ -1811,6 +1819,9 @@ class ilUserImportParser extends ilSaxParser
                 }
                 break;
             case 'TimeLimitFrom':
+                if ($this->cdata === '') {
+                    break;
+                }
                 // Accept datetime or Unix timestamp
                 if (strtotime($this->cdata) === false && !is_numeric($this->cdata)) {
                     $this->logFailure($this->user_obj->getLogin(), sprintf($this->lng->txt('usrimport_xml_element_content_illegal'), 'TimeLimitFrom', $this->stripTags($this->cdata)));
@@ -1818,6 +1829,9 @@ class ilUserImportParser extends ilSaxParser
                 $this->user_obj->setTimeLimitFrom((int) $this->cdata);
                 break;
             case 'TimeLimitUntil':
+                if ($this->cdata === '') {
+                    break;
+                }
                 // Accept datetime or Unix timestamp
                 if (strtotime($this->cdata) === false && !is_numeric($this->cdata)) {
                     $this->logFailure($this->user_obj->getLogin(), sprintf($this->lng->txt('usrimport_xml_element_content_illegal'), 'TimeLimitUntil', $this->stripTags($this->cdata)));

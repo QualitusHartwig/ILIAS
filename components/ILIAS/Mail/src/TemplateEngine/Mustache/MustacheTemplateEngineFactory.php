@@ -18,16 +18,15 @@
 
 declare(strict_types=1);
 
-if (!file_exists('../ilias.ini.php')) {
-    die('The ILIAS setup is not completed. Please run the setup routine.');
+namespace ILIAS\Mail\TemplateEngine\Mustache;
+
+use ILIAS\Mail\TemplateEngine\TemplateEngineFactoryInterface;
+use ILIAS\Mail\TemplateEngine\TemplateEngineInterface;
+
+class MustacheTemplateEngineFactory implements TemplateEngineFactoryInterface
+{
+    public function getBasicEngine(): TemplateEngineInterface
+    {
+        return new MustacheTemplateEngine(new \Mustache\Engine());
+    }
 }
-
-require_once '../vendor/composer/vendor/autoload.php';
-require_once __DIR__ . '/../artifacts/bootstrap_default.php';
-entry_point('ILIAS Legacy Initialisation Adapter');
-
-global $DIC;
-ilStartUpGUI::setForcedCommand('doLogout');
-$DIC->ctrl()->callBaseClass(ilStartUpGUI::class);
-$DIC['ilBench']->save();
-exit();

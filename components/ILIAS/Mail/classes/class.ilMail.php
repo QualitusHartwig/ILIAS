@@ -1302,7 +1302,12 @@ class ilMail
         if (!$this->isSystemMail()) {
             $message .= $this->signature_service->user($this->user_id);
         }
-        $mailer->Body($this->refinery->string()->markdown()->toHTML()->transform($message) ?? '');
+        $mailer->Body(
+            $message,
+            function (string $message): string {
+                return $this->refinery->string()->markdown()->toHTML()->transform($message) ?? '';
+            }
+        );
 
         if ($cc !== '') {
             $mailer->Cc($cc);

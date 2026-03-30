@@ -203,7 +203,8 @@ final class ilObjEmployeeTalkAccess extends ilObjectAccess
         $user = $this->getCurrentUsersId();
         if (
             $user === $talk->getOwner() &&
-            $this->container->access()->checkAccess('read', '', ilObjTalkTemplateAdministration::getRootRefId())
+            $this->container->access()->checkAccess('read', '', ilObjTalkTemplateAdministration::getRootRefId()) &&
+            $this->talkPositionSettings->isActive()
         ) {
             return true;
         }

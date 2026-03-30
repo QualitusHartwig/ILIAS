@@ -151,11 +151,19 @@ class ilLTIConsumerProviderTableGUI implements DataRetrieval
             fn($ret, $key, $value) => [$key, $value]
         );
 
-        usort($records, static function (array $left, array $right) use ($order_field): int {
-            $left_val = $left[$order_field] ?? '';
-            $right_val = $right[$order_field] ?? '';
-            return ilStr::strCmp($left_val, $right_val);
+        $order_field = (string) $order_field;
+        $sortable_records = array_map(function (array $record) use ($order_field): array {
+            return [
+                'sort_key' => $this->getSortableValue($record, $order_field),
+                'record' => $record,
+            ];
+        }, $records);
+
+        usort($sortable_records, static function (array $left, array $right): int {
+            return ilStr::strCmp($left['sort_key'], $right['sort_key']);
         });
+
+        $records = array_column($sortable_records, 'record');
 
         if ($order_direction === Order::DESC) {
             $records = array_reverse($records);
@@ -166,6 +174,20 @@ class ilLTIConsumerProviderTableGUI implements DataRetrieval
         }
 
         return $records;
+    }
+
+    protected function getSortableValue(array $record, string $order_field): string
+    {
+        return match ($order_field) {
+            'category' => $this->getCategoryTranslation((string) ($record['category'] ?? '')),
+            'outcome' => $this->getHasOutcomeFormatted((bool) ($record['outcome'] ?? false)),
+            'internal' => $this->getIsInternalFormatted(!(bool) ($record['external'] ?? false)),
+            'with_key' => $this->getIsWithKeyFormatted(!(bool) ($record['provider_key_customizable'] ?? false)),
+            'availability' => $this->getAvailabilityLabel($record),
+            'own_provider' => $this->getOwnProviderLabel($record),
+            'provider_creator' => $this->getProviderCreatorLabel($record),
+            default => (string) ($record[$order_field] ?? ''),
+        };
     }
 
     /**

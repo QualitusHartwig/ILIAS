@@ -213,54 +213,54 @@ class StandardFilterTest extends ILIAS_UI_TestBase
         </div>
         <div class="il-filter-input-section row" id="section_inputs_id_1" role="region" aria-labelledby="opener_id_1" data-section-inputs-expanded="0">
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
+                <div data-il-ui-component="text-field-input" data-il-ui-input-name="filter_input_0/filter_input_1" id="id_6" class="input-group">
                     <label for="id_5" class="input-group-addon leftaddon">Title</label>
                     <input id="id_5" type="text" name="filter_input_0/filter_input_1" class="c-field-text" />
                     <span class="input-group-addon rightaddon">
-                        <a class="glyph" href="" aria-label="remove" id="id_6">
+                        <a class="glyph" href="" aria-label="remove" id="id_7">
                             <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                         </a>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
-                    <label for="id_7" class="input-group-addon leftaddon">Selection</label>
-                    <select id="id_7" name="filter_input_0/filter_input_2">
+                <div data-il-ui-component="select-field-input" data-il-ui-input-name="filter_input_0/filter_input_2" id="id_9" class="input-group">
+                    <label for="id_8" class="input-group-addon leftaddon">Selection</label>
+                    <select id="id_8" name="filter_input_0/filter_input_2">
                         <option selected="selected" value="">-</option>
                         <option value="one">One</option>
                         <option value="two">Two</option>
                         <option value="three">Three</option>
                     </select>
                     <span class="input-group-addon rightaddon">
-                        <a class="glyph" href="" aria-label="remove" id="id_8">
+                        <a class="glyph" href="" aria-label="remove" id="id_10">
                             <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                         </a>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
+                <div data-il-ui-component="multi-select-field-input" data-il-ui-input-name="filter_input_0/filter_input_3" id="id_11" class="input-group">
                     <label class="input-group-addon leftaddon">Multi Selection</label>
-                    <span role="button" tabindex="0" class="form-control il-filter-field" id="id_11" data-placement="bottom"></span>
-                    <div class="il-standard-popover-content" style="display:none;" id="id_9"></div>
+                    <span role="button" tabindex="0" class="form-control il-filter-field" id="id_14" data-placement="bottom"></span>
+                    <div class="il-standard-popover-content" style="display:none;" id="id_12"></div>
                     <span class="input-group-addon rightaddon">
-                        <span class="glyph" aria-label="remove" role="img" id="id_12">
+                        <span class="glyph" aria-label="remove" role="img" id="id_15">
                             <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                         </span>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
-                    <button class="btn btn-bulky" id="id_18">
+                <div data-il-ui-component="" data-il-ui-input-name="" class="input-group">
+                    <button class="btn btn-bulky" id="id_21">
                         <span class="glyph" aria-label="add" role="img">
                             <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
                         </span>
                         <span class="bulky-label"></span>
                     </button>
                 </div>
-                <div class="il-standard-popover-content" style="display:none;" id="id_16"></div>
+                <div class="il-standard-popover-content" style="display:none;" id="id_19"></div>
             </div>
             <div class="il-filter-controls">
                 <button class="btn btn-bulky" data-action="" id="id_2">
@@ -284,7 +284,7 @@ class StandardFilterTest extends ILIAS_UI_TestBase
 </div>
 EOT;
 
-        $this->assertHTMLEquals($this->brutallyTrimHTML($expected), $this->brutallyTrimHTML($html));
+        $this->assertEquals($this->brutallyTrimHTML($expected), $this->brutallyTrimHTML($html));
     }
 
     public function testRenderDeactivatedCollapsed(): void
@@ -351,54 +351,54 @@ EOT;
         </div>
         <div class="il-filter-input-section row" id="section_inputs_id_1" role="region" aria-labelledby="opener_id_1" data-section-inputs-expanded="0">
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
+                <div data-il-ui-component="text-field-input" data-il-ui-input-name="filter_input_0/filter_input_1" id="id_6" class="input-group">
                     <label for="id_5" class="input-group-addon leftaddon">Title</label>
                     <input id="id_5" type="text" name="filter_input_0/filter_input_1" class="c-field-text" />
                     <span class="input-group-addon rightaddon">
-                        <a class="glyph" href="" aria-label="remove" id="id_6">
+                        <a class="glyph" href="" aria-label="remove" id="id_7">
                             <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                         </a>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
-                    <label for="id_7" class="input-group-addon leftaddon">Selection</label>
-                    <select id="id_7" name="filter_input_0/filter_input_2">
+                <div data-il-ui-component="select-field-input" data-il-ui-input-name="filter_input_0/filter_input_2" id="id_9" class="input-group">
+                    <label for="id_8" class="input-group-addon leftaddon">Selection</label>
+                    <select id="id_8" name="filter_input_0/filter_input_2">
                         <option selected="selected" value="">-</option>
                         <option value="one">One</option>
                         <option value="two">Two</option>
                         <option value="three">Three</option>
                     </select>
                     <span class="input-group-addon rightaddon">
-                        <a class="glyph" href="" aria-label="remove" id="id_8">
+                        <a class="glyph" href="" aria-label="remove" id="id_10">
                             <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                         </a>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
+                <div data-il-ui-component="multi-select-field-input" data-il-ui-input-name="filter_input_0/filter_input_3" id="id_11" class="input-group">
                     <label class="input-group-addon leftaddon">Multi Selection</label>
-                    <span role="button" tabindex="0" class="form-control il-filter-field" id="id_11" data-placement="bottom"></span>
-                    <div class="il-standard-popover-content" style="display:none;" id="id_9"></div>
+                    <span role="button" tabindex="0" class="form-control il-filter-field" id="id_14" data-placement="bottom"></span>
+                    <div class="il-standard-popover-content" style="display:none;" id="id_12"></div>
                     <span class="input-group-addon rightaddon">
-                        <span class="glyph" aria-label="remove" role="img" id="id_12">
+                        <span class="glyph" aria-label="remove" role="img" id="id_15">
                             <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                         </span>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
-                    <button class="btn btn-bulky" id="id_18">
+                <div data-il-ui-component="" data-il-ui-input-name="" class="input-group">
+                    <button class="btn btn-bulky" id="id_21">
                         <span class="glyph" aria-label="add" role="img">
                             <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
                         </span>
                         <span class="bulky-label"></span>
                     </button>
                 </div>
-                <div class="il-standard-popover-content" style="display:none;" id="id_16"></div>
+                <div class="il-standard-popover-content" style="display:none;" id="id_19"></div>
             </div>
             <div class="il-filter-controls">
                 <button class="btn btn-bulky" data-action="" id="id_2">
@@ -422,7 +422,7 @@ EOT;
 </div>
 EOT;
 
-        $this->assertHTMLEquals($this->brutallyTrimHTML($expected), $this->brutallyTrimHTML($html));
+        $this->assertEquals($this->brutallyTrimHTML($expected), $this->brutallyTrimHTML($html));
     }
 
     public function testRenderActivatedExpanded(): void
@@ -489,54 +489,54 @@ EOT;
         </div>
         <div class="il-filter-input-section row" id="section_inputs_id_1" role="region" aria-labelledby="opener_id_1" data-section-inputs-expanded="1">
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
+                <div data-il-ui-component="text-field-input" data-il-ui-input-name="filter_input_0/filter_input_1" id="id_6" class="input-group">
                     <label for="id_5" class="input-group-addon leftaddon">Title</label>
                     <input id="id_5" type="text" name="filter_input_0/filter_input_1" class="c-field-text" />
                     <span class="input-group-addon rightaddon">
-                        <a class="glyph" href="" aria-label="remove" id="id_6">
+                        <a class="glyph" href="" aria-label="remove" id="id_7">
                             <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                         </a>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
-                    <label for="id_7" class="input-group-addon leftaddon">Selection</label>
-                    <select id="id_7" name="filter_input_0/filter_input_2">
+                <div data-il-ui-component="select-field-input" data-il-ui-input-name="filter_input_0/filter_input_2" id="id_9" class="input-group">
+                    <label for="id_8" class="input-group-addon leftaddon">Selection</label>
+                    <select id="id_8" name="filter_input_0/filter_input_2">
                         <option selected="selected" value="">-</option>
                         <option value="one">One</option>
                         <option value="two">Two</option>
                         <option value="three">Three</option>
                     </select>
                     <span class="input-group-addon rightaddon">
-                        <a class="glyph" href="" aria-label="remove" id="id_8">
+                        <a class="glyph" href="" aria-label="remove" id="id_10">
                             <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                         </a>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
+                <div data-il-ui-component="multi-select-field-input" data-il-ui-input-name="filter_input_0/filter_input_3" id="id_11" class="input-group">
                     <label class="input-group-addon leftaddon">Multi Selection</label>
-                    <span role="button" tabindex="0" class="form-control il-filter-field" id="id_11" data-placement="bottom"></span>
-                    <div class="il-standard-popover-content" style="display:none;" id="id_9"></div>
+                    <span role="button" tabindex="0" class="form-control il-filter-field" id="id_14" data-placement="bottom"></span>
+                    <div class="il-standard-popover-content" style="display:none;" id="id_12"></div>
                     <span class="input-group-addon rightaddon">
-                        <span class="glyph" aria-label="remove" role="img" id="id_12">
+                        <span class="glyph" aria-label="remove" role="img" id="id_15">
                             <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                         </span>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
-                    <button class="btn btn-bulky" id="id_18">
+                <div data-il-ui-component="" data-il-ui-input-name="" class="input-group">
+                    <button class="btn btn-bulky" id="id_21">
                         <span class="glyph" aria-label="add" role="img">
                             <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
                         </span>
                         <span class="bulky-label"></span>
                     </button>
                 </div>
-                <div class="il-standard-popover-content" style="display:none;" id="id_16"></div>
+                <div class="il-standard-popover-content" style="display:none;" id="id_19"></div>
             </div>
             <div class="il-filter-controls">
                 <button class="btn btn-bulky" data-action="" id="id_2">
@@ -560,7 +560,7 @@ EOT;
 </div>
 EOT;
 
-        $this->assertHTMLEquals($this->brutallyTrimHTML($expected), $this->brutallyTrimHTML($html));
+        $this->assertEquals($this->brutallyTrimHTML($expected), $this->brutallyTrimHTML($html));
     }
 
     public function testRenderDeactivatedExpanded(): void
@@ -627,54 +627,54 @@ EOT;
         </div>
         <div class="il-filter-input-section row" id="section_inputs_id_1" role="region" aria-labelledby="opener_id_1" data-section-inputs-expanded="1">
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
+                <div data-il-ui-component="text-field-input" data-il-ui-input-name="filter_input_0/filter_input_1" id="id_6" class="input-group">
                     <label for="id_5" class="input-group-addon leftaddon">Title</label>
                     <input id="id_5" type="text" name="filter_input_0/filter_input_1" class="c-field-text" />
                     <span class="input-group-addon rightaddon">
-                    <a class="glyph" href="" aria-label="remove" id="id_6">
+                    <a class="glyph" href="" aria-label="remove" id="id_7">
                         <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                     </a>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
-                    <label for="id_7" class="input-group-addon leftaddon">Selection</label>
-                    <select id="id_7" name="filter_input_0/filter_input_2">
+                <div data-il-ui-component="select-field-input" data-il-ui-input-name="filter_input_0/filter_input_2" id="id_9" class="input-group">
+                    <label for="id_8" class="input-group-addon leftaddon">Selection</label>
+                    <select id="id_8" name="filter_input_0/filter_input_2">
                         <option selected="selected" value="">-</option>
                         <option value="one">One</option>
                         <option value="two">Two</option>
                         <option value="three">Three</option>
                     </select>
                     <span class="input-group-addon rightaddon">
-                        <a class="glyph" href="" aria-label="remove" id="id_8">
+                        <a class="glyph" href="" aria-label="remove" id="id_10">
                             <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                         </a>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
+                <div data-il-ui-component="multi-select-field-input" data-il-ui-input-name="filter_input_0/filter_input_3" id="id_11" class="input-group">
                     <label class="input-group-addon leftaddon">Multi Selection</label>
-                    <span role="button" tabindex="0" class="form-control il-filter-field" id="id_11" data-placement="bottom"></span>
-                    <div class="il-standard-popover-content" style="display:none;" id="id_9"></div>
+                    <span role="button" tabindex="0" class="form-control il-filter-field" id="id_14" data-placement="bottom"></span>
+                    <div class="il-standard-popover-content" style="display:none;" id="id_12"></div>
                     <span class="input-group-addon rightaddon">
-                        <span class="glyph" aria-label="remove" role="img" id="id_12">
+                        <span class="glyph" aria-label="remove" role="img" id="id_15">
                             <span class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
                         </span>
                     </span>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4 il-popover-container">
-                <div class="input-group">
-                    <button class="btn btn-bulky" id="id_18">
+                <div data-il-ui-component="" data-il-ui-input-name="" class="input-group">
+                    <button class="btn btn-bulky" id="id_21">
                         <span class="glyph" aria-label="add" role="img">
                             <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
                         </span>
                         <span class="bulky-label"></span>
                     </button>
                 </div>
-                <div class="il-standard-popover-content" style="display:none;" id="id_16"></div>
+                <div class="il-standard-popover-content" style="display:none;" id="id_19"></div>
             </div>
             <div class="il-filter-controls">
                 <button class="btn btn-bulky" data-action="" id="id_2">
@@ -698,7 +698,7 @@ EOT;
 </div>
 EOT;
 
-        $this->assertHTMLEquals($this->brutallyTrimHTML($expected), $this->brutallyTrimHTML($html));
+        $this->assertEquals($this->brutallyTrimHTML($expected), $this->brutallyTrimHTML($html));
     }
 
     public function testDedicatedNames(): void

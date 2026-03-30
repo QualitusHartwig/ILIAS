@@ -18,10 +18,23 @@
 
 declare(strict_types=1);
 
-class ilMustacheFactory
+namespace ILIAS\Database\PDO;
+
+use ilAtomQuery;
+use ilAtomQueryTransaction;
+use ilDBInterface;
+
+class GaleraDetails implements Details
 {
-    public function getBasicEngine(): Mustache_Engine
+    #[\Override]
+    public function supportsTransactions(): bool
     {
-        return new Mustache_Engine();
+        return true;
+    }
+
+    #[\Override]
+    public function atomQuery(ilDBInterface $db): ilAtomQuery
+    {
+        return new ilAtomQueryTransaction($db);
     }
 }

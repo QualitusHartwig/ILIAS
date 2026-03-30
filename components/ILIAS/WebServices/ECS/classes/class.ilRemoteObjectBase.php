@@ -444,7 +444,7 @@ abstract class ilRemoteObjectBase extends ilObject2
                 if (!$adv_md_def) {
                     continue;
                 }
-                if (property_exists($a_json, $target)){
+                if (property_exists($a_json, $target)) {
                     $raw_value = $a_json->{$target};
                 } else {
                     $raw_value = '';

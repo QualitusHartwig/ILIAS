@@ -1566,7 +1566,7 @@ class ilObjStyleSheet extends ilObject
 
     public static function getExportContentStylePath(): string
     {
-        return "content_style/style.css";
+        return "assets/content_style/style.css";
     }
 
     /**

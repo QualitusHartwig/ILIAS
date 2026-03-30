@@ -67,7 +67,15 @@ class EntriesTable implements OrderingRetrieval
         $nok = $this->pons->out()->nok();
 
         foreach ($this->repository->allForParent($this->group->getId()) as $entry) {
-            $title = $this->translations_repository->get($entry)->getDefault()?->getTranslation() ?? $entry->getTitle();
+            if ($entry->isCore()) {
+                $title = $this->collector->getSingleItemFromRaw(
+                    $this->identification->fromSerializedIdentification($entry->getId()),
+                )?->getTitle() ?? 'Unknown';
+            } else {
+                $title = $this->translations_repository->get($entry)->getDefault()?->getTranslation(
+                ) ?? $entry->getTitle();
+            }
+
             $row = $row_builder->buildOrderingRow(
                 $this->hash($entry->getId()),
                 [

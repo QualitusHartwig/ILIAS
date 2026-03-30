@@ -17,32 +17,15 @@
  *********************************************************************/
 
 declare(strict_types=1);
+
+namespace ILIAS\UICore\Exceptions;
+
+use ilCtrlException;
+
 /**
- * Class ilDBPdoMySQLInnoDB
- *
- * @author Fabian Schmid <fs@studer-raimann.ch>
+ * Thrown when ilCtrl encounters an invalid or unresolvable CID path during
+ * request dispatching
  */
-class ilDBPdoMySQLInnoDB extends ilDBPdoMySQL
+class ilCtrlPathException extends ilCtrlException
 {
-    protected string $storage_engine = 'InnoDB';
-
-    #[\Override]
-    public function supportsFulltext(): bool
-    {
-        return false;
-    }
-
-
-    #[\Override]
-    public function supportsTransactions(): bool
-    {
-        return false;
-    }
-
-
-    #[\Override]
-    public function addFulltextIndex(string $table_name, array $fields, string $name = 'in'): bool
-    {
-        return false; // NOT SUPPORTED
-    }
 }

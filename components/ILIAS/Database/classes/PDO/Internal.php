@@ -18,20 +18,13 @@
 
 declare(strict_types=1);
 
-use PHPUnit\Framework\TestCase;
+namespace ILIAS\Database\PDO;
 
-class ilMustacheFactoryTest extends TestCase
+use ilDBInterface;
+use ilDBPdoInterface;
+
+interface Internal extends ilDBInterface, ilDBPdoInterface
 {
-    public function testCreatInstance(): void
-    {
-        $f = new ilMustacheFactory();
-        $this->assertInstanceOf(ilMustacheFactory::class, $f);
-    }
-
-    public function testCreateBasicEngine(): void
-    {
-        $f = new ilMustacheFactory();
-        $engine = $f->getBasicEngine();
-        $this->assertInstanceOf(Mustache_Engine::class, $engine);
-    }
+    public function getFieldDefinition(): ?\ilDBPdoFieldDefinition;
+    public function getIndexName(string $index_name_base): string;
 }

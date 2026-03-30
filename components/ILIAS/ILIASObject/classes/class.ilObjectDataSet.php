@@ -335,13 +335,14 @@ class ilObjectDataSet extends ilDataSet
                     break;
                 }
                 $transl = $this->translations_repository->getFor($new_id);
-                if ($transl->getLaguageForCode($rec['LangCode']) === null) {
-                    self::$base_lang = $rec['LangCode'];
+                $lang_code = $rec['LangCode'] ?? $rec['MasterLang'];
+                if ($transl->getLaguageForCode($lang_code) === null) {
+                    self::$base_lang = $lang_code;
                     break;
                 }
 
                 $this->translations_repository->store(
-                    $transl->withBaseLanguage($rec['LangCode'])
+                    $transl->withBaseLanguage($lang_code)
                 );
                 break;
 

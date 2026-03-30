@@ -1476,6 +1476,8 @@ class ilExAssignment
         global $DIC;
 
         $ilDB = $DIC->database();
+        $gui = $DIC->exercise()->internal()->gui();
+        $domain = $DIC->exercise()->internal()->domain();
         $log = ilLoggerFactory::getLogger("exc");
 
         $ass = new self($a_ass_id);
@@ -1504,6 +1506,24 @@ class ilExAssignment
         $ntf->setSubjectLangId("exc_feedback_notification_subject");
         $ntf->setIntroductionLangId("exc_feedback_notification_body");
         $ntf->addAdditionalInfo("exc_assignment", $ass->getTitle());
+        $ref_id = 0;
+        if ($a_user_id) {   // link to assignment
+            $ref_id = $domain->permission()->getFirstRefIdWithPermission(
+                "read",
+                $ass->getExerciseId(),
+                $a_user_id
+            );
+        } else {
+            $ref_ids = ilObject::_getAllReferences($ass->getExerciseId());
+            if (count($ref_ids) === 1) {
+                $ref_id = current($ref_ids);
+            }
+        }
+        if ($ref_id > 0) {
+            $perm_link = $gui->permanentLink()->getPermanentLink($ref_id, $ass->getId());
+            $ntf->addAdditionalInfo("exc_link_to_assignment", $perm_link);
+        }
+
         $ntf->setGotoLangId("exc_feedback_notification_link");
         $ntf->setReasonLangId("exc_feedback_notification_reason");
 

@@ -35,6 +35,7 @@ use ILIAS\Data\URI;
 use ILIAS\FileUpload\MimeType;
 use ILIAS\MetaData\Services\ServicesInterface as LOMServices;
 use ILIAS\File\Capabilities\Capabilities;
+use ILIAS\File\Versions\Table\Table as VersionsTable;
 
 /**
  * @author Fabian Schmid <fabian@sr.solutions>
@@ -53,7 +54,6 @@ class ilFileVersionsGUI
     public const KEY_COPYRIGHT_ID = "copyright_id";
 
     public const CMD_DEFAULT = 'index';
-    public const CMD_DELETE_VERSIONS = "deleteVersions";
     public const CMD_ROLLBACK_VERSION = "rollbackVersion";
     public const CMD_DOWNLOAD_VERSION = "sendFile";
     public const HIST_ID = 'hist_id';
@@ -71,6 +71,7 @@ class ilFileVersionsGUI
     public const CMD_UNPUBLISH = 'unpublish';
 
     private ilToolbarGUI $toolbar;
+    private ?VersionsTable $table = null;
     private \ILIAS\ResourceStorage\Services $storage;
     private ActionRepository $action_repo;
     private ?Revision $current_revision;
@@ -133,7 +134,6 @@ class ilFileVersionsGUI
         match ($this->ctrl->getCmd(self::CMD_DEFAULT)) {
             self::CMD_DEFAULT => $this->index(),
             self::CMD_DOWNLOAD_VERSION => $this->downloadVersion(),
-            self::CMD_DELETE_VERSIONS => $this->deleteVersions(),
             self::CMD_ROLLBACK_VERSION => $this->rollbackVersion(),
             self::CMD_ADD_NEW_VERSION => $this->addVersion(ilFileVersionFormGUI::MODE_ADD),
             self::CMD_ADD_REPLACING_VERSION => $this->addVersion(ilFileVersionFormGUI::MODE_REPLACE),
@@ -337,8 +337,7 @@ class ilFileVersionsGUI
             $this->toolbar->addComponent($btn_publish);
         }
 
-        $table = new ilFileVersionsTableGUI($this, self::CMD_DEFAULT);
-        $this->tpl->setContent($table->getHTML());
+        $this->tpl->setContent($this->getTable()->getHTML());
     }
 
     private function addVersion(int $mode = ilFileVersionFormGUI::MODE_ADD): void
@@ -428,14 +427,20 @@ class ilFileVersionsGUI
         return $this->file;
     }
 
+    private function getTable(): VersionsTable
+    {
+        return $this->table ??= new VersionsTable($this);
+    }
+
     private function getVersionIdsFromRequest(): array
     {
-        if ('GET' === $this->http->request()->getMethod() &&
-            $this->http->wrapper()->query()->has(self::HIST_ID)
-        ) {
-            return [
-                $this->http->wrapper()->query()->retrieve(self::HIST_ID, $this->refinery->kindlyTo()->int()),
-            ];
+        $token_name = $this->getTable()->getIdToken()->getName();
+        $query_params = $this->http->request()->getQueryParams();
+
+        if (array_key_exists($token_name, $query_params)) {
+            $raw = $query_params[$token_name];
+            $values = is_array($raw) ? $raw : [$raw];
+            return array_values(array_map(static fn($v): int => (int) $v, $values));
         }
 
         /** in case request is triggered by @see self::CMD_RENDER_DELETE_SELECTED_VERSIONS_MODAL */
@@ -446,11 +451,10 @@ class ilFileVersionsGUI
             );
         }
 
-        if ($this->http->wrapper()->post()->has(self::HIST_ID)) {
-            return $this->http->wrapper()->post()->retrieve(
-                self::HIST_ID,
-                $this->refinery->kindlyTo()->listOf($this->refinery->kindlyTo()->int())
-            );
+        if ($this->http->wrapper()->query()->has(self::HIST_ID)) {
+            return [
+                $this->http->wrapper()->query()->retrieve(self::HIST_ID, $this->refinery->kindlyTo()->int()),
+            ];
         }
 
         return [];
@@ -550,69 +554,6 @@ class ilFileVersionsGUI
                 $this->ctrl->redirect($this, self::CMD_DEFAULT);
             }
         }
-    }
-
-    //TODO: Remove this function and replace its calls with calls to "getDeleteSelectedVersionsModal" as soon as the new table gui is introduced.
-    // This function and its deprecated ilConfirmationGUI are only needed because the old ilTable2GUI doesn't support calling modals from its MultiCommands
-    private function deleteVersions(): void
-    {
-        $version_ids = $this->getVersionIdsFromRequest();
-        $existing_versions = $this->file->getVersions();
-        $remaining_versions = array_udiff(
-            $existing_versions,
-            $version_ids,
-            static function ($a, $b): int|float {
-                if ($a instanceof ilObjFileVersion) {
-                    $a = $a->getHistEntryId();
-                }
-                if ($b instanceof ilObjFileVersion) {
-                    $b = $b->getHistEntryId();
-                }
-                return $a - $b;
-            }
-        );
-
-        $this->checkSanityOfDeletionRequest($version_ids, true);
-
-        $conf_gui = new ilConfirmationGUI();
-        $conf_gui->setFormAction($this->ctrl->getFormAction($this, self::CMD_DEFAULT));
-        $conf_gui->setCancel($this->lng->txt("cancel"), self::CMD_DEFAULT);
-
-        $icon = ilObject::_getIcon($this->file->getId(), "small", $this->file->getType());
-        $alt = $this->lng->txt("icon") . " " . $this->lng->txt("obj_" . $this->file->getType());
-
-        // only one version left, delete the whole file
-        if (count($remaining_versions) < 1) {
-            // Ask
-            $conf_gui->setHeaderText($this->lng->txt('file_confirm_delete_all_versions'));
-            $conf_gui->setConfirm($this->lng->txt("confirm"), self::CMD_CONFIRMED_DELETE_FILE);
-            $conf_gui->addItem(
-                "id[]",
-                $this->ref_id,
-                $this->file->getTitle(),
-                $icon,
-                $alt
-            );
-        } else {
-            // Ask to delete version
-            $conf_gui->setHeaderText($this->lng->txt('file_confirm_delete_versions'));
-            $conf_gui->setConfirm($this->lng->txt("confirm"), self::CMD_CONFIRMED_DELETE_VERSIONS);
-
-            foreach ($this->file->getVersions($version_ids) as $version) {
-                $a_text = $version['filename'] ?? $version->getFilename() ?? $this->file->getTitle();
-                $version_string = $version['hist_id'] ?? $version->getVersion();
-                $a_text .= " (v" . $version_string . ")";
-                $conf_gui->addItem(
-                    "hist_id[]",
-                    $version['hist_entry_id'],
-                    $a_text,
-                    $icon,
-                    $alt
-                );
-            }
-        }
-
-        $this->tpl->setContent($conf_gui->getHTML());
     }
 
     private function getFileZipOptionsForm(): Form

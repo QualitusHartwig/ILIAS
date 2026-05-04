@@ -18,28 +18,20 @@
 
 declare(strict_types=1);
 
-namespace ILIAS\UI\examples\Symbol\Glyph\Sortation;
+namespace ILIAS\StaticURL\Session;
 
 /**
- * ---
- * expected output: >
- *   ILIAS shows the rendered Component.
- * ---
+ * @author Fabian Schmid <fabian@sr.solutions>
  */
-function sortation()
+final class ILIASSessionStore implements SessionStore
 {
-    global $DIC;
-    $f = $DIC->ui()->factory();
-    $renderer = $DIC->ui()->renderer();
+    public function set(string $key, mixed $value): void
+    {
+        \ilSession::set($key, $value);
+    }
 
-    $glyph = $f->symbol()->glyph()->sortation("#");
-
-    //Showcase the various states of this Glyph
-    $list = $f->listing()->descriptive([
-        "Active" => $glyph,
-        "Inactive" => $glyph->withUnavailableAction(),
-        "Highlighted" => $glyph->withHighlight()
-    ]);
-
-    return $renderer->render($list);
+    public function get(string $key): mixed
+    {
+        return \ilSession::get($key);
+    }
 }

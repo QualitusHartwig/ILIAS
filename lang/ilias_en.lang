@@ -3706,7 +3706,7 @@ common#:#check_languages#:#Check All Languages
 common#:#check_link#:#Weblink check
 common#:#check_link_desc#:#If enabled all external links in ILIAS learning modules will be checked if they are active.
 common#:#check_user_accounts#:#Check user accounts
-common#:#check_user_accounts_desc#:#If enabled, all users whose account expires will be informed by e-mail two weeks before. Furthermore all users which have not confirmed their account after a registration with e-mail confirmation will be deleted.
+common#:#check_user_accounts_desc#:#If enabled, all users whose account expires will be informed by e-mail two weeks before.
 common#:#check_web_resources#:#Check Weblinks
 common#:#check_web_resources_desc#:#If enabled all Weblinks will be checked if they are active.
 common#:#checked#:#Checked
@@ -5407,6 +5407,8 @@ common#:#refresh#:#Refresh
 common#:#refresh_languages#:#Refresh All Languages
 common#:#refuse#:#Refuse Request
 common#:#reg_account_confirmation_successful#:#Your user account has been activated.
+common#:#reg_delete_expired_pending_registrations#:#Delete Expired Pending Registrations
+common#:#reg_delete_expired_pending_registrations_desc#:#Deletes all ILIAS accounts that have not been confirmed after a registration with e-mail confirmation.
 common#:#reg_goto_parent_membership_info#:#Only members can access the target object.
 common#:#reg_mail_body_2_confirmation#:#This link is only valid for %s. After this period has passed, the link will expire and you will have to restart the registration process from the beginning.
 common#:#reg_mail_body_3_confirmation#:#If this e-mail means nothing to you, then it is possible that somebody else has entered your e-mail address either deliberately or accidentally, so please ignore this e-mail.
@@ -8089,6 +8091,8 @@ crs#:#tutorial_support_block_title#:#Contact Person
 crs#:#user_fields#:#User Fields
 crsv#:#crsv_create#:#Create Course Certificate
 crsv#:#crsv_create_info#:#Select a completed course to generate a certificate for it
+dash#:#add_to_favourites#:#Add to Favourites
+dash#:#added_to_favourites#:#The item has been added to your favourites.
 dash#:#dash_activation#:#activation
 dash#:#dash_added_to_favs#:#Recommendation has been added to personal favourites.
 dash#:#dash_avail_presentation#:#Available Presentations
@@ -8126,7 +8130,6 @@ dash#:#dash_item_removed#:#Recommendation has been removed from the list.
 dash#:#dash_learning_sequences#:#My Learning Sequences
 dash#:#dash_list#:#List
 dash#:#dash_main_panel#:#Main Panel
-dash#:#dash_make_favourite#:#Add to Favourites
 dash#:#dash_manual_new_item_pos#:#Position of New Objects
 dash#:#dash_manual_new_item_pos_bot#:#Bottom
 dash#:#dash_manual_new_item_pos_top#:#Top
@@ -8154,6 +8157,8 @@ dash#:#dash_view_courses_groups#:#Section ‘My Courses and Groups’
 dash#:#dash_view_favourites#:#Section ‘Favourites’
 dash#:#favourites_disabled_info#:#Add to favorites is deactivated. You may change this inside the repository settings.
 dash#:#memberships_disabled_info#:#Subscriptions are deactivated. You may change this inside the course settings.
+dash#:#remove_from_favourites#:#Remove from Favourites
+dash#:#removed_from_favourites#:#The item has been removed from your favourites.
 dash#:#topitem_block#:#Block
 dateplaner#:#Fr_long#:#Friday
 dateplaner#:#Fr_short#:#Fr
@@ -8685,7 +8690,7 @@ dcl#:#dcl_file_not_readable#:#The file could not be read. Please make sure that 
 dcl#:#dcl_filter#:#Available in Filter
 dcl#:#dcl_filter_changeable#:#Filter Changeable
 dcl#:#dcl_formula#:#Formula
-dcl#:#dcl_formula_desc#:#Similar to when using a spreadsheet, entries can be combined or calculated using a formula. 
+dcl#:#dcl_formula_desc#:#Similar to when using a spreadsheet, entries can be combined or calculated using a formula.
 dcl#:#dcl_formula_detail_desc#:#Entries in this field are generated automatically. You cannot enter or edit information in this field.
 dcl#:#dcl_height#:#Height in Pixels
 dcl#:#dcl_height_desc#:#The height of the file will be reduced to this value during upload.
@@ -8734,7 +8739,7 @@ dcl#:#dcl_msg_table_edited#:#Table settings saved.
 dcl#:#dcl_msg_tableview_created#:#View created.
 dcl#:#dcl_msg_tableview_deleted#:#View deleted.
 dcl#:#dcl_msg_tableview_updated#:#View updated.
-dcl#:#dcl_msg_tableviews_delete_all#:#Deletion not possible. There must be at least one view in existence. 
+dcl#:#dcl_msg_tableviews_delete_all#:#Deletion not possible. There must be at least one view in existence.
 dcl#:#dcl_multiple_selection#:#Multiple Selection
 dcl#:#dcl_new#:#Create New Data Collection
 dcl#:#dcl_new_entries#:#New Entries
@@ -8771,7 +8776,7 @@ dcl#:#dcl_owner#:#Owner
 dcl#:#dcl_owner_description#:#The owner of the entry.
 dcl#:#dcl_owner_name#:#Owner (Name)
 dcl#:#dcl_page_type_dclf#:#Data Collection Detailed View
-dcl#:#dcl_placeholder_info#:#In order for the data from the fields of this table to be shown in this detailed view, please enter the corresponding placeholders for those fields. Those placeholders are listed in the tool bars of the page elements 'Text' and 'Data Table'. 
+dcl#:#dcl_placeholder_info#:#In order for the data from the fields of this table to be shown in this detailed view, please enter the corresponding placeholders for those fields. Those placeholders are listed in the tool bars of the page elements 'Text' and 'Data Table'.
 dcl#:#dcl_please_select#:#--- Please select ---
 dcl#:#dcl_prop_expression#:#Expression
 dcl#:#dcl_prop_expression_info#:#Valid operators: <b>%s</b><br>Supported functions: <b>%s</b><br>Use brackets <b>‘(’, ‘)’</b> to group calculations.<br>Concatenate strings and placeholders with &: <b>‘The result is ’ & [[Int 1]] * [[Int2]]</b><br>Using functions: <b>SUM([[Int 1]];[[Int 2]])</b><br><br>Allowed fields (click on a title to use as a placeholder within the expression):<br>%s<br><b>(Allowed fields are checkbox, number, text and date that don’t contain any formula-sensitive characters inside their titles)</b>
@@ -8781,7 +8786,7 @@ dcl#:#dcl_record#:#Entry
 dcl#:#dcl_record_deleted#:#Entry deleted.
 dcl#:#dcl_record_settings#:#Entry Settings
 dcl#:#dcl_reference#:#Reference
-dcl#:#dcl_reference_desc#:#A field which will display selected entries made in another field. This other field can be located in a different table. Changes made to the original entry will affect the version displayed in this field. 
+dcl#:#dcl_reference_desc#:#A field which will display selected entries made in another field. This other field can be located in a different table. Changes made to the original entry will affect the version displayed in this field.
 dcl#:#dcl_reference_link#:#Link Referenced Entry
 dcl#:#dcl_reference_link_info#:#Please note: You need to have set up and activated a ‘Detailed View’ template in the table in which the referenced entry is located.
 dcl#:#dcl_reference_title#:#Referenced Field
@@ -8858,7 +8863,7 @@ dcl#:#dcl_wrong_regex#:#The text you entered does not fulfil the requirements of
 dcl#:#dcl_xls_async_export#:#as XLSX (asynchronous)
 dcl#:#disable_comments#:#Disable Comments
 dcl#:#disable_visible#:#Disable Visible
-dcl#:#duplicate_entries_exist#:#Some of the existing values for this field are identical. Please make sure that all existing entries have unique values for this field in order to change this setting. 
+dcl#:#duplicate_entries_exist#:#Some of the existing values for this field are identical. Please make sure that all existing entries have unique values for this field in order to change this setting.
 dcl#:#enable_comments#:#Enable Comments
 dcl#:#enable_visible#:#Enable Visible
 dcl#:#entry_of#:#Entry %1$d of %2$d
@@ -9612,7 +9617,7 @@ exc#:#exc_submission_and_grades_notification_link#:#Link to "Submissions and Gra
 exc#:#exc_submission_downloads_notification_link#:#Download new submissions: %s
 exc#:#exc_submission_file#:#Submission File
 exc#:#exc_submission_no_new_files#:#No new submissions available.
-exc#:#exc_submission_notification#:#E-Mail Notification on Submissions
+exc#:#exc_submission_notification#:#E-Mail Notification
 exc#:#exc_submission_notification_body#:#A new submission for exercise "%s" has been uploaded.
 exc#:#exc_submission_notification_info#:#You will be notified when submissions are uploaded or individual deadlines are requested. This is a personal setting which does not affect other administrators of the exercise.
 exc#:#exc_submission_notification_link#:#Link to exercise: %s
@@ -11375,7 +11380,7 @@ lti#:#lti_con_prov_xapi_launch_secret_info#:#&nbsp;
 lti#:#lti_con_prov_xapi_launch_url#:#URL of LRS Endpoint
 lti#:#lti_con_prov_xapi_launch_url_info#:#Please add full URL with https://
 lti#:#lti_con_redirection_uris#:#Redirection URI
-lti#:#lti_con_tool_url#:#Login URL
+lti#:#lti_con_tool_url#:#Launch URL
 lti#:#lti_con_version#:#LTI Version
 lti#:#lti_con_version_1.1#:#Version 1.1
 lti#:#lti_con_version_1.3#:#Version 1.3
@@ -13093,6 +13098,7 @@ notes#:#notes_latest_comment#:#Latest Comment
 notes#:#notes_latest_message#:#Latest Message
 notes#:#notes_message_author_counterpart#:#Respondent
 notes#:#notes_message_author_you#:#You
+notes#:#notes_message_deleted#:#Message deleted.
 notes#:#notes_messages#:#Messages
 notes#:#notes_my_comments#:#My Comments
 notes#:#notes_no_comments#:#No comment has been posted yet.
@@ -15118,9 +15124,7 @@ rep#:#rep_add_new_def_grp_content#:#Content
 rep#:#rep_add_new_def_grp_feedback#:#Feedback and Evaluation
 rep#:#rep_add_new_def_grp_organisation#:#Organisation
 rep#:#rep_add_new_def_grp_templates#:#Templates
-rep#:#rep_add_to_favourites#:#Add to Favourites
 rep#:#rep_added_rec_content#:#Recommended content has been added.
-rep#:#rep_added_to_favourites#:#The item has been added to your favourites.
 rep#:#rep_allowed_types#:#Allowed Types
 rep#:#rep_breadcr_crs#:#Breadcrumb starts with course
 rep#:#rep_breadcr_crs_config#:#Configuration
@@ -15175,9 +15179,7 @@ rep#:#rep_object_references_cannot_be_read#:#No permissions for %s more referenc
 rep#:#rep_object_to_delete#:#To Delete
 rep#:#rep_rec_content_removed#:#Recommended content has been removed.
 rep#:#rep_recommended_content#:#Recommended Content
-rep#:#rep_remove_from_favourites#:#Remove from Favourites
 rep#:#rep_remove_rec_content#:#Are you sure you want to remove the following recommended content?
-rep#:#rep_removed_from_favourites#:#The item has been removed from your favourites.
 rep#:#rep_target_location#:#Target Location
 rep#:#rep_target_location_info#:#Bitte wählen Sie nun das Ziel aus, an dem die ausgewählten Objekte wiederhergestellt werden sollen.
 rep#:#rep_time_based_availability#:#Limited Availability Period
@@ -16194,6 +16196,7 @@ style#:#sty_individual_styles#:#Individual Styles
 style#:#sty_keep_existing#:#Keep Existing
 style#:#sty_left#:#Left
 style#:#sty_left_right_padding#:#Cell Padding Left/Right
+style#:#sty_legacy_image_directory_found#:#Legacy image directory found. You may migrate the directory from ILIAS 9 by clicking "Migrate Images"
 style#:#sty_letter_spacing#:#Letter Spacing
 style#:#sty_lightness_border#:#Lightness Border
 style#:#sty_lightness_cell1_bg#:#Lightness Cell 1 Background
@@ -16214,6 +16217,7 @@ style#:#sty_margin_and_padding#:#Margin and Padding
 style#:#sty_media_char#:#Media
 style#:#sty_media_queries#:#Media Queries
 style#:#sty_media_query_info#:#A separate CSS block is added for each media query after the default (no special media query) block.
+style#:#sty_migrate_images#:#Migrate Images
 style#:#sty_min_height#:#Minimum Height
 style#:#sty_move_lm_styles#:#Change Style of Learning Modules
 style#:#sty_move_obj_styles#:#Change Style of Objects
@@ -16272,6 +16276,7 @@ style#:#sty_special#:#Special
 style#:#sty_style_chars#:#Style Classes
 style#:#sty_style_class#:#Style Classes
 style#:#sty_style_classes_copied#:#Style classes have been copied.
+style#:#sty_style_not_migrated#:#This content style has not been migrated to the ILIAS 10 data structure yet. Changes will not be applied.
 style#:#sty_substyle#:#Substyle
 style#:#sty_substyle_of#:#Sub Style of
 style#:#sty_substyles#:#Substyles
@@ -17276,7 +17281,7 @@ trac#:#trac_lp_determination_info_sco#:#Select the items that determine the over
 trac#:#trac_lp_determination_tutor#:#Display of objects in learning progress
 trac#:#trac_lp_learner_access#:#View Own Learning Progress
 trac#:#trac_lp_learner_access_info#:#If active, users can access their own learning progress status.
-trac#:#trac_lp_list_gui#:#Dashboard, Repository, Search
+trac#:#trac_lp_list_gui#:#Dashboard and Repository
 trac#:#trac_lp_list_gui_info#:#If activated, the learning progress status is included in objects lists.
 trac#:#trac_lp_settings_info_parent_container#:#Learning Progress of Parent Container Objects
 trac#:#trac_lp_settings_info_parent_legend#:#The learning progress status of this object is influenced by "%s".
@@ -17946,7 +17951,7 @@ wiki#:#wiki_wiki_search#:#Wiki Search
 wiki#:#wiki_wpg#:#Wiki Page
 wopi#:#action_edit#:#Edit
 wopi#:#action_view#:#View
-wopi#:#activate_saving_interval#:#Activate Saving Interval
+wopi#:#activate_saving_interval#:#Automatic Publication
 wopi#:#activate_wopi#:#Activate WOPI
 wopi#:#close_wopi_editor#:#Close Editor
 wopi#:#close_wopi_editor_info#:#It can take up to several minutes for the external editor to transfer the changes to ILIAS. Visit this page again at a later time if the changes you have made are not yet visible.
@@ -17955,8 +17960,8 @@ wopi#:#msg_error_wopi_invalid_discorvery_url#:#The Discovery URL entered is inva
 wopi#:#msg_wopi_settings_modified#:#Settings saved.
 wopi#:#open_external_editor#:#Open in External Editor
 wopi#:#open_external_viewer#:#Show Content
-wopi#:#saving_interval#:#Interval
-wopi#:#saving_interval_byline#:#By default, ILIAS adds all changes made by an external editor to a draft version until this version is published manually. Activating the saving interval causes a new version to be published, if possible, after the specified number of seconds. Please note that a low value can lead to a large number of file versions, which in turn will take up a much larger amount of hard disk space.
+wopi#:#saving_interval#:#New version after … seconds
+wopi#:#saving_interval_byline#:#After the specified editing time, ILIAS automatically publishes a new version of the file when the external editor reports changes. By default, ILIAS adds all changes received from the editor as a draft only, until a new file version is manually published. Please note that using this option with a low value can lead to a large number of file versions, which takes up a lot of storage space.
 wopi#:#wopi_crawler_cronjob_description#:#Updates the information of the connected WOPI service.
 wopi#:#wopi_crawler_cronjob_no_apps#:#No WOPI apps were found in the discovery.
 wopi#:#wopi_crawler_cronjob_not_activated#:#WOPI is not activated.

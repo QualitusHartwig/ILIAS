@@ -1808,15 +1808,16 @@ class ilObjectListGUI
             $this->ctrl->setParameter($this->container_obj, 'type', $type);
             $this->ctrl->setParameter($this->container_obj, 'item_ref_id', $this->getCommandId());
 
+            $this->lng->loadLanguageModule('dash');
             if (!$this->fav_manager->ifIsFavourite($this->user->getId(), $this->getCommandId())) {
                 // Pass type and object ID to ilAccess to improve performance
                 if ($this->checkCommandAccess('read', '', $this->ref_id, $this->type, $this->obj_id)) {
                     $cmd_link = $this->ctrl->getLinkTarget($this->container_obj, 'addToDesk');
-                    $this->insertCommand($cmd_link, $this->lng->txt('rep_add_to_favourites'));
+                    $this->insertCommand($cmd_link, $this->lng->txt('add_to_favourites'));
                 }
             } else {
                 $cmd_link = $this->ctrl->getLinkTarget($this->container_obj, 'removeFromDesk');
-                $this->insertCommand($cmd_link, $this->lng->txt('rep_remove_from_favourites'));
+                $this->insertCommand($cmd_link, $this->lng->txt('remove_from_favourites'));
             }
 
             $this->ctrl->clearParameters($this->container_obj);
@@ -2294,6 +2295,22 @@ class ilObjectListGUI
         $this->header_icons[$id] = ['glyph' => $glyph, 'onclick' => $onclick];
     }
 
+    protected function getHeaderGlyphShyButton(
+        ILIAS\UI\Component\Symbol\Glyph\Glyph $glyph,
+        string $onclick_js
+    ): ILIAS\UI\Component\Button\Shy {
+        return $this->ui->factory()->button()
+            ->shy('', '')
+            ->withSymbol($glyph)
+            ->withAdditionalOnLoadCode(
+                static function (string $id) use ($onclick_js): string {
+                    return '$("#' . $id . '").on("click", function(event) {'
+                        . $onclick_js
+                        . ' return false; });';
+                }
+            );
+    }
+
     public function setAjaxHash(string $hash): void
     {
         $this->ajax_hash = $hash;
@@ -2324,7 +2341,7 @@ class ilObjectListGUI
                 $f = $this->ui->factory();
                 $this->addHeaderGlyph(
                     'tags',
-                    $f->symbol()->glyph()->tag('#')
+                    $f->symbol()->glyph()->tag()
                       ->withCounter($f->counter()->status(count($tags))),
                     ilTaggingGUI::getListTagsJSCall($this->ajax_hash, $redraw_js)
                 );
@@ -2346,7 +2363,7 @@ class ilObjectListGUI
                 $f = $this->ui->factory();
                 $this->addHeaderGlyph(
                     'notes',
-                    $f->symbol()->glyph()->note('#')
+                    $f->symbol()->glyph()->note()
                       ->withCounter($f->counter()->status((int) $cnt[$this->obj_id][Note::PRIVATE])),
                     ilNoteGUI::getListNotesJSCall($this->ajax_hash, $redraw_js)
                 );
@@ -2361,7 +2378,7 @@ class ilObjectListGUI
                 $f = $this->ui->factory();
                 $this->addHeaderGlyph(
                     'comments',
-                    $f->symbol()->glyph()->comment('#')
+                    $f->symbol()->glyph()->comment()
                       ->withCounter($f->counter()->status((int) $cnt[$this->obj_id][Note::PUBLIC])),
                     ilNoteGUI::getListCommentsJSCall($this->ajax_hash, $redraw_js)
                 );
@@ -2407,13 +2424,16 @@ class ilObjectListGUI
 
                 if (is_array($attr)) {
                     if (isset($attr['glyph']) && $attr['glyph']) {
-                        if ($attr['onclick']) {
-                            $htpl->setCurrentBlock('prop_glyph_oc');
-                            $htpl->setVariable('GLYPH_ONCLICK', $attr['onclick']);
-                            $htpl->parseCurrentBlock();
-                        }
                         $renderer = $this->ui->renderer();
-                        $html = $renderer->render($attr['glyph']);
+                        if (!empty($attr['onclick'])) {
+                            $html = $renderer->render(
+                                $this->getHeaderGlyphShyButton($attr['glyph'], $attr['onclick'])
+                            );
+                        } else {
+                            $html = '<span class="prop">'
+                                . $renderer->render($attr['glyph'])
+                                . '</span>';
+                        }
                         $htpl->setCurrentBlock('prop_glyph');
                         $htpl->setVariable('GLYPH', $html);
                         $htpl->parseCurrentBlock();

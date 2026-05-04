@@ -313,6 +313,20 @@ components: `Input\Field\File`, `Input\Field\Image`, `Dropzone\File\Standard` an
 necessary, ideally in a way where no or only minimal interface changes are caused, so this
 improvement can be backported to earlier versions too.
 
+### Replace `@yaireo/tagify` library (advanced, ~5d)
+
+We are using `@yaireo/tagify` for our `Input\Field\Tag` input functionality. The library is
+increasingly unfit for our needs around accessibility and usability, and working around its
+limitations becomes increasingly hacky. The root cause is that the library renders its DOM
+elements purely on the client at initialisation time, making the HTML output unpredictable and
+server-side rendering impossible. Binding custom logic requires reaching into library internals
+via JS, since elements don't exist until an instance is live. A custom implementation would
+give us full control over the rendered markup, allowing us to bind logic directly to elements,
+and make the component behave like any other input in our system. We ran into the same problem
+with the file upload library, where working around these constraints made maintenance significantly
+more expensive than it needed to be. To avoid the same fate here, we should replace the library 
+with a custom implementation sometime soon.
+
 ## Long Term
 
 ### Mark Some Components as Internal

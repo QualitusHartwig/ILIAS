@@ -27,6 +27,14 @@ use ILIAS\UI\Component\Modal\Modal;
 class ilObjBlogListGUI extends ilObjectListGUI
 {
     private ?Modal $comment_modal = null;
+    protected \ILIAS\Blog\InternalService $blog_service;
+
+    public function __construct(int $context = self::CONTEXT_REPOSITORY)
+    {
+        global $DIC;
+        parent::__construct($context);
+        $this->blog_service = $DIC->blog()->internal();
+    }
 
     public function init(): void
     {
@@ -69,18 +77,21 @@ class ilObjBlogListGUI extends ilObjectListGUI
         string $cmd = "",
         string $onclick = ""
     ): void {
-        global $DIC;
+        $blog_service = $this->blog_service;
 
         $tpl = $this->ui->mainTemplate();
-        $ctrl = $this->ctrl;
+        $export_possible = $blog_service->domain()
+                               ->export()
+                               ->manager()
+                               ->isCommentsExportPossible($this->obj_id);
         if ($cmd === "export"
-            && ilObjBlogAccess::isCommentsExportPossible($this->obj_id)
+            && $export_possible
             && (bool) $this->settings->get('item_cmd_asynch')) {
             $href = $this->getCommandLink("forwardExport");
             $cmd = "forwardExport";
             $onclick = "";
         }
-        if ($cmd !== "export" || !ilObjBlogAccess::isCommentsExportPossible($this->obj_id)) {
+        if ($cmd !== "export" || !$export_possible) {
             parent::insertCommand($href, $text, $frame, $img, $cmd, $onclick);
             return;
         }
@@ -95,7 +106,7 @@ class ilObjBlogListGUI extends ilObjectListGUI
 
             $prevent_background_click = false;
 
-            if (ilObjBlogAccess::isCommentsExportPossible($this->obj_id)) {
+            if ($export_possible) {
 
                 $modal = $this->getModalTemplate();
                 $signal = $modal["show"];
@@ -118,7 +129,6 @@ class ilObjBlogListGUI extends ilObjectListGUI
 
     public function getModalTemplate(): array
     {
-        $ctrl = $this->ctrl;
         $ui = $this->ui;
 
         $comment_export_helper = new \ILIAS\Notes\Export\ExportHelperGUI();
@@ -126,8 +136,8 @@ class ilObjBlogListGUI extends ilObjectListGUI
         $modal = $comment_export_helper->getCommentIncludeModalDialog(
             'HTML Export',
             $this->lng->txt("note_html_export_include_comments"),
-            $ctrl->getLinkTargetByClass([ilRepositoryGUI::class, ilObjBlogGUI::class], "export"),
-            $ctrl->getLinkTargetByClass([ilRepositoryGUI::class, ilObjBlogGUI::class], "exportWithComments")
+            $this->getCommandLink("export"),
+            $this->getCommandLink("exportWithComments")
         );
 
         $modalt["show"] = $modal->getShowSignal()->getId();
@@ -136,5 +146,39 @@ class ilObjBlogListGUI extends ilObjectListGUI
 
         return $modalt;
     }
+
+    public function getCommandLink(string $cmd): string
+    {
+        if ($this->context == self::CONTEXT_REPOSITORY || $this->context == self::CONTEXT_SEARCH) {
+            $id_par = "ref_id";
+        } else {
+            $id_par = "wsp_id";
+        }
+        switch ($cmd) {
+            case "export":
+            case "exportWithComments":
+                $this->ctrl->setParameterByClass(ilObjBlogGUI::class, $id_par, $this->ref_id);
+                return $this->ctrl->getLinkTargetByClass(
+                    [ilObjBlogGUI::class, \ILIAS\Blog\Export\ExportGUI::class],
+                    $cmd
+                );
+            case "render":
+                $this->ctrl->setParameterByClass(ilObjBlogGUI::class, $id_par, $this->ref_id);
+                return $this->ctrl->getLinkTargetByClass(
+                    [ilObjBlogGUI::class, \ILIAS\Blog\Editing\EditingGUI::class],
+                    ""
+                );
+                break;
+            case "preview":
+                $this->ctrl->setParameterByClass(ilObjBlogGUI::class, $id_par, $this->ref_id);
+                return $this->ctrl->getLinkTargetByClass(
+                    [ilObjBlogGUI::class, \ILIAS\Blog\Presentation\PresentationGUI::class],
+                    ""
+                );
+                break;
+        }
+        return parent::getCommandLink($cmd);
+    }
+
 
 }

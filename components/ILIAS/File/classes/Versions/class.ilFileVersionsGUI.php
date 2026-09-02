@@ -36,6 +36,7 @@ use ILIAS\FileUpload\MimeType;
 use ILIAS\MetaData\Services\ServicesInterface as LOMServices;
 use ILIAS\File\Capabilities\Capabilities;
 use ILIAS\File\Versions\Table\Table as VersionsTable;
+use ILIAS\File\Capabilities\CapabilityCollection;
 
 /**
  * @author Fabian Schmid <fabian@sr.solutions>
@@ -95,8 +96,10 @@ class ilFileVersionsGUI
     /**
      * ilFileVersionsGUI constructor.
      */
-    public function __construct(private ilObjFile $file)
-    {
+    public function __construct(
+        private ilObjFile $file,
+        private CapabilityCollection $capabilities
+    ) {
         global $DIC;
         $this->ctrl = $DIC->ctrl();
         $this->tpl = $DIC->ui()->mainTemplate();
@@ -181,11 +184,19 @@ class ilFileVersionsGUI
                     $this->current_revision->getInformation()->getSuffix()
                 );
 
+                // select best of the following
+                $cap = $this->capabilities->getBestOf(
+                    Capabilities::MANAGE_VERSIONS,
+                    Capabilities::VIEW_EXTERNAL,
+                    Capabilities::INFO_PAGE
+                );
+                $goto_link = $cap->getUri();
+
                 $embeded_application = new EmbeddedApplication(
                     $this->current_revision->getIdentification(),
                     $action,
                     new ilObjFileStakeholder(),
-                    new URI(rtrim(ILIAS_HTTP_PATH, "/") . "/" . $this->ctrl->getLinkTarget($this, self::CMD_DEFAULT)),
+                    $goto_link,
                     false,
                     $this->lng->getLangKey()
                 );

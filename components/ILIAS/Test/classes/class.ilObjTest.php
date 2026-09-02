@@ -48,6 +48,7 @@ use ILIAS\Test\Settings\ScoreReporting\ScoreSettingsRepository;
 use ILIAS\Test\Settings\ScoreReporting\ScoreReportingTypes;
 use ILIAS\Test\Settings\ScoreReporting\ScoreSettings;
 use ILIAS\TestQuestionPool\Import\TestQuestionsImportTrait;
+use ILIAS\TestQuestionPool\Questions\GeneralQuestionProperties;
 use ILIAS\TestQuestionPool\Questions\GeneralQuestionPropertiesRepository;
 use ILIAS\Refinery\Factory as Refinery;
 use ILIAS\Filesystem\Filesystem;
@@ -2693,6 +2694,27 @@ class ilObjTest extends ilObject
         }
         return false;
     }
+
+    /**
+     * @deprecated This is only a stop-gap measure to make archive export work.
+     * Do not use anywhere else! - sk 2026-06-22
+     */
+    public function getQuestionIdsInTest(): array
+    {
+        if (!$this->isRandomTest()) {
+            return $this->questions;
+        }
+
+        $query = $this->db->query(
+            "SELECT qst_fi FROM tst_rnd_cpy WHERE tst_fi={$this->test_id}"
+        );
+
+        return array_map(
+            fn(\stdClass $v): int => $v->qst_fi,
+            $this->db->fetchAll($query, \ilDBConstants::FETCHMODE_OBJECT)
+        );
+    }
+
 
     /**
     * Calculates the available questions for a test
@@ -5557,7 +5579,7 @@ class ilObjTest extends ilObject
             $row = $ilDB->fetchAssoc($result);
             $row['feedback'] = ilRTE::_replaceMediaObjectImageSrc($row['feedback'] ?? '', 1);
         } elseif ($ilDB->numRows($result) > 1) {
-            $DIC->logger()->root()->warning(
+            $DIC->logger()->forComponent('tst')->warning(
                 "WARNING: Multiple feedback entries on tst_manual_fb for " .
                 "active_fi = $active_id , question_fi = $question_id and pass = $pass"
             );
@@ -5653,23 +5675,6 @@ class ilObjTest extends ilObject
         }
 
         $this->db->insert('tst_manual_fb', $update_default);
-
-        if ($this->logger->isLoggingEnabled()) {
-            $this->logger->logScoringInteraction(
-                $this->logger->getInteractionFactory()->buildScoringInteraction(
-                    $this->getRefId(),
-                    $question_id,
-                    $this->user->getId(),
-                    self::_getUserIdFromActiveId($active_id),
-                    TestScoringInteractionTypes::QUESTION_GRADED,
-                    [
-                        AdditionalInformationGenerator::KEY_EVAL_FINALIZED => $this->logger
-                            ->getAdditionalInformationGenerator()->getTrueFalseTagForBool($finalized),
-                        AdditionalInformationGenerator::KEY_FEEDBACK => $feedback ? ilRTE::_replaceMediaObjectImageSrc($feedback, 0) : ''
-                    ]
-                )
-            );
-        }
     }
 
     /**

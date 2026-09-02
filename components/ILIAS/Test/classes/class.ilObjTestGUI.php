@@ -469,6 +469,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
                     $this->lng,
                     $this->getTestObject()->getTestlogger(),
                     $this->component_repository,
+                    $this->component_factory,
                     $this->tabs_manager,
                     $this->toolbar,
                     $this->tpl,
@@ -741,6 +742,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
                     $this->db,
                     $this->getTestObject()->getTestlogger(),
                     $this->component_repository,
+                    $this->component_factory,
                     $this->getTestObject(),
                     $this->user,
                     $this->access,
@@ -777,6 +779,7 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
                     $this->getTestObject()->getTestlogger(),
                     $this->tree,
                     $this->component_repository,
+                    $this->component_factory,
                     $this->getTestObject(),
                     $this->questionrepository,
                     $this->testrequest,
@@ -1041,7 +1044,8 @@ class ilObjTestGUI extends ilObjectGUI implements ilCtrlBaseClassInterface, ilDe
             $this->ref_id
         );
 
-        if ($nr_of_participants_with_results > 0) {
+        if ($nr_of_participants_with_results > 0
+            && $this->getTestObject()->getGlobalSettings()->isAdjustingQuestionsWithResultsAllowed()) {
             $gui->addAdditionalCmd(
                 $this->lng->txt('tst_corrections_qst_form'),
                 $this->ctrl->getLinkTargetByClass(ilTestCorrectionsGUI::class, 'showQuestion')

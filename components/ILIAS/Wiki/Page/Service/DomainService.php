@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 namespace ILIAS\Wiki\Page;
 
+use ILIAS\COPage\Page\PageManagerInterface;
 use ILIAS\Wiki\InternalDomainService;
 use ILIAS\Wiki\InternalRepoService;
 use ILIAS\Wiki\InternalDataService;
@@ -36,7 +37,8 @@ class DomainService
     public function __construct(
         InternalDataService $data_service,
         InternalRepoService $repo_service,
-        InternalDomainService $domain_service
+        InternalDomainService $domain_service,
+        protected PageManagerInterface $page_manager
     ) {
         $this->repo_service = $repo_service;
         $this->data_service = $data_service;
@@ -67,6 +69,56 @@ class DomainService
             $this->domain_service->wiki(),
             $this,
             $ref_id
+        );
+    }
+
+    public function pageTemplateRetrieval(int $wiki_id): PageTemplateRetrieval
+    {
+        return new PageTemplateRetrieval($wiki_id);
+    }
+
+    public function pagesRetrieval(
+        int $ref_id,
+        string $mode,
+        int $page_id,
+        string $lang
+    ): PagesRetrieval {
+        return new PagesRetrieval(
+            $this->domain_service,
+            $ref_id,
+            $mode,
+            $page_id,
+            $lang
+        );
+    }
+
+    public function recentChangesRetrieval(int $ref_id): RecentChangesRetrieval
+    {
+        return new RecentChangesRetrieval($this->domain_service, $ref_id);
+    }
+
+    public function contributorsRetrieval(int $wiki_id): ContributorsRetrieval
+    {
+        return new ContributorsRetrieval($this->page_manager, $wiki_id);
+    }
+
+    public function exportOrderRetrieval(
+        array $all_pages,
+        array $page_ids
+    ): ExportOrderRetrieval {
+        return new ExportOrderRetrieval($all_pages, $page_ids);
+    }
+
+    public function importantPagesRetrieval(
+        int $ref_id,
+        int $wiki_id,
+        string $start_page
+    ): ImportantPagesRetrieval {
+        return new ImportantPagesRetrieval(
+            $this->domain_service,
+            $ref_id,
+            $wiki_id,
+            $start_page
         );
     }
 

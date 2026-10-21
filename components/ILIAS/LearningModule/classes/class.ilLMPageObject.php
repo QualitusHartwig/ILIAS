@@ -298,14 +298,14 @@ class ilLMPageObject extends ilLMObject
             if (count($childs) > 1) {
                 $cnt = 0;
                 foreach ($childs as $child) {
-                    $active = ilLMPage::_lookupActive(
+                    $active = $DIC->copage()->internal()->domain()->page()->lookupActive(
                         $child["obj_id"],
                         ilObject::_lookupType($a_lm_id),
                         $a_time_scheduled_activation
                     );
 
                     if (!$active) {
-                        $act_data = ilLMPage::_lookupActivationData((int) $child["obj_id"], ilObject::_lookupType($a_lm_id));
+                        $act_data = $DIC->copage()->internal()->domain()->page()->lookupActivationData((int) $child["obj_id"], ilObject::_lookupType($a_lm_id));
                         if ($act_data["show_activation_info"] &&
                             (ilUtil::now() < $act_data["activation_start"])) {
                             $active = true;
@@ -479,7 +479,7 @@ class ilLMPageObject extends ilLMObject
         $count_query = "SELECT count(pq.question_id) cnt ";
 
         // basic query
-        $query = "SELECT pq.page_id, pq.question_id ";
+        $query = "SELECT pq.page_id, pq.page_lang, pq.question_id ";
 
         $from = " FROM page_question pq JOIN lm_tree t ON (t.lm_id = " . $ilDB->quote($a_lm_id, "integer") .
             " AND pq.page_id = t.child and pq.page_parent_type = " . $ilDB->quote("lm", "text") . ") " .

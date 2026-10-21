@@ -16,6 +16,7 @@
  *
  *********************************************************************/
 
+use ILIAS\Repository\Deletion\MissingPermissionException;
 use ILIAS\Repository\Trash\TrashGUIRequest;
 
 /**
@@ -36,6 +37,7 @@ class ilRepositoryTrashGUI
     protected ilTree $tree;
     protected ?ilLogger $logger = null;
     protected TrashGUIRequest $request;
+    protected \ILIAS\Repository\InternalGUIService $repository_gui;
     protected object $parent_gui;
     protected string $parent_cmd;
 
@@ -57,6 +59,7 @@ class ilRepositoryTrashGUI
         $this->parent_cmd = $a_parent_cmd;
 
         $this->logger = $DIC->logger()->rep();
+        $this->repository_gui = $DIC->repository()->internal()->gui();
         $this->request = $DIC->repository()
             ->internal()
             ->gui()
@@ -90,11 +93,14 @@ class ilRepositoryTrashGUI
     }
 
     public function restoreToNewLocation(
-        ?ilPropertyFormGUI $form = null
+        ?ilPropertyFormGUI $form = null,
+        array $trash_ids = []
     ): void {
         $this->lng->loadLanguageModule('rep');
 
-        $trash_ids = $this->request->getTrashIds();
+        if ($trash_ids === []) {
+            $trash_ids = $this->request->getTrashIds();
+        }
 
         $this->ctrl->setParameter($this, 'trash_ids', implode(',', $trash_ids));
 
@@ -209,11 +215,10 @@ class ilRepositoryTrashGUI
         $form_name = "cgui_" . md5(uniqid('', true));
         $cgui->setFormName($form_name);
 
-        $deps = [];
         foreach ($a_ids as $ref_id) {
             $obj_id = ilObject::_lookupObjId($ref_id);
             $type = ilObject::_lookupType($obj_id);
-            $title = call_user_func([ilObjectFactory::getClassByType($type), '_lookupTitle'], $obj_id);
+            $title = ilObject::_lookupTitle($obj_id);
             $alt = ($objDefinition->isPlugin($type))
                 ? $lng->txt("icon") . " " . ilObjectPlugin::lookupTxtById($type, "obj_" . $type)
                 : $lng->txt("icon") . " " . $lng->txt("obj_" . $type);
@@ -226,17 +231,9 @@ class ilRepositoryTrashGUI
                 ilObject::_getIcon($obj_id, "small", $type),
                 $alt
             );
-
-            ilObject::collectDeletionDependencies($deps, $ref_id, $obj_id, $type);
-        }
-        $deps_html = "";
-
-        if (is_array($deps) && count($deps) > 0) {
-            $tab = new ilRepDependenciesTableGUI($deps);
-            $deps_html = "<br/><br/>" . $tab->getHTML();
         }
 
-        $tpl->setContent($cgui->getHTML() . $deps_html);
+        $tpl->setContent($cgui->getHTML());
         return true;
     }
 
@@ -342,20 +339,15 @@ class ilRepositoryTrashGUI
     public function showTrashTable(
         int $a_ref_id
     ): void {
-        $tpl = $this->tpl;
-        $tree = $this->tree;
-        $lng = $this->lng;
-
-        $objects = $tree->getSavedNodeData($a_ref_id);
-
-        if (count($objects) === 0) {
-            $this->tpl->setOnScreenMessage('info', $lng->txt("msg_trash_empty"));
+        $table_builder = $this->repository_gui
+            ->trash()
+            ->trashTableBuilder($a_ref_id, $this->parent_gui, 'trash');
+        $table = $table_builder->getTable();
+        if ($table->handleCommand()) {
             return;
         }
-        $ttab = new ilTrashTableGUI($this->parent_gui, "trash", $a_ref_id);
-        $ttab->setData($objects);
 
-        $tpl->setContent($ttab->getHTML());
+        $this->tpl->setContent($table_builder->getFilter()->render() . $table->render());
     }
 
     /**
@@ -418,6 +410,8 @@ class ilRepositoryTrashGUI
                 } else {
                     $this->tpl->setOnScreenMessage('success', $lng->txt("msg_removed"), true);
                 }
+            } catch (MissingPermissionException $e) {
+                $this->tpl->setOnScreenMessage('failure', $this->lng->txt('permission_denied'), true);
             } catch (ilRepositoryException $e) {
                 // we catch ilRepositoryException, since this is usually permission related
                 // other exceptions are thrown to get call stacks
@@ -511,7 +505,7 @@ class ilRepositoryTrashGUI
         foreach ($a_ids as $id) {
             $obj_id = ilObject::_lookupObjId($id);
             $type = ilObject::_lookupType($obj_id);
-            $title = call_user_func([ilObjectFactory::getClassByType($type), '_lookupTitle'], $obj_id);
+            $title = ilObject::_lookupTitle($obj_id);
             $alt = ($objDefinition->isPlugin($type))
                 ? $lng->txt("icon") . " " . ilObjectPlugin::lookupTxtById($type, "obj_" . $type)
                 : $lng->txt("icon") . " " . $lng->txt("obj_" . $type);

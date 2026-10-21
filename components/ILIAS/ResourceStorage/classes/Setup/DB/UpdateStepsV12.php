@@ -32,9 +32,20 @@ class UpdateStepsV12 implements \ilDatabaseUpdateSteps
     public function step_1(): void
     {
         $this->db->modifyTableColumn('il_resource_flavour', 'variant', [
-            'notnull' => false,
             'length' => 638,
             'type' => \ilDBConstants::T_TEXT,
         ]);
+    }
+
+    public function step_2(): void
+    {
+        if (!$this->db->tableColumnExists('il_resource', 'confidential')) {
+            $this->db->addTableColumn('il_resource', 'confidential', [
+                'type' => \ilDBConstants::T_INTEGER,
+                'length' => 1,
+                'notnull' => true,
+                'default' => 0,
+            ]);
+        }
     }
 }

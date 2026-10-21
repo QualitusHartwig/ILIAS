@@ -154,6 +154,26 @@ class ilPageEditorGUI
         $this->page_back_title = $a_title;
     }
 
+    private function hasRequestedComponent(): bool
+    {
+        return $this->requested_ctype !== "" || $this->requested_cname !== "";
+    }
+
+    private function isNewComponentCommand(string $cmd): bool
+    {
+        return in_array($cmd, ["insert", "create", "upload"], true);
+    }
+
+    protected function isMatchingContentObjectGUI(string $next_class, string $ctype): bool
+    {
+        $pc_def = $this->pc_definition->getPCDefinitionByType($ctype);
+        if (is_array($pc_def) && strtolower($pc_def["pc_gui_class"]) === $next_class) {
+            return true;
+        }
+
+        return !str_starts_with($next_class, "ilpc");
+    }
+
     /**
      * execute command
      */
@@ -166,13 +186,12 @@ class ilPageEditorGUI
         $cont_obj = null;
 
         $ret = "";
-        $add_type = "";
+        $add_type = $this->request->getString("pluginName");
 
         // Step BC (basic command determination)
         // determine cmd, cmdClass, hier_id and pc_id
         $cmd = $this->ctrl->getCmd("displayPage");
         $cmdClass = strtolower($this->ctrl->getCmdClass());
-
         $hier_id = $this->requested_hier_id;
         $pc_id = $this->requested_pc_id;
         $new_hier_id = $this->request->getString("new_hier_id");
@@ -180,44 +199,11 @@ class ilPageEditorGUI
             $hier_id = $new_hier_id;
         }
 
-        $this->log->debug("step BC: cmd:$cmd, cmdClass:$cmdClass, hier_id: $hier_id, pc_id: $pc_id");
-
-        // Step EC (exec_ command handling)
-        // handle special exec_ commands, modify pc, hier_id
-        if (substr($cmd, 0, 5) == "exec_") {
-            // check whether pc id is given
-            $pca = explode(":", $this->ctrl->getCmd());
-            $pc_id = $pca[1];
-            $cmd = explode("_", $pca[0]);
-            unset($cmd[0]);
-            $hier_id = implode("_", $cmd);
-            $cmd = $this->request->getString("command" . $hier_id);
-        }
-        $this->log->debug("step EC: cmd:$cmd, hier_id: $hier_id, pc_id: $pc_id");
-
-        // Step CC (handle table container (and similar) commands
-        // ... strip "c" "r" of table ids from hierarchical id
-        $first_hier_character = substr($hier_id, 0, 1);
-        if ($first_hier_character == "c" ||
-            $first_hier_character == "r" ||
-            $first_hier_character == "g" ||
-            $first_hier_character == "i") {
-            $hier_id = substr($hier_id, 1);
-        }
-        $this->log->debug("step CC: cmd:$cmd, hier_id: $hier_id, pc_id: $pc_id");
+        $this->log->debug("step BC: cmd:$cmd, hier_id: $hier_id, pc_id: $pc_id");
 
         // Step B (build dom, and ids in XML)
         $this->page->buildDom();
         $this->page->addHierIDs();
-
-
-        // Step CS (strip base command)
-        $com = null;
-        if ($cmdClass != "ilcontainerresourcegui") {
-            $com = explode("_", $cmd);
-            $cmd = $com[0];
-        }
-        $this->log->debug("step CS: cmd:$cmd");
 
 
         // Step NC (determine next class)
@@ -230,50 +216,12 @@ class ilPageEditorGUI
             $hier_id = $hid[$this->requested_pl_pc_id];
         }
         $this->log->debug("step PH: next class: " . $next_class);
-        if (!is_null($com) && ($com[0] == "insert" || $com[0] == "create")) {
-            // Step CM (creation mode handling)
-            $cmd = $com[0];
-            $ctype = $com[1] ?? "";				// note ctype holds type if cmdclass is empty, but also subcommands if not (e.g. applyFilter in ilpcmediaobjectgui)
-            $add_type = $this->request->getString("pluginName");
-            if ($ctype == "mob") {
-                $ctype = "media";
-            }
+        $this->log->debug("step LM: cmd: " . $cmd . ", cmdClass: " . $cmdClass);
 
-            $this->log->debug("step CM: cmd: " . $cmd . ", ctype: " . $ctype . ", add_type: " . $add_type);
-        } else {
-            $this->log->debug("step LM: cmd: " . $cmd . ", cmdClass: " . $cmdClass);
-
-            // Step PR (get content object and return to parent)
-            $this->log->debug("before PR: cmdClass: $cmdClass, nextClass: $next_class" .
-                ", hier_id: " . $hier_id . ", pc_id: " . $pc_id . ")");
-            // note: ilinternallinkgui for page: no cont_obj is received
-            // ilinternallinkgui for mob: cont_obj is received
-            if ($this->requested_ctype == "" && $this->requested_cname == "" &&
-                $cmd != "insertFromClipboard" && $cmd != "pasteFromClipboard" &&
-                $cmd != "setMediaMode" && $cmd != "copyLinkedMediaToClipboard" &&
-                $cmd != "activatePage" && $cmd != "deactivatePage" &&
-                $cmd != "copyLinkedMediaToMediaPool" && $cmd != "showSnippetInfo" &&
-                $cmd != "delete" && $cmd != "paste" &&
-                $cmd != "cancelDeleteSelected" && $cmd != "confirmedDeleteSelected" &&
-                $cmd != "copy" && $cmd != "cut" &&
-                ($cmd != "displayPage" || $this->request->getString("editImagemapForward_x") != "" || $cmdClass == "ilcontainerresourcegui") &&
-                $cmd != "activate" && $cmd != "characteristic" &&
-                $cmd != "assignCharacteristic" &&
-                $cmdClass != "ilrepositoryselector2inputgui" &&
-                $cmdClass != "ilpageeditorserveradaptergui" &&
-                $cmd != "cancelCreate" && $cmd != "popup" &&
-                $cmdClass != "ileditclipboardgui" && $cmd != "addChangeComment" &&
-                ($cmdClass != "ilinternallinkgui" || ($next_class == "ilpcmediaobjectgui"))) {
-                $cont_obj = $this->page->getContentObject($hier_id, $pc_id);
-                if (!is_object($cont_obj)) {
-                    $this->log->debug("returnToParent");
-                    $ilCtrl->returnToParent($this);
-                }
-                $ctype = $cont_obj->getType();
-            }
-        }
-        // Step NC (handle empty next class)
-        if ($this->requested_ctype != "" || $this->requested_cname != "") {
+        // Step PR (get content object for PC GUI)
+        $this->log->debug("before PR: nextClass: $next_class" .
+            ", hier_id: " . $hier_id . ", pc_id: " . $pc_id . ")");
+        if ($this->hasRequestedComponent()) {
             $ctype = $this->requested_ctype;
             if ($this->requested_cname != "") {
                 $pc_def = $this->pc_definition->getPCDefinitionByName($this->requested_cname);
@@ -281,9 +229,14 @@ class ilPageEditorGUI
             }
             $pc_id = $this->requested_pc_id;
             $hier_id = $this->requested_hier_id;
-            if (!in_array($cmd, ["insert", "create", "upload"])) {
-                $cont_obj = $this->page->getContentObject($hier_id, $pc_id);
+        }
+        if ($this->pc_definition->isPCGUIClassName($next_class, true) && !$this->isNewComponentCommand($cmd)) {
+            $cont_obj = $this->page->getContentObject($hier_id, $pc_id);
+            if (!is_object($cont_obj)) {
+                $this->log->debug("returnToParent");
+                $ilCtrl->returnToParent($this);
             }
+            $ctype = $cont_obj->getType();
         }
         // this fixes e.g. #31214
         if ($pc_id != "" && $hier_id == "") {
@@ -299,20 +252,13 @@ class ilPageEditorGUI
 
         $this->ctrl->setParameter($this, "hier_id", $hier_id);
         $this->ctrl->setParameter($this, "pc_id", $pc_id);
+        if ($this->hasRequestedComponent()) {
+            $this->ctrl->setParameter($this, "ctype", $ctype);
+        }
 
-        if ($next_class == "") {
-            $pc_def = $this->pc_definition->getPCDefinitionByType($ctype);
-            if (is_array($pc_def)) {
-                if ($ctype === "plug") {
-                    $this->ctrl->setParameterByClass(
-                        $pc_def["pc_gui_class"],
-                        "pluginName",
-                        $this->request->getString("pluginName")
-                    );
-                }
-                $this->ctrl->redirectByClass($pc_def["pc_gui_class"], $this->ctrl->getCmd());
-            }
-            $next_class = $this->ctrl->getNextClass($this);
+        if (is_object($cont_obj) && !$this->isMatchingContentObjectGUI($next_class, $ctype)) {
+            $this->log->debug("returnToParent due to mismatching content object GUI");
+            $ilCtrl->returnToParent($this);
         }
         $this->log->debug("step NC2: next_class: $next_class");
 

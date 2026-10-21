@@ -1516,27 +1516,6 @@ assessment#:#tst_hide_info_tab#:#Hide Info Tab###26 08 2024 new variable
 assessment#:#tst_hide_info_tab_desc#:#Hides the tab ‘Info’ of the test.###26 08 2024 new variable
 assessment#:#tst_hide_pagecontents#:#Hide page content###26 08 2024 new variable
 assessment#:#tst_hide_pagecontents_desc#:#ILIAS content placed before and after the actual question text via the "Edit Page" button will not be displayed in the result views and print output.###26 08 2024 new variable
-assessment#:#tst_highscore_achieved_ts#:#Test tarihini göster
-assessment#:#tst_highscore_achieved_ts_description#:#Kontroller, test tarihi sütunda gösterilecekse
-assessment#:#tst_highscore_all_tables#:#All Rankings###07 11 2014 new variable
-assessment#:#tst_highscore_all_tables_description#:#If selected, the test provides both ranking tables.###07 11 2014 new variable
-assessment#:#tst_highscore_anon#:#Girdilerin Anonimleştirilmesi
-assessment#:#tst_highscore_anon_description#:#Kontroller, eğer isimler sıralamaları ile anonimleştirilse. Bu seçenek test anonimleştirme anahtarı ile değiştirilebilir.
-assessment#:#tst_highscore_description#:#En yüksek skor görüntüleme mevcut mu ?
-assessment#:#tst_highscore_enabled#:#Skor Göster
-assessment#:#tst_highscore_mode#:#Mode###07 11 2014 new variable
-assessment#:#tst_highscore_own_table#:#'Kendi Derece' Tablosunu Göster
-assessment#:#tst_highscore_own_table_description#:#'kendi derecesi' tablosu gösterilecek ise
-assessment#:#tst_highscore_percentage#:#Yüzdesini Göster
-assessment#:#tst_highscore_percentage_description#:#Kontroller, testler yüzdesi ile bir sütun gösterilecek olmalıdır eğer.
-assessment#:#tst_highscore_score#:#Skoru Göster
-assessment#:#tst_highscore_score_description#:#Skor sütununu göstermek için kontroller
-assessment#:#tst_highscore_top_num#:#Başarı Sırası Eleman Sayısı
-assessment#:#tst_highscore_top_num_description#:#En iyi derece tablosuna kaç adet kayıt eklenmeli
-assessment#:#tst_highscore_top_table#:#'En iyi derece' Tablosunu Göster
-assessment#:#tst_highscore_top_table_description#:#Kontroller, tablo 'üst düzey' gösterildiği gibi olmalıdır eğer.
-assessment#:#tst_highscore_wtime#:#Çalışma süresini göster
-assessment#:#tst_highscore_wtime_description#:#Kontroller, çalışma zamanı testleri ile bir sütun gösterilecek olmalıdır eğer.
 assessment#:#tst_imap_qst_mode#:#Mode###24 10 2013 new variable
 assessment#:#tst_imap_qst_mode_mc#:#Multiple Choice###24 10 2013 new variable
 assessment#:#tst_imap_qst_mode_sc#:#Single Choice###24 10 2013 new variable
@@ -6349,6 +6328,7 @@ content#:#cont_def_organization#:#varsayılan
 content#:#cont_default#:#Standart
 content#:#cont_definition#:#Tanım
 content#:#cont_delete_content#:#Delete Content###29 07 2022 new variable
+content#:#cont_delete_file_item_confirm#:#Do you really want to delete the selected file(s)?###21 09 2026 new variable
 content#:#cont_delete_selected#:#Sil
 content#:#cont_delete_style#:#Stili Sil
 content#:#cont_delete_track_data#:#Takip Verisi Sil
@@ -12915,7 +12895,6 @@ news#:#news_allow_shorter_periods#:#kısa süreli sahip
 news#:#news_allow_shorter_periods_info#:#Kullanıcılar kişisel masaüstünde kısa haberler dönemlerde seçebilirsiniz.
 news#:#news_attached_to#:#Bağlı
 news#:#news_block_information#:#<b> Haberler </ b> blok <b> Kişisel Öğeler ile ilgili tüm haberler listeler </ b> kişisel masaüstünde seçtiniz.
-news#:#news_block_news_for_context#:#Haberleri
 news#:#news_cache#:#Haberler Önbellek (Dakika)
 news#:#news_cache_info#:#Güncelleme haberler bloklar her x dakika. '0 'Her anlamına gelir. Yüksek değerler performansını artırmak, ancak haber erişilebilir olmayan ürün bağlantı verebilirsiniz.
 news#:#news_default_visibility#:#Standart Erişim
@@ -17002,6 +16981,7 @@ svy#:#svy_codes#:#Access Codes###07 02 2020 new variable
 svy#:#svy_current_page#:#Current Page###29 07 2022 new variable
 svy#:#svy_finish_survey#:#Finish survey '%1'###07 02 2020 new variable
 svy#:#svy_finished_x_appraisees#:#You have finished the survey for %s appraisee(s).###28 10 2024 new variable
+svy#:#svy_info_participants#:#Aşağıdaki arama seçeneklerinden birini kullanarak kullanıcıları bu anketin katılımcıları olarak ekleyin. Anket, bu kullanıcıların panosuna bir görev olarak eklenecektir.
 svy#:#svy_information#:#Information###28 10 2024 new variable
 svy#:#svy_invite_participants#:#Invite Participants###07 02 2020 new variable
 svy#:#svy_link_to_svy#:#Link to Survey###26 08 2024 new variable

@@ -94,13 +94,17 @@ class ilObjFileBasedLMAccess extends ilObjectAccess
             if (!$rid) {
                 return $startfile[$a_id] = "";
             }
-            $zip = $DIC->resourceStorage()->consume()->containerZIP($rid)->getZIP();
-            foreach ($zip->getFiles() as $file) {
-                if ($file === $start_file) {
-                    return $startfile[$a_id] = $start_file;
-                }
+            // Locate the single stored path. Unzip::getFiles() yields nothing when the
+            // archive exceeds the decompression-bomb limits, which hides a valid start file.
+            $stream = $DIC->resourceStorage()->consume()->stream($rid)->getStream();
+            $uri = $stream->getMetadata()['uri'] ?? '';
+            $archive = new \ZipArchive();
+            $found = "";
+            if (is_string($uri) && $uri !== '' && $archive->open($uri, \ZipArchive::RDONLY) === true) {
+                $found = self::locateStartFileInArchive($archive, $start_file);
+                $archive->close();
             }
-            return $startfile[$a_id] = "";
+            return $startfile[$a_id] = $found;
         }
 
         // Old learning module
@@ -127,6 +131,22 @@ class ilObjFileBasedLMAccess extends ilObjectAccess
         }
 
         return $startfile[$a_id] = "";
+    }
+
+    /**
+     * Returns the stored start file if the archive contains it, otherwise falls back to
+     * index.html and index.htm in the root of the archive, as for learning modules which
+     * have not been migrated yet. Many learning modules have no start file stored at all.
+     */
+    public static function locateStartFileInArchive(\ZipArchive $archive, string $start_file): string
+    {
+        $candidates = array_filter([$start_file, 'index.html', 'index.htm'], static fn(string $c): bool => $c !== '');
+        foreach ($candidates as $candidate) {
+            if ($archive->locateName($candidate) !== false) {
+                return $candidate;
+            }
+        }
+        return "";
     }
 
     public static function _checkGoto(string $target): bool

@@ -32,6 +32,15 @@ class Authentication implements Component\Component
         array | \ArrayAccess &$pull,
         array | \ArrayAccess &$internal,
     ): void {
+        $define[] = Authentication\Domain\AuthenticatedUser::class;
+
+        $implement[Authentication\Domain\AuthenticatedUser::class] = static fn() =>
+            new Authentication\Infrastructure\SessionAuthenticatedUser(
+                new \ReflectionClass(\ilAuthSession::class)->newLazyProxy(
+                    static fn(): \ilAuthSession => $GLOBALS['DIC']['ilAuthSession']
+                )
+            );
+
         // currently this is will be a session storage because we cannot store
         // data on the client, see https://mantis.ilias.de/view.php?id=38503.
         // @todo: this should be implemented by some proper key-value storage (or service).
@@ -69,5 +78,7 @@ class Authentication implements Component\Component
             new Component\Resource\ComponentJS($this, 'js/dist/SessionReminder.min.js');
         $contribute[User\Settings\UserSettings::class] = fn() =>
             new Authentication\UserSettings\Settings();
+        $contribute[\ILIAS\StaticURL\Handler\Handler::class] = static fn() =>
+            new \ILIAS\Authentication\StaticUrlHandler();
     }
 }

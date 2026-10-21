@@ -16,12 +16,6 @@
  *
  *********************************************************************/
 
-/**
- * Class ilInternalLink
- * Some methods to handle internal links
- * @author Alexander Killing <killing@leifos.de>
- * @deprecated 10 This component will be removed with ILIAS 10
- */
 class ilInternalLink
 {
     /**
@@ -273,13 +267,13 @@ class ilInternalLink
         switch ($a_type) {
             case "PageObject":
             case "StructureObject":
-                return ilLMObject::_exists($a_target);
+                return ilLMObject::_exists((int) $a_target);
 
             case "GlossaryItem":
-                return ilGlossaryTerm::_exists($a_target);
+                return ilGlossaryTerm::_exists((int) $a_target);
 
             case "MediaObject":
-                return ilObjMediaObject::_exists($a_target);
+                return ilObjMediaObject::_exists((int) $a_target);
 
             case "WikiPage":
                 return ilWikiPage::_exists("wiki", (int) $a_target);

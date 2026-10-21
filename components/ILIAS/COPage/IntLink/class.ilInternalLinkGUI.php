@@ -18,11 +18,6 @@
 
 use ILIAS\COPage\IntLink\StandardGUIRequest;
 
-/**
- * Internal link selector
- * @author Alexander Killing <killing@leifos.de>
- * @deprecated 10 This component will be removed with ILIAS 10
- */
 class ilInternalLinkGUI
 {
     protected \ILIAS\MediaObjects\Thumbs\ThumbsGUI $thumbs_gui;
@@ -941,7 +936,7 @@ class ilInternalLinkGUI
         $tpl->addJavaScript("assets/js/Form.js");
 
         $mt = self::getModalTemplate();
-        $tpl->addOnLoadCode('il.IntLink.setModalTemplate("' . addslashes(json_encode($mt["template"])) . '");');
+        $tpl->addOnLoadCode('il.IntLink.setModalTemplate("' . addslashes(json_encode($mt["template"])) . '", "' . $mt["show"] . '", "' . $mt["close"] . '");');
 
         $html = "<div id='ilIntLinkModal' data-show-signal='" . $mt["show"] . "' data-close-signal='" . $mt["close"] . "'></div>";
 

@@ -86,7 +86,6 @@ abstract class ilPageObject
     public bool $dom_builded = false;
     public bool $history_saved = false;
     protected string $language = "-";
-    protected static array $activation_data = array();
     protected bool $import_mode = false;
     protected ilLogger $log;
     protected ?array $page_record = array();
@@ -107,6 +106,7 @@ abstract class ilPageObject
     protected \ILIAS\COPage\Page\PageManagerInterface $page_manager;
     protected \ILIAS\COPage\Style\StyleManager $style_manager;
     protected \ILIAS\COPage\PC\DomainService $pc_service;
+    protected \ILIAS\COPage\History\HistoryManager $history_manager;
 
     final public function __construct(
         int $a_id = 0,
@@ -166,6 +166,7 @@ abstract class ilPageObject
             ->contentIds($this);
         $this->page_manager = $domain->page();
         $this->pc_service = $domain->pc();
+        $this->history_manager = $domain->history();
         $this->pc_definition = $domain->pc()->definition();
         $this->link = $domain->link();
         $this->style_manager = $domain->style();
@@ -485,194 +486,6 @@ abstract class ilPageObject
             }
         }
         return $this->active;
-    }
-
-    /**
-     * Preload activation data by Parent Id
-     */
-    public static function preloadActivationDataByParentId(int $a_parent_id): void
-    {
-        global $DIC;
-
-        $db = $DIC->database();
-        $set = $db->query(
-            "SELECT page_id, parent_type, lang, active, activation_start, activation_end, show_activation_info FROM page_object " .
-            " WHERE parent_id = " . $db->quote($a_parent_id, "integer")
-        );
-        while ($rec = $db->fetchAssoc($set)) {
-            self::$activation_data[$rec["page_id"] . ":" . $rec["parent_type"] . ":" . $rec["lang"]] = $rec;
-        }
-    }
-
-    /**
-     * lookup activation status
-     */
-    public static function _lookupActive(
-        int $a_id,
-        string $a_parent_type,
-        bool $a_check_scheduled_activation = false,
-        string $a_lang = "-"
-    ): bool {
-        global $DIC;
-
-        $db = $DIC->database();
-
-        // language must be set at least to "-"
-        if ($a_lang == "") {
-            $a_lang = "-";
-        }
-
-        if (isset(self::$activation_data[$a_id . ":" . $a_parent_type . ":" . $a_lang])) {
-            $rec = self::$activation_data[$a_id . ":" . $a_parent_type . ":" . $a_lang];
-        } else {
-            $set = $db->queryF(
-                "SELECT active, activation_start, activation_end FROM page_object WHERE page_id = %s" .
-                " AND parent_type = %s AND lang = %s",
-                array("integer", "text", "text"),
-                array($a_id, $a_parent_type, $a_lang)
-            );
-            $rec = $db->fetchAssoc($set);
-            if (!$rec) {
-                return true;
-            }
-        }
-
-        $rec["n"] = ilUtil::now();
-        if (!$rec["active"] && $a_check_scheduled_activation) {
-            if ($rec["n"] >= $rec["activation_start"] &&
-                $rec["n"] <= $rec["activation_end"]) {
-                return true;
-            }
-        }
-
-        return (bool) $rec["active"];
-    }
-
-    /**
-     * Check whether page is activated by time schedule
-     */
-    public static function _isScheduledActivation(
-        int $a_id,
-        string $a_parent_type,
-        string $a_lang = "-"
-    ): bool {
-        global $DIC;
-
-        $db = $DIC->database();
-
-        // language must be set at least to "-"
-        if ($a_lang == "") {
-            $a_lang = "-";
-        }
-
-        //echo "<br>";
-        //var_dump(self::$activation_data); exit;
-        if (isset(self::$activation_data[$a_id . ":" . $a_parent_type . ":" . $a_lang])) {
-            $rec = self::$activation_data[$a_id . ":" . $a_parent_type . ":" . $a_lang];
-        } else {
-            $set = $db->queryF(
-                "SELECT active, activation_start, activation_end FROM page_object WHERE page_id = %s" .
-                " AND parent_type = %s AND lang = %s",
-                array("integer", "text", "text"),
-                array($a_id, $a_parent_type, $a_lang)
-            );
-            $rec = $db->fetchAssoc($set);
-        }
-
-        if (!$rec["active"] && $rec["activation_start"] != "") {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * write activation status
-     */
-    public static function _writeActive(
-        int $a_id,
-        string $a_parent_type,
-        bool $a_active
-    ): void {
-        global $DIC;
-
-        $db = $DIC->database();
-
-        // language must be set at least to "-"
-        $a_lang = "-";
-
-        $db->manipulateF(
-            "UPDATE page_object SET active = %s, activation_start = %s, " .
-            " activation_end = %s WHERE page_id = %s" .
-            " AND parent_type = %s AND lang = %s",
-            array("int", "timestamp", "timestamp", "integer", "text", "text"),
-            array((int) $a_active, null, null, $a_id, $a_parent_type, $a_lang)
-        );
-    }
-
-    /**
-     * Lookup activation data
-     */
-    public static function _lookupActivationData(
-        int $a_id,
-        string $a_parent_type,
-        string $a_lang = "-"
-    ): array {
-        global $DIC;
-
-        $db = $DIC->database();
-
-        // language must be set at least to "-"
-        if ($a_lang == "") {
-            $a_lang = "-";
-        }
-
-        if (isset(self::$activation_data[$a_id . ":" . $a_parent_type . ":" . $a_lang])) {
-            $rec = self::$activation_data[$a_id . ":" . $a_parent_type . ":" . $a_lang];
-        } else {
-            $set = $db->queryF(
-                "SELECT active, activation_start, activation_end, show_activation_info FROM page_object WHERE page_id = %s" .
-                " AND parent_type = %s AND lang = %s",
-                array("integer", "text", "text"),
-                array($a_id, $a_parent_type, $a_lang)
-            );
-            $rec = $db->fetchAssoc($set);
-            if (!$rec) {
-                return [
-                    "active" => 1,
-                    "activation_start" => null,
-                    "activation_end" => null,
-                    "show_activation_info" => 0
-                ];
-            }
-        }
-
-        return $rec;
-    }
-
-    public static function lookupParentId(int $a_id, string $a_type): int
-    {
-        global $DIC;
-
-        $db = $DIC->database();
-
-        $res = $db->query("SELECT parent_id FROM page_object WHERE page_id = " . $db->quote($a_id, "integer") . " " .
-            "AND parent_type=" . $db->quote($a_type, "text"));
-        $rec = $db->fetchAssoc($res);
-        return (int) ($rec["parent_id"] ?? 0);
-    }
-
-    public static function _writeParentId(string $a_parent_type, int $a_pg_id, int $a_par_id): void
-    {
-        global $DIC;
-
-        $db = $DIC->database();
-        $db->manipulateF(
-            "UPDATE page_object SET parent_id = %s WHERE page_id = %s" .
-            " AND parent_type = %s",
-            array("integer", "integer", "text"),
-            array($a_par_id, $a_pg_id, $a_parent_type)
-        );
     }
 
     /**
@@ -1658,6 +1471,13 @@ s     */
             "WHERE page_id = " . $this->db->quote($this->getId(), "integer") .
             " AND parent_type= " . $this->db->quote($this->getParentType(), "text") . $and);
 
+        // delete page history entries
+        $this->history_manager->deleteHistoryEntries(
+            $this->getParentType(),
+            $this->getId(),
+            $this->getLanguage()
+        );
+
         // delete media objects
         foreach ($mobs as $mob_id) {
             $copg_logger->debug("ilPageObject: ... processing mob " . $mob_id . ".");
@@ -2053,36 +1873,6 @@ s     */
     }
 
     /**
-     * lookup whether page contains deactivated elements
-     */
-    public static function _lookupContainsDeactivatedElements(
-        int $a_id,
-        string $a_parent_type,
-        string $a_lang = "-"
-    ): bool {
-        global $DIC;
-
-        $db = $DIC->database();
-
-        if ($a_lang == "") {
-            $a_lang = "-";
-        }
-
-        $query = "SELECT * FROM page_object WHERE page_id = " .
-            $db->quote($a_id, "integer") . " AND " .
-            " parent_type = " . $db->quote($a_parent_type, "text") . " AND " .
-            " lang = " . $db->quote($a_lang, "text") . " AND " .
-            " inactive_elements = " . $db->quote(1, "integer");
-        $obj_set = $db->query($query);
-
-        if ($obj_rec = $obj_set->fetchRow(ilDBConstants::FETCHMODE_ASSOC)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Check whether content contains deactivated elements
      */
     public function containsDeactivatedElements(string $a_content): bool
@@ -2224,71 +2014,6 @@ s     */
             " AND lang = " . $db->quote($this->getLanguage(), "text"));
     }
 
-    /**
-     * Get recent pages changes for parent object.
-     * @param string $a_parent_type Parent Type
-     * @param int    $a_parent_id   Parent ID
-     * @param int    $a_period      Time Period
-     */
-    public static function getRecentChanges(
-        string $a_parent_type,
-        int $a_parent_id,
-        int $a_period = 30,
-        string $a_lang = ""
-    ): array {
-        global $DIC;
-
-        $db = $DIC->database();
-
-        $and_lang = "";
-        if ($a_lang != "") {
-            $and_lang = " AND lang = " . $db->quote($a_lang, "text");
-        }
-
-        $page_changes = array();
-        $limit_ts = date('Y-m-d H:i:s', time() - ($a_period * 24 * 60 * 60));
-        $q = "SELECT * FROM page_object " .
-            " WHERE parent_id = " . $db->quote($a_parent_id, "integer") .
-            " AND parent_type = " . $db->quote($a_parent_type, "text") .
-            " AND last_change >= " . $db->quote($limit_ts, "timestamp") . $and_lang;
-        //	" AND (TO_DAYS(now()) - TO_DAYS(last_change)) <= ".((int)$a_period);
-        $set = $db->query($q);
-        while ($page = $db->fetchAssoc($set)) {
-            $page_changes[] = array(
-                "date" => $page["last_change"],
-                "id" => $page["page_id"],
-                "lang" => $page["lang"],
-                "type" => "page",
-                "user" => $page["last_change_user"]
-            );
-        }
-
-        $and_str = "";
-        if ($a_period > 0) {
-            $limit_ts = date('Y-m-d H:i:s', time() - ($a_period * 24 * 60 * 60));
-            $and_str = " AND hdate >= " . $db->quote($limit_ts, "timestamp") . " ";
-        }
-
-        $q = "SELECT * FROM page_history " .
-            " WHERE parent_id = " . $db->quote($a_parent_id, "integer") .
-            " AND parent_type = " . $db->quote($a_parent_type, "text") .
-            $and_str . $and_lang;
-        $set = $db->query($q);
-        while ($page = $db->fetchAssoc($set)) {
-            $page_changes[] = array(
-                "date" => $page["hdate"],
-                "id" => $page["page_id"],
-                "lang" => $page["lang"],
-                "type" => "hist",
-                "nr" => $page["nr"],
-                "user" => $page["user_id"]
-            );
-        }
-
-        $page_changes = ilArrayUtil::sortArray($page_changes, "date", "desc");
-
-        return $page_changes;
-    }
 
     /**
      * Get all pages for parent object
@@ -2325,177 +2050,6 @@ s     */
         }
 
         return $pages;
-    }
-
-    /**
-     * Get new pages.
-     */
-    public static function getNewPages(
-        string $a_parent_type,
-        int $a_parent_id,
-        string $a_lang = "-"
-    ): array {
-        global $DIC;
-
-        $db = $DIC->database();
-
-        $and_lang = "";
-        if ($a_lang != "") {
-            $and_lang = " AND lang = " . $db->quote($a_lang, "text");
-        }
-
-        $pages = array();
-
-        $q = "SELECT * FROM page_object " .
-            " WHERE parent_id = " . $db->quote($a_parent_id, "integer") .
-            " AND parent_type = " . $db->quote($a_parent_type, "text") . $and_lang .
-            " ORDER BY created DESC";
-        $set = $db->query($q);
-        while ($page = $db->fetchAssoc($set)) {
-            if ($page["created"] != "") {
-                $pages[] = array(
-                    "created" => $page["created"],
-                    "id" => $page["page_id"],
-                    "lang" => $page["lang"],
-                    "user" => $page["create_user"],
-                );
-            }
-        }
-
-        return $pages;
-    }
-
-    /**
-     * Get all contributors for parent object
-     * @param string $a_parent_type Parent Type
-     * @param int    $a_parent_id   Parent ID
-     */
-    public static function getParentObjectContributors(
-        string $a_parent_type,
-        int $a_parent_id,
-        string $a_lang = "-"
-    ): array {
-        global $DIC;
-
-        $db = $DIC->database();
-        $profile = $DIC->copage()->internal()->domain()->profile();
-
-        $and_lang = "";
-        if ($a_lang != "") {
-            $and_lang = " AND lang = " . $db->quote($a_lang, "text");
-        }
-
-        $contributors = array();
-        $set = $db->queryF(
-            "SELECT last_change_user, lang, page_id FROM page_object " .
-            " WHERE parent_id = %s AND parent_type = %s " .
-            " AND last_change_user != %s" . $and_lang,
-            array("integer", "text", "integer"),
-            array($a_parent_id, $a_parent_type, 0)
-        );
-
-        while ($page = $db->fetchAssoc($set)) {
-            if ($a_lang == "") {
-                $contributors[$page["last_change_user"]][$page["page_id"]][$page["lang"]] = 1;
-            } else {
-                $contributors[$page["last_change_user"]][$page["page_id"]] = 1;
-            }
-        }
-
-        $set = $db->queryF(
-            "SELECT count(*) as cnt, lang, page_id, user_id FROM page_history " .
-            " WHERE parent_id = %s AND parent_type = %s AND user_id != %s " . $and_lang .
-            " GROUP BY page_id, user_id, lang ",
-            array("integer", "text", "integer"),
-            array($a_parent_id, $a_parent_type, 0)
-        );
-        while ($hpage = $db->fetchAssoc($set)) {
-            if ($a_lang == "") {
-                $contributors[$hpage["user_id"]][$hpage["page_id"]][$hpage["lang"]] =
-                    ($contributors[$hpage["user_id"]][$hpage["page_id"]][$hpage["lang"]] ?? 0) + $hpage["cnt"];
-            } else {
-                $contributors[$hpage["user_id"]][$hpage["page_id"]] =
-                    ($contributors[$hpage["user_id"]][$hpage["page_id"]] ?? 0) + $hpage["cnt"];
-            }
-        }
-
-        $c = array();
-        foreach ($contributors as $k => $co) {
-            if ($profile->exists($k)) {
-                $name = ilObjUser::_lookupName($k);
-                $c[] = array("user_id" => $k,
-                             "pages" => $co,
-                             "lastname" => $name["lastname"],
-                             "firstname" => $name["firstname"]
-                );
-            }
-        }
-
-        return $c;
-    }
-
-    /**
-     * Get all contributors for parent object
-     */
-    public static function getPageContributors(
-        string $a_parent_type,
-        int $a_page_id,
-        string $a_lang = "-"
-    ): array {
-        global $DIC;
-
-        $db = $DIC->database();
-
-        $and_lang = "";
-        if ($a_lang != "") {
-            $and_lang = " AND lang = " . $db->quote($a_lang, "text");
-        }
-
-        $contributors = array();
-        $set = $db->queryF(
-            "SELECT last_change_user, lang FROM page_object " .
-            " WHERE page_id = %s AND parent_type = %s " .
-            " AND last_change_user != %s" . $and_lang,
-            array("integer", "text", "integer"),
-            array($a_page_id, $a_parent_type, 0)
-        );
-
-        while ($page = $db->fetchAssoc($set)) {
-            if ($a_lang == "") {
-                $contributors[$page["last_change_user"]][$page["lang"]] = 1;
-            } else {
-                $contributors[$page["last_change_user"]] = 1;
-            }
-        }
-
-        $set = $db->queryF(
-            "SELECT count(*) as cnt, lang, page_id, user_id FROM page_history " .
-            " WHERE page_id = %s AND parent_type = %s AND user_id != %s " . $and_lang .
-            " GROUP BY user_id, page_id, lang ",
-            array("integer", "text", "integer"),
-            array($a_page_id, $a_parent_type, 0)
-        );
-        while ($hpage = $db->fetchAssoc($set)) {
-            if ($a_lang === "") {
-                $contributors[$hpage["user_id"]][$page["lang"]] =
-                    ($contributors[$hpage["user_id"]][$page["lang"]] ?? 0) + $hpage["cnt"];
-            } else {
-                $contributors[$hpage["user_id"]] =
-                    ($contributors[$hpage["user_id"]] ?? 0) + $hpage["cnt"];
-            }
-        }
-
-        $c = array();
-        foreach ($contributors as $k => $co) {
-            $name = ilObjUser::_lookupName($k);
-            $c[] = array("user_id" => $k,
-                         "pages" => $co,
-                         "lastname" => $name["lastname"],
-                         "firstname" => $name["firstname"]
-            );
-        }
-
-        return $c;
     }
 
     /**
@@ -3062,7 +2616,8 @@ s     */
         array $targets,
         string $char_par,
         string $char_sec,
-        string $char_med
+        string $char_med,
+        string $char_tab = ""
     ): array|bool {
         if (is_array($targets)) {
             foreach ($targets as $t) {
@@ -3076,6 +2631,13 @@ s     */
                 }
                 if (is_object($cont_obj) && $cont_obj->getType() == "media") {
                     $cont_obj->setClass($char_med);
+                }
+                if (is_object($cont_obj) && in_array($cont_obj->getType(), ["tab", "dtab"])) {
+                    $table_format = explode(":", $char_tab, 3);
+                    if (count($table_format) === 3 && $table_format[0] === "t") {
+                        $cont_obj->setTemplate($table_format[2]);
+                        $cont_obj->setClass("");
+                    }
                 }
             }
             return $this->update();

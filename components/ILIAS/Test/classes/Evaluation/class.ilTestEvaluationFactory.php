@@ -101,6 +101,10 @@ class ilTestEvaluationFactory
         $current_attempt = null;
 
         foreach ($this->retrieveEvaluationData($this->getAccessFilteredActiveIds()) as $row) {
+            if ($row['pass'] === null) {
+                continue;
+            }
+
             $active_id = $row['active_id'];
             $pass = $row['pass'];
 
@@ -113,6 +117,10 @@ class ilTestEvaluationFactory
             if ($current_attempt !== $pass) {
                 $current_attempt = $pass;
                 $attempt = $this->buildBasicAttemptEvaluationDataFromDB($row);
+            }
+
+            if (!isset($attempt)) {
+                continue;
             }
 
             $attempt = $this->addQuestionToAttempt($attempt, $row);
@@ -354,7 +362,10 @@ class ilTestEvaluationFactory
             );
 
             while ($seqrow = $this->db->fetchAssoc($seqresult)) {
-                $questionsequence = unserialize($seqrow["sequence"]);
+                $questionsequence = unserialize($seqrow["sequence"], ['allowed_classes' => false]);
+                if (!is_array($questionsequence)) {
+                    continue;
+                }
                 foreach ($questionsequence as $sidx => $seq) {
                     if (!isset($questionsbysequence[$seq])) {
                         continue;

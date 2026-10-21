@@ -20,6 +20,7 @@ namespace ILIAS\COPage\Page;
 
 use ILIAS\DI\Exceptions\Exception;
 use ILIAS\COPage\Editor\Server;
+use ILIAS\COPage\PC\Table\TableStyleSelector;
 use ParagraphStyleSelector;
 use SectionStyleSelector;
 use MediaObjectStyleSelector;
@@ -95,9 +96,11 @@ class PageQueryActionHandler implements Server\QueryActionHandler
         $o->errorMessage = $this->getErrorMessage();
         $o->errorModalMessage = $this->getErrorModalMessage();
         $o->config = $this->getConfig();
-        $o->components = $this->getComponentsEditorUI();
+        $components = $this->getComponentsEditorUI();
+        $o->components = $components;
         $o->pcModel = $this->getPCModel();
         $o->pcDefinition = $this->getComponentsDefinitions();
+        $o->pcFormActions = $this->getPCFormActions($components);
         $o->formatSelection = $this->getFormatSelection();
         $o->modal = $this->getModalTemplate();
         $o->confirmation = $this->getConfirmationTemplate();
@@ -540,6 +543,7 @@ class PageQueryActionHandler implements Server\QueryActionHandler
         $tpl->setVariable("TXT_PAR", $lng->txt("cont_choose_characteristic_text"));
         $tpl->setVariable("TXT_SECTION", $lng->txt("cont_choose_characteristic_section"));
         $tpl->setVariable("TXT_MEDIA", $lng->txt("cont_media"));
+        $tpl->setVariable("TXT_TABLE", $lng->txt("cont_table"));
 
         $par_sel = new ParagraphStyleSelector($this->ui_wrapper, $this->page_gui->getStyleId());
         $tpl->setVariable("PAR_SELECTOR", $ui->renderer()->renderAsync($par_sel->getStyleSelector(" ", "format", "format.paragraph", "format")));
@@ -549,6 +553,14 @@ class PageQueryActionHandler implements Server\QueryActionHandler
 
         $med_sel = new MediaObjectStyleSelector($this->ui_wrapper, $this->page_gui->getStyleId());
         $tpl->setVariable("MEDIA_SELECTOR", $ui->renderer()->renderAsync($med_sel->getStyleSelector(" ", "format", "format.media", "format")));
+
+        $tab_sel = new TableStyleSelector($this->ui_wrapper, $this->page_gui->getStyleId());
+        $tpl->setVariable("TABLE_SELECTOR", $ui->renderer()->renderAsync($tab_sel->getStyleSelector(" ", "format", "format.table", "format")));
+
+        $tpl->setVariable(
+            "FORMAT_ERROR",
+            $this->ui_wrapper->getRenderedInfoBox($lng->txt("cont_cp_question_diff_formats_info"))
+        );
 
         $tpl->setVariable(
             "SAVE_BUTTON",
@@ -628,6 +640,20 @@ class PageQueryActionHandler implements Server\QueryActionHandler
             $pcdef["txt"][$def["pc_type"]] = $this->lng->txt("cont_" . "pc_" . $def["pc_type"]);
         }
         return $pcdef;
+    }
+
+    protected function getPCFormActions(array $components): array
+    {
+        $actions = [];
+        $component_names = array_unique([...array_keys($components), "Plugged"]);
+        foreach ($component_names as $name) {
+            $def = $this->pc_definition->getPCDefinitionByName($name);
+            $actions[$def["name"]] = $this->ctrl->getFormActionByClass(
+                [\ilPageEditorGUI::class, $def["pc_gui_class"]],
+                ""
+            );
+        }
+        return $actions;
     }
 
     public function getModalTemplate(): array

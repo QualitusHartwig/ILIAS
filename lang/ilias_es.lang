@@ -1521,27 +1521,6 @@ assessment#:#tst_hide_info_tab#:#Ocultar pestaña Información
 assessment#:#tst_hide_info_tab_desc#:#Oculta la pestaña ‘Info’ de la prueba.
 assessment#:#tst_hide_pagecontents#:#Ocultar contenido de la página
 assessment#:#tst_hide_pagecontents_desc#:#El contenido de ILIAS colocado antes y después del texto de la pregunta mediante el botón "Editar página" no se mostrará en las vistas de resultados ni en la impresión.
-assessment#:#tst_highscore_achieved_ts#:#Fecha
-assessment#:#tst_highscore_achieved_ts_description#:#Se incluirá una columna con la fecha de la prueba en la clasificación.
-assessment#:#tst_highscore_all_tables#:#Posición del participante y clasificación principal
-assessment#:#tst_highscore_all_tables_description#:#Los participantes obtienen información sobre la clasificación superior y su propia posición en la misma.
-assessment#:#tst_highscore_anon#:#Sin nombres
-assessment#:#tst_highscore_anon_description#:#La clasificación se muestra sin listar los nombres de los demás participantes. Esto ocurrirá de todos modos si la prueba se realizó de forma anónima.
-assessment#:#tst_highscore_description#:#Dentro de la pestaña 'Mis resultados' a los participantes se les presenta una subpestaña 'Mostrar clasificación'. Al hacer clic en ella, se muestra a los participantes una tabla de clasificación con el rendimiento en la prueba. También debe activar 'Acceso a los resultados de la prueba' para poder usar esta funcionalidad.
-assessment#:#tst_highscore_enabled#:#Clasificación
-assessment#:#tst_highscore_mode#:#Modo
-assessment#:#tst_highscore_own_table#:#Posición propia del participante
-assessment#:#tst_highscore_own_table_description#:#A los participantes se les informa de su propia posición en la clasificación.
-assessment#:#tst_highscore_percentage#:#Porcentaje
-assessment#:#tst_highscore_percentage_description#:#Se incluirá en la clasificación una columna que contiene el porcentaje de la prueba.
-assessment#:#tst_highscore_score#:#Puntuación
-assessment#:#tst_highscore_score_description#:#Se incluirá en la clasificación una columna que contiene la puntuación.
-assessment#:#tst_highscore_top_num#:#Longitud de la clasificación superior
-assessment#:#tst_highscore_top_num_description#:#Especifica cuántas posiciones deben incluirse en la lista de clasificación superior.
-assessment#:#tst_highscore_top_table#:#Clasificación superior
-assessment#:#tst_highscore_top_table_description#:#A los participantes se les muestra una tabla con la clasificación superior.
-assessment#:#tst_highscore_wtime#:#Duración de la prueba
-assessment#:#tst_highscore_wtime_description#:#Se incluirá en la clasificación una columna con la duración de la prueba.
 assessment#:#tst_imap_qst_mode#:#Modo
 assessment#:#tst_imap_qst_mode_mc#:#Opción múltiple
 assessment#:#tst_imap_qst_mode_sc#:#Opción única
@@ -6366,6 +6345,7 @@ content#:#cont_def_organization#:#predeterminado
 content#:#cont_default#:#Predeterminado
 content#:#cont_definition#:#Definición
 content#:#cont_delete_content#:#Eliminar contenido
+content#:#cont_delete_file_item_confirm#:#Do you really want to delete the selected file(s)?###21 09 2026 new variable
 content#:#cont_delete_selected#:#Eliminar
 content#:#cont_delete_style#:#Eliminar estilo
 content#:#cont_delete_track_data#:#Eliminar datos de seguimiento
@@ -9435,7 +9415,7 @@ exc#:#exc_mandatory_info#:#Las tareas obligatorias deben ser aprobadas para apro
 exc#:#exc_mandatory_rand_determined#:#Determinado aleatoriamente
 exc#:#exc_max_char_limit#:#Número máximo de caracteres
 exc#:#exc_max_file#:#Número máximo de archivos
-exc#:#exc_max_file_info#:#Los participantes no podrán subir más archivos una vez que se alcance el límite. En las tareas de equipo, el límite también se aplica por participante, no a nivel de equipo.
+exc#:#exc_max_file_info#:#Los participantes no podrán subir más archivos una vez que se alcance el límite.
 exc#:#exc_max_file_reached#:#No puede subir más de %s archivos.
 exc#:#exc_max_file_tgl#:#Limitar subidas
 exc#:#exc_max_team_participants#:#Número máximo
@@ -12976,7 +12956,6 @@ news#:#news_allow_shorter_periods#:#Permitir periodos más cortos
 news#:#news_allow_shorter_periods_info#:#Los usuarios pueden seleccionar periodos de noticias más cortos en el tablero.
 news#:#news_attached_to#:#Adjunto a
 news#:#news_block_information#:#El bloque de <b>Noticias</b> enumera todas las noticias relacionadas con sus <b>Favoritos</b>.
-news#:#news_block_news_for_context#:#Noticias
 news#:#news_cache#:#Caché de noticias (minutos)
 news#:#news_cache_info#:#Actualizar los bloques de noticias cada x minutos. '0' significa cada vez. Valores más altos mejoran el rendimiento, pero las noticias pueden enlazar a elementos no accesibles.
 news#:#news_default_visibility#:#Acceso predeterminado
@@ -17061,47 +17040,47 @@ survey#:#users_skipped#:#Usuarios que omitieron
 survey#:#values#:#Valores
 survey#:#vertical#:#Vertical
 survey#:#warning_question_not_complete#:#¡La pregunta no está completa!
-survey#:#workingtime#:#Tiempo empleado
-svy#:#survey_360_appraisees_remind_info#:#Si se ha activado la "Autoevaluación", se recordará a los evaluados que aún no hayan finalizado la encuesta que lo hagan.
-svy#:#survey_360_raters_remind_info#:#Se recordará a los evaluadores que aún no hayan finalizado la encuesta que lo hagan.
-svy#:#svy_0_open_appraisees#:#No hay más evaluados para que usted califique o la encuesta ya no está abierta a los evaluadores.
-svy#:#svy_all_pages#:#Todas las páginas
-svy#:#svy_all_participants#:#Todos los participantes
-svy#:#svy_all_questions#:#Todas las preguntas
-svy#:#svy_code#:#Código de acceso
-svy#:#svy_codes#:#Códigos de acceso
-svy#:#svy_current_page#:#Página actual
-svy#:#svy_finish_survey#:#Participar en la encuesta ‘%1’
-svy#:#svy_finished_x_appraisees#:#Ya ha completado la encuesta para %s evaluado(s).
-svy#:#svy_information#:#Información
-svy#:#svy_invite_participants#:#Añadir a las tareas de los usuarios
-svy#:#svy_link_to_svy#:#Enlace a la encuesta
-svy#:#svy_part_overview#:#Resumen
-svy#:#svy_placeholders_label#:#Marcadores de posición disponibles
-svy#:#svy_print_selection#:#Selección de la vista de impresión
-svy#:#svy_remove_all_participants#:#Eliminar todos los datos de los participantes
-svy#:#svy_remove_participants#:#Eliminar participantes
-svy#:#svy_selected_participants#:#Participantes seleccionados
-svy#:#svy_selected_questions#:#Preguntas seleccionadas
-svy#:#svy_selection#:#Selección
-svy#:#svy_status#:#Estado
-svy#:#svy_status_finished#:#Finalizado
-svy#:#svy_status_in_progress#:#En progreso
-svy#:#svy_status_invited#:#Añadido a tareas
-svy#:#svy_user_added_appraisee#:#Encuesta ‘%1’
-svy#:#svy_user_added_appraisee_close_mail#:#La encuesta ha sido cerrada para sus evaluadores.
-svy#:#svy_user_added_appraisee_mail#:#Se le ha añadido a la encuesta como persona evaluada.
-svy#:#svy_user_added_rater#:#Encuesta ‘%1’
-svy#:#svy_user_added_rater_mail#:#Se le ha añadido como evaluador a la encuesta.
-svy#:#svy_user_added_rater_reminder_mail#:#Por favor, no olvide evaluar a las siguientes personas:
-svy#:#svy_user_not_found#:#Usuario no encontrado.
-svy#:#svy_users_invited#:#Se ha añadido un ‘pendiente’, notificando a los usuarios que pueden participar en esta encuesta, en la sección de ‘Tareas’ de su(s) tablero(s).
-svy#:#svy_x_appraisees_closed_for_raters#:#La encuesta ha sido cerrada para los evaluadores por %s evaluado(s).
-svy#:#svy_x_open_appraisees#:#Tiene %s evaluado(s) esperando su feedback.
-svy#:#svy_your_appraisees#:#Sus evaluados
-svy#:#svy_your_raters#:#Sus calificadores
-svy#:#svy_your_raters_finished#:#%s de sus calificadores han finalizado la encuesta.
-sysc#:#sysc_action_list_tree#:#Crear volcado del árbol del repositorio
+survey#:#workingtime#:#Tiempo de trabajo
+svy#:#survey_360_appraisees_remind_info#:#Si está activada la autoevaluación, los evaluados que no hayan finalizado la encuesta recibirán un recordatorio.
+svy#:#survey_360_raters_remind_info#:#Los evaluadores que no hayan finalizado la encuesta recibirán un recordatorio.
+svy#:#svy_0_open_appraisees#:#You cannot perform the survey for any appraisee anymore.###28 10 2024 new variable
+svy#:#svy_all_pages#:#All Pages###29 07 2022 new variable
+svy#:#svy_all_participants#:#All Participants###29 07 2022 new variable
+svy#:#svy_all_questions#:#All Questions###29 07 2022 new variable
+svy#:#svy_code#:#Access Code###28 10 2024 new variable
+svy#:#svy_codes#:#Access Codes###07 02 2020 new variable
+svy#:#svy_current_page#:#Current Page###29 07 2022 new variable
+svy#:#svy_finish_survey#:#Finish survey '%1'###07 02 2020 new variable
+svy#:#svy_finished_x_appraisees#:#You have finished the survey for %s appraisee(s).###28 10 2024 new variable
+svy#:#svy_information#:#Information###28 10 2024 new variable
+svy#:#svy_invite_participants#:#Invite Participants###07 02 2020 new variable
+svy#:#svy_link_to_svy#:#Link to Survey###26 08 2024 new variable
+svy#:#svy_part_overview#:#Overview###07 02 2020 new variable
+svy#:#svy_placeholders_label#:#Available Placeholders###26 08 2024 new variable
+svy#:#svy_print_selection#:#Print View Selection###29 07 2022 new variable
+svy#:#svy_remove_all_participants#:#Remove all Participants###07 02 2020 new variable
+svy#:#svy_remove_participants#:#Remove Participants###07 02 2020 new variable
+svy#:#svy_selected_participants#:#Selected Participants###29 07 2022 new variable
+svy#:#svy_selected_questions#:#Selected Questions###29 07 2022 new variable
+svy#:#svy_selection#:#Selection###29 07 2022 new variable
+svy#:#svy_status#:#Status###07 02 2020 new variable
+svy#:#svy_status_finished#:#Finished###07 02 2020 new variable
+svy#:#svy_status_in_progress#:#In Progress###07 02 2020 new variable
+svy#:#svy_status_invited#:#Invited###07 02 2020 new variable
+svy#:#svy_user_added_appraisee#:#Survey '%1'###26 08 2024 new variable
+svy#:#svy_user_added_appraisee_close_mail#:#The survey has been closed for your raters.###26 08 2024 new variable
+svy#:#svy_user_added_appraisee_mail#:#You have been added to the survey as an appraisee.###26 08 2024 new variable
+svy#:#svy_user_added_rater#:#Survey '%1'###26 08 2024 new variable
+svy#:#svy_user_added_rater_mail#:#You have been added as a rater to the survey.###26 08 2024 new variable
+svy#:#svy_user_added_rater_reminder_mail#:#Please finish to rate the following appraisees:###26 08 2024 new variable
+svy#:#svy_user_not_found#:#User not found.###26 08 2024 new variable
+svy#:#svy_users_invited#:#Users have been invited.###07 02 2020 new variable
+svy#:#svy_x_appraisees_closed_for_raters#:#%s appraisee(s) has/have closed the survey for raters.###28 10 2024 new variable
+svy#:#svy_x_open_appraisees#:#%s appraisee(s) are open for you to rate.###28 10 2024 new variable
+svy#:#svy_your_appraisees#:#Your Appraisees###28 10 2024 new variable
+svy#:#svy_your_raters#:#Your Raters###28 10 2024 new variable
+svy#:#svy_your_raters_finished#:#%s of your raters have finished the survey.###28 10 2024 new variable
+sysc#:#sysc_action_list_tree#:#Crear volcado del árbol de repositorio.
 sysc#:#sysc_action_repair#:#Reparar
 sysc#:#sysc_action_show_tree#:#Mostrar volcado del árbol del repositorio
 sysc#:#sysc_action_validate#:#Validar

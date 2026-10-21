@@ -376,7 +376,7 @@ trait ilTestBaseTestCaseTrait
     protected function addGlobal_refinery(): void
     {
         $refineryMock = $this->getMockBuilder(RefineryFactory::class)->disableOriginalConstructor()->getMock();
-        $refineryMock->expects(self::any())->method('random')->willReturn($this->getMockBuilder(RandomGroup::class)->getMock());
+        $refineryMock->method('random')->willReturn($this->getMockBuilder(RandomGroup::class)->getMock());
         $this->setGlobalVariable('refinery', $refineryMock);
     }
 
@@ -429,6 +429,22 @@ trait ilTestBaseTestCaseTrait
         $this->setGlobalVariable(
             \ILIAS\Mail\TemplateEngine\TemplateEngineFactoryInterface::class,
             $this->createMock(\ILIAS\Mail\TemplateEngine\TemplateEngineFactoryInterface::class)
+        );
+    }
+
+    protected function addGlobal_logging(): void
+    {
+        $this->setGlobalVariable(
+            'logging.factory',
+            $this->createStub(ILIAS\Logging\Logger\LoggerFactoryInterface::class)
+        );
+        $this->setGlobalVariable(
+            'logging.defaultConfigFactory',
+            $this->createStub(ILIAS\Logging\Logger\DefaultConfigLoggerFactoryInterface::class)
+        );
+        $this->setGlobalVariable(
+            'logging.config',
+            $this->createStub(ILIAS\Logging\Config\ConfigInterface::class)
         );
     }
 
@@ -504,10 +520,6 @@ trait ilTestBaseTestCaseTrait
         $local_dic_mock['results.data.factory'] = fn(Pimple\Container $c)
             => $this->createMock(
                 ILIAS\Test\Results\Data\Factory::class
-            );
-        $local_dic_mock['results.toplist.repository'] = fn(Pimple\Container $c)
-            => $this->createMock(
-                ILIAS\Test\Results\Toplist\TestTopListRepository::class
             );
         $local_dic_mock['results.data.repository'] = fn(Pimple\Container $c)
             => $this->createMock(

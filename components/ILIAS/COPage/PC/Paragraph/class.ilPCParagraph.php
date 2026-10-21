@@ -557,7 +557,7 @@ class ilPCParagraph extends ilPageContent
             ? "/"
             : "";
 
-        $slash_chars = '/[]?()$*';
+        $slash_chars = '/[]?()$*|';
 
         if ($ok) {
             $replace_str = addcslashes($start_tag, $slash_chars);
@@ -744,7 +744,8 @@ class ilPCParagraph extends ilPageContent
                             $a_text,
                             [
                                 "Target" => "il_" . $inst_str . "_obj_" . $obj_id,
-                                "Type" => "RepositoryItem"
+                                "Type" => "RepositoryItem",
+                                "Anchor" => $attribs["anchor"] ?? ""
                             ]
                         );
                     } else {
@@ -1079,7 +1080,10 @@ class ilPCParagraph extends ilPageContent
                     if ($target_type === "") {
                         $target_type = "obj";
                     }
-                    $a_text = preg_replace('~<IntLink' . $found[1] . '>~i', "[iln " . $inst_str . "$target_type=\"" . $target_id . "\"" . $tframestr . "]", $a_text);
+                    $ancstr = (!empty($attribs["Anchor"]))
+                        ? ' anchor="' . $attribs["Anchor"] . '"'
+                        : "";
+                    $a_text = preg_replace('~<IntLink' . $found[1] . '>~i', "[iln " . $inst_str . "$target_type=\"" . $target_id . "\"" . $ancstr . "]", $a_text);
                     break;
 
                     // Download File (not in repository, Object ID)
@@ -1339,8 +1343,6 @@ class ilPCParagraph extends ilPageContent
     ): string|bool|array {
         $ilUser = $this->user;
 
-        $a_content = str_replace("<br>", "<br />", $a_content);
-
         $this->log->debug("step 1: " . substr($a_content, 0, 1000));
         try {
             $t = self::handleAjaxContent($a_content);
@@ -1437,6 +1439,8 @@ class ilPCParagraph extends ilPageContent
 
         $domutil = $DIC->copage()->internal()->domain()->domUtil();
 
+        // TinyMCE sends HTML line breaks, including when editing table cells.
+        $a_content = str_replace("<br>", "<br />", $a_content);
         $a_content = "<dummy>" . $a_content . "</dummy>";
 
         $doc = new DOMDocument();

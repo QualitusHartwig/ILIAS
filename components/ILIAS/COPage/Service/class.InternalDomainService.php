@@ -28,10 +28,8 @@ use ILIAS\COPage\Page\PageContentManager;
 use ILIAS\COPage\PC\PCDefinition;
 use ILIAS\COPage\Link\LinkManager;
 use ILIAS\COPage\Style\StyleManager;
+use ILIAS\COPage\WordDiff\WordDiff;
 
-/**
- * @author Alexander Killing <killing@leifos.de>
- */
 class InternalDomainService
 {
     use GlobalDICDomainServices;
@@ -39,6 +37,7 @@ class InternalDomainService
     protected ?\ilLogger $copg_log = null;
     protected InternalRepoService $repo_service;
     protected InternalDataService $data_service;
+    protected ?Page\PageManagerInterface $page_manager = null;
 
     public function __construct(
         Container $DIC,
@@ -92,7 +91,11 @@ class InternalDomainService
 
     public function page(): Page\PageManagerInterface
     {
-        return new Page\PageManager();
+        return $this->page_manager ??= new Page\PageManager(
+            $this->repo_service->page(),
+            $this->domUtil(),
+            $this->profile()
+        );
     }
 
     public function pageConfig(string $parent_type): \ilPageConfig
@@ -121,6 +124,15 @@ class InternalDomainService
     public function compare(): PageCompare
     {
         return new PageCompare();
+    }
+
+    /**
+     * @param list<string> $original_lines
+     * @param list<string> $closing_lines
+     */
+    public function wordDiff(array $original_lines, array $closing_lines): WordDiff
+    {
+        return new WordDiff($original_lines, $closing_lines);
     }
 
     public function link(): LinkManager
@@ -154,7 +166,7 @@ class InternalDomainService
         return $this->DIC->testQuestion();
     }
 
-    public function componentFactory(): \ilComponentRepository
+    public function componentFactory(): \ilComponentFactory
     {
         return $this->DIC['component.factory'];
     }

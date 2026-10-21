@@ -24,6 +24,7 @@ use ILIAS\Blog\InternalDataService;
 use ILIAS\Blog\InternalDomainService;
 use ILIAS\Blog\InternalGUIService;
 use ilObjBlogGUI;
+use ILIAS\COPage\Page\PageManagerInterface;
 use ilTemplate;
 use ilBlogPosting;
 use ilDatePresentation;
@@ -48,6 +49,7 @@ class PostingListGUI
         protected InternalDataService $data,
         protected InternalDomainService $domain,
         protected InternalGUIService $gui,
+        protected PageManagerInterface $page_manager,
         protected int $blog_id,
         protected PermissionManager $perm,
         protected ?string $current_month = null,
@@ -104,7 +106,7 @@ class PostingListGUI
             $created = $item->getCreated();
             $approved = $item->isApproved();
             // only published items
-            $is_active = ilBlogPosting::_lookupActive($item_id, "blp");
+            $is_active = $this->page_manager->lookupActive($item_id, "blp");
             if (!$is_active && !$a_show_inactive) {
                 continue;
             }
@@ -323,7 +325,7 @@ class PostingListGUI
                 }
 
                 // additional editors
-                foreach (\ilPageObject::getPageContributors("blp", $item_id) as $editor) {
+                foreach ($this->page_manager->getPageContributors("blp", $item_id) as $editor) {
                     $editor_id = (int) $editor["user_id"];
                     if ($editor_id !== $author) {
                         $authors[] = \ilUserUtil::getNamePresentation($editor_id);

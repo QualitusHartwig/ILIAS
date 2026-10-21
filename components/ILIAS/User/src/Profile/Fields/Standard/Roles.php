@@ -31,7 +31,10 @@ class Roles implements FieldDefinition
     use NoOverrides;
 
     public function __construct(
-        private readonly \ilObjectDataCache $object_cache
+        private readonly \ilAuthSession $auth_session,
+        private readonly \ilObjectDataCache $object_cache,
+        private readonly \ilRbacReview $rbac_review,
+        private readonly \ilRbacAdmin $rbac_admin
     ) {
     }
 
@@ -108,7 +111,7 @@ class Roles implements FieldDefinition
         if ($user !== null) {
             return $this->buildNonEditableInput($lng, $user);
         }
-        return $this->buildMultiselect($lng);
+        return $this->buildMultiselect($lng, $context);
     }
 
     public function addValueToUserObject(
@@ -120,9 +123,8 @@ class Roles implements FieldDefinition
             return $user;
         }
 
-        $rbac_admin = new \ilRbacAdmin();
         foreach ($input as $role_id) {
-            $rbac_admin->assignUser((int) $role_id, $user->getId());
+            $this->rbac_admin->assignUser((int) $role_id, $user->getId());
         }
 
         return $user;
@@ -130,11 +132,10 @@ class Roles implements FieldDefinition
 
     public function retrieveValueFromUser(\ilObjUser $user): string
     {
-        $rbac_review = new \ilRbacReview();
-        $assigned_roles = $rbac_review->assignedRoles($user->getId());
+        $assigned_roles = $this->rbac_review->assignedRoles($user->getId());
         return substr(
             array_reduce(
-                $rbac_review->getGlobalRolesArray(),
+                $this->rbac_review->getGlobalRolesArray(),
                 fn(string $c, array $v) => in_array($v['obj_id'], $assigned_roles)
                     ? $c . $this->object_cache->lookupTitle($v['obj_id']) . ', '
                     : $c,
@@ -156,18 +157,31 @@ class Roles implements FieldDefinition
         return $input;
     }
 
-    private function buildMultiSelect(Language $lng): \ilFormPropertyGUI
-    {
-        $rbac_review = new \ilRbacReview();
+    private function buildMultiSelect(
+        Language $lng,
+        Context $context
+    ): \ilFormPropertyGUI {
+        $rbac_review = $this->rbac_review;
+
         $input = new \ilMultiSelectInputGUI($this->getLabel($lng));
         $input->setOptions(
             array_reduce(
                 $rbac_review->getGlobalRolesArray(),
-                function (array $c, array $v): array {
-                    if ($v['obj_id'] === ANONYMOUS_ROLE_ID) {
+                function (array $c, array $v) use ($context, $rbac_review): array {
+                    if ($v['obj_id'] === ANONYMOUS_ROLE_ID
+                        || (
+                            $context === Context::LocalUserAdministration
+                            && ($v['obj_id'] === SYSTEM_ROLE_ID
+                            && !$rbac_review->isAssigned(
+                                $this->auth_session->getUserId(),
+                                SYSTEM_ROLE_ID
+                            ))
+                        )) {
                         return $c;
                     }
+
                     $c[$v['obj_id']] = $this->object_cache->lookupTitle($v['obj_id']);
+
                     return $c;
                 },
                 []

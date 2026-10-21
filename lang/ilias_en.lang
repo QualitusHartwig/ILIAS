@@ -581,6 +581,7 @@ assessment#:#concatenation#:#Concatenation
 assessment#:#conf_delete_pass#:#Are you sure you want to delete your existing answers?
 assessment#:#confirm_log_deletion#:#Are you sure, you want to delete the selected log entries? You will not be able to recover the deleted entries.
 assessment#:#confirm_sync_questions#:#The question you changed is a copy which has been created for use with the active test. Do you want to change the original of the question too?
+assessment#:#contained_question_types#:#Contained Question Types
 assessment#:#coordinates#:#Coordinates
 assessment#:#copy_and_link_to_questionpool#:#Add to question pool
 assessment#:#copy_no_questions_selected#:#Please select at least one question to copy.
@@ -1001,7 +1002,7 @@ assessment#:#passed_short#:#passed
 assessment#:#passed_status#:#Passed Status
 assessment#:#passes_finished#:#%s passes
 assessment#:#percentage#:#Percentage
-assessment#:#percentage_points_achieved#:#Reached Points
+assessment#:#percentage_points_achieved#:#Average Percentage
 assessment#:#percentile#:#Percentile
 assessment#:#personal_settings_apply#:#Apply Settings Template
 assessment#:#personal_settings_apply_changed_confirmation#:#The current test settings will be overwritten with the settings from the selected template. This also overwrites the Selection of Test Questions. The process cannot be undone!
@@ -1518,27 +1519,6 @@ assessment#:#tst_hide_info_tab#:#Hide Info Tab
 assessment#:#tst_hide_info_tab_desc#:#Hide the test’s ‘Info’ tab.
 assessment#:#tst_hide_pagecontents#:#Hide Page Content
 assessment#:#tst_hide_pagecontents_desc#:#Content placed before and after the actual question text via the ‘Edit Page’ button will not be displayed in results views or print output.
-assessment#:#tst_highscore_achieved_ts#:#Date / Time
-assessment#:#tst_highscore_achieved_ts_description#:#Show an additional column in the rankings table showing when the test was finished.
-assessment#:#tst_highscore_all_tables#:#Own performance and top ranks
-assessment#:#tst_highscore_all_tables_description#:#Participants get information about the top ranking and their own position in the ranking.
-assessment#:#tst_highscore_anon#:#Without Names
-assessment#:#tst_highscore_anon_description#:#Show rankings without the names of other participants. This will be the case anyway if the test’s ‘Privacy’ has been set to ‘without names / anonymous test’
-assessment#:#tst_highscore_description#:#Within the ‘My Results’ tab, participants are presented with a ‘Rankings’ subtab which contains a scoreboard table of the participants’ performances in the test. ‘Access to Test Results’ needs to be activated in order to use this functionality.
-assessment#:#tst_highscore_enabled#:#Rankings
-assessment#:#tst_highscore_mode#:#Mode
-assessment#:#tst_highscore_own_table#:#Own performance
-assessment#:#tst_highscore_own_table_description#:#Participants will be shown their own position in the rankings.
-assessment#:#tst_highscore_percentage#:#Percentage Score
-assessment#:#tst_highscore_percentage_description#:#Show an additional column in the ranking table showing score in percent.
-assessment#:#tst_highscore_score#:#Point Score
-assessment#:#tst_highscore_score_description#:#Show an additional column in the ranking table showing points scored.
-assessment#:#tst_highscore_top_num#:#Number of Top Ranks
-assessment#:#tst_highscore_top_num_description#:#Specify how many positions are to be included in the top ranks list.
-assessment#:#tst_highscore_top_table#:#Top ranks
-assessment#:#tst_highscore_top_table_description#:#Participants will be shown the top positions in the rankings.
-assessment#:#tst_highscore_wtime#:#Time Spent
-assessment#:#tst_highscore_wtime_description#:#Show an additional column in the ranking table showing the time taken to complete the test.
 assessment#:#tst_imap_qst_mode#:#Mode
 assessment#:#tst_imap_qst_mode_mc#:#Multiple Choice
 assessment#:#tst_imap_qst_mode_sc#:#Single Choice
@@ -3408,6 +3388,7 @@ cmps#:#cmps_db_update#:#DB Update Script
 cmps#:#cmps_deactivate#:#Deactivate
 cmps#:#cmps_detailed_information#:#Detailed Informationen
 cmps#:#cmps_dir#:#Directory
+cmps#:#cmps_disable_creation#:#Disable Creation
 cmps#:#cmps_enable_creation#:#Enable Creation
 cmps#:#cmps_file_version#:#Update File Version
 cmps#:#cmps_group#:#Group
@@ -4327,7 +4308,7 @@ common#:#grp_mem_change_status#:#Change Participant Status
 common#:#grp_mem_send_mail#:#Send member a mail
 common#:#grp_members_gallery#:#Group Members Gallery
 common#:#grp_msg_applicants_assigned#:#Applicant(s) assigned as group member(s)
-common#:#grp_msg_member_assigned#:#User(s) assigned as group member(s)
+common#:#grp_msg_member_assigned#:#User(s) added to group.
 common#:#grp_msg_membership_annulled#:#Cancelled membership.
 common#:#grp_new#:#New Group
 common#:#grp_registration#:#Join Group
@@ -4660,7 +4641,6 @@ common#:#main_menu#:#Main Menu
 common#:#mainbar_aria_label#:#Mainbar
 common#:#mainbar_more_label#:#More
 common#:#manage_members#:#Manage Members
-common#:#marked_entries#:#Marked Entries
 common#:#matriculation#:#Matriculation Number
 common#:#max_previews_per_object#:#Number of preview images per file
 common#:#max_previews_per_object_info#:#Defines the maximum number of preview images that are created per file.
@@ -6413,6 +6393,7 @@ content#:#cont_def_organization#:#default
 content#:#cont_default#:#Default
 content#:#cont_definition#:#Definition
 content#:#cont_delete_content#:#Delete Content
+content#:#cont_delete_file_item_confirm#:#Do you really want to delete the selected file(s)?
 content#:#cont_delete_selected#:#Delete
 content#:#cont_delete_style#:#Delete Style
 content#:#cont_delete_track_data#:#Delete Tracking Data
@@ -7164,7 +7145,7 @@ content#:#cont_standard#:#Standard
 content#:#cont_start#:#Start
 content#:#cont_start_file_set_to#:#%s has been set as start file.
 content#:#cont_start_value#:#Start Value
-content#:#cont_start_value_info#:#Enter start value as decimal number. Default is 1.
+content#:#cont_start_value_info#:#Enter start value as decimal number. Default is 1. If you use an own counter via ::before, the start value will only be used, if you use the internal 'list-item' counter.
 content#:#cont_startfile#:#Start File
 content#:#cont_status#:#Status
 content#:#cont_std_is_in_dir#:#Deletion not possible. Standard view file is in directory.
@@ -7299,6 +7280,8 @@ content#:#cont_versions#:#Versions
 content#:#cont_whole_glossary#:#Whole Glossary
 content#:#cont_width#:#Width in pixels
 content#:#cont_width_height_info#:#The presentation can be set to a fixed size. 950 pixels for width and 650 pixels for height are proven values for setting the size. If no value is entered the browser will determine the size of the presentation.
+content#:#cont_width_px_perc#:#Width
+content#:#cont_width_px_perc_info#:#(e.g. px or % value)
 content#:#cont_wiki_link_dialog#:#Wiki Page (Dialog)
 content#:#cont_wiki_page#:#Wiki Page
 content#:#cont_wiki_page_link#:#Wiki Page Link
@@ -8057,7 +8040,6 @@ crs#:#event_csv_export#:#CSV Export
 crs#:#event_date_time#:#Date and Time
 crs#:#event_desc#:#Description
 crs#:#event_details_workflow#:#Details/Workflow
-crs#:#event_digit#:#Digit
 crs#:#event_edit_members#:#Participants
 crs#:#event_etime_smaller_stime#:#The finish time is earlier than the start time. Please enter a valid time span.
 crs#:#event_file#:#File
@@ -8238,7 +8220,6 @@ dateplaner#:#back_to_grp#:#Go to Group
 dateplaner#:#back_to_pd#:#Back
 dateplaner#:#btn_ical#:#Subscribe
 dateplaner#:#c_date#:#Create Event
-dateplaner#:#cal_accepted#:#Accepted
 dateplaner#:#cal_add_appointment#:#Create Appointment
 dateplaner#:#cal_add_calendar#:#Add Calendar
 dateplaner#:#cal_add_category#:#Create New Calendar
@@ -8410,7 +8391,6 @@ dateplaner#:#cal_day_selection#:#Select Day
 dateplaner#:#cal_day_start#:#Day Start
 dateplaner#:#cal_day_week_view#:#Day/Week View Settings
 dateplaner#:#cal_deadline#:#Deadline
-dateplaner#:#cal_declined#:#Declined
 dateplaner#:#cal_def_date_format#:#Default Date Input Format
 dateplaner#:#cal_def_date_format_info#:#Please choose a format for the input of dates.
 dateplaner#:#cal_def_day_end#:#Default Day End
@@ -8595,7 +8575,6 @@ dateplaner#:#cal_type_rl#:#Calendar Location
 dateplaner#:#cal_type_sess#:#Session Calendar
 dateplaner#:#cal_type_system#:#Public Calendar
 dateplaner#:#cal_type_tals#:#Talks
-dateplaner#:#cal_unshare#:#Cancel Sharing
 dateplaner#:#cal_unshare_cal#:#Stop Sharing
 dateplaner#:#cal_unshared_selected_usr#:#Stopped sharing the calendar with the selected users.
 dateplaner#:#cal_upcoming_events_header#:#Upcoming Events
@@ -9329,6 +9308,10 @@ exc#:#exc_assignment_type#:#Type of Submission
 exc#:#exc_assignment_view#:#Assignment View
 exc#:#exc_assignments#:#Assignments
 exc#:#exc_assignments_deleted#:#The assignments have been deleted.
+exc#:#exc_auto_last_save#:#Last saved:
+exc#:#exc_auto_save_info#:#The text will be saved every 30 seconds, if changes are made.
+exc#:#exc_auto_saved_minutes_p#:#%s minute ago
+exc#:#exc_auto_saved_minutes_s#:#%s minutes ago
 exc#:#exc_blog_created#:#Blog successfully created.
 exc#:#exc_blog_returned#:#Assignment Blog
 exc#:#exc_blog_selected#:#The blog has been assigned.
@@ -9455,7 +9438,7 @@ exc#:#exc_mandatory_info#:#Mandatory assignments must be passed to pass the whol
 exc#:#exc_mandatory_rand_determined#:#Randomly determined
 exc#:#exc_max_char_limit#:#Maximum number of characters
 exc#:#exc_max_file#:#Max Number of Files
-exc#:#exc_max_file_info#:#Participants will not be able to upload more files once the limit is reached. In team assignments the limit is also enforced per participant not team-wide.
+exc#:#exc_max_file_info#:#Participants will not be able to upload more files once the limit is reached.
 exc#:#exc_max_file_reached#:#You cannot upload more than %s files.
 exc#:#exc_max_file_tgl#:#Limit Uploads
 exc#:#exc_max_team_participants#:#Maximal Number
@@ -9630,6 +9613,7 @@ exc#:#exc_reminder_submit_setting#:#Remind Users to Submit
 exc#:#exc_reminder_submit_subject#:#Assignment "%s" was not finished
 exc#:#exc_reminders_cron#:#Reminders for Assignments
 exc#:#exc_reminders_cron_info#:#If enabled, 3 reminders will be active: Users to Submit, Tutors to Grade and Participants to Feedback.
+exc#:#exc_reminders_cron_not_active#:#Note: Notifications will not be sent until the 'Reminders for Assignments' cron job is activated. Currently the cron job is deactivated.
 exc#:#exc_request_deadline#:#Request Deadline
 exc#:#exc_requirement#:#Requirement
 exc#:#exc_review_anytime#:#Give Feedback Anytime
@@ -10137,6 +10121,7 @@ forum#:#frm_default_view#:#Default View
 forum#:#frm_edit_title#:#Edit Title
 forum#:#frm_enable_print_option#:#Enable print option
 forum#:#frm_enable_print_option_desc#:#If disabled, nobody is able to select the print option in Forum.
+forum#:#frm_forum_push_notification_info#:#Forum notifications are sent as push notifications instead of e-mail. If the push notification cannot be delivered, an e-mail will be sent instead.
 forum#:#frm_mark_as_read#:#Mark as read
 forum#:#frm_mark_as_unread#:#Mark as unread
 forum#:#frm_max_notification_age#:#Max. Notification Age
@@ -10167,6 +10152,7 @@ forum#:#frm_noti_subject_new_post#:#New post in forum "%1$s"%2$s, thread "%3$s"
 forum#:#frm_noti_subject_uncens_post#:#Post uncensored in forum "%1$s"%2$s, thread "%3$s"
 forum#:#frm_noti_subject_upt_post#:#Post modified in forum "%1$s"%2$s, thread "%3$s"
 forum#:#frm_notification_activated#:#Notification Activated
+forum#:#frm_notification_bg_task_title#:#Forum notification delivery
 forum#:#frm_notification_deactivated#:#Notification Deactivated
 forum#:#frm_post_not_activated_yet#:#Not activated yet.
 forum#:#frm_posts#:#Forum Posts
@@ -10570,7 +10556,7 @@ help#:#gdtr_deleted_step#:#Step has been deleted.
 help#:#gdtr_deleted_tour#:#Tour has been deleted.
 help#:#gdtr_edit_content#:#Edit Content
 help#:#gdtr_edit_page_info#:#Edit the content that should be presented to explain the selected UI element.
-help#:#gdtr_edit_properties#:#Edit Properties
+help#:#gdtr_edit_properties#:#Edit UI Elements
 help#:#gdtr_edit_step_info#:#On this screen you define, which element on the screen should be explained in this step of the tour. A popover with the explanation text you define will be presented pointing to this element.
 help#:#gdtr_edit_steps#:#Edit Steps
 help#:#gdtr_element_id#:#Element ID
@@ -10613,7 +10599,7 @@ help#:#gdtr_tour_has_been_reset#:#Tour has been reset.
 help#:#gdtr_tour_settings#:#Edit Settings
 help#:#gdtr_tour_steps#:#Tour Steps
 help#:#gdtr_tours#:#Tours
-help#:#gdtr_type#:#Type
+help#:#gdtr_type#:#UI Elements
 help#:#guided_tour#:#Guided Tour
 help#:#help_all#:#All
 help#:#help_component#:#Component
@@ -10747,6 +10733,9 @@ irss#:#by_size_asc#:#By File Size (Ascending)
 irss#:#by_size_desc#:#By File Size (Descending)
 irss#:#by_title_asc#:#By Title (Ascending)
 irss#:#by_title_desc#:#By Title (Descending)
+irss#:#confidential#:#Confidential
+irss#:#confidential_no_download#:#This resource is confidential and can only be downloaded by its owner.
+irss#:#confidential_redacted#:#[Confidential]
 irss#:#create_directory#:#Create Directory
 irss#:#creation_date#:#Creation Date (This Revision)
 irss#:#directory_name#:#Directory Name
@@ -10793,12 +10782,15 @@ irss#:#type#:#File Type
 irss#:#upload_field_title#:#Selected Files
 irss#:#upload_modal_title#:#Add Files
 itgr#:#itgr_always_open#:#Always Open
-itgr#:#itgr_assign_materials#:#Assign Materials
-itgr#:#itgr_assigned_materials#:#Assigned Materials
-itgr#:#itgr_assignment#:#Assigned to this Item Group
-itgr#:#itgr_assignment_to_other_itgr#:#Already assigned to another Item Group
+itgr#:#itgr_assign#:#Assign
+itgr#:#itgr_assign_materials#:#Organize Objects
+itgr#:#itgr_assigned_first#:#Assigned First
+itgr#:#itgr_assigned_materials#:#Assigned Objects
+itgr#:#itgr_assignment#:#Assigned to this Object Group
+itgr#:#itgr_assignment_to_other_itgr#:#Already assigned to another Object Group
 itgr#:#itgr_behaviour#:#Block Behaviour
 itgr#:#itgr_behaviour_info#:#The system will store the opened/closed state for the current user until logout.
+itgr#:#itgr_create_and_assign_object#:#Create and Assign Object
 itgr#:#itgr_desc_info#:#The description will not be a part of the item group's presentation in its container.
 itgr#:#itgr_display#:#Display
 itgr#:#itgr_display_with_title#:#With Title
@@ -10807,7 +10799,7 @@ itgr#:#itgr_display_with_title_and_toggleable_initially#:#Initial state
 itgr#:#itgr_display_with_title_and_toggleable_initially_closed#:#initially closed
 itgr#:#itgr_display_with_title_and_toggleable_initially_open#:#initially opened
 itgr#:#itgr_display_without_title#:#Without Title
-itgr#:#itgr_edit#:#Edit Item Groups
+itgr#:#itgr_edit#:#Edit Object Groups
 itgr#:#itgr_expandable_closed#:#Expandable (initially closed)
 itgr#:#itgr_expandable_open#:#Expandable (initially opened)
 itgr#:#itgr_item#:#Item
@@ -10816,8 +10808,11 @@ itgr#:#itgr_list_default#:#Default
 itgr#:#itgr_list_default_info#:#Inherits value from upper container.
 itgr#:#itgr_list_presentation#:#Item Presentation
 itgr#:#itgr_materials#:#Materials
+itgr#:#itgr_organise_objects#:#Manage Objects
 itgr#:#itgr_tile#:#Tiles
 itgr#:#itgr_tile_size#:#Tile Size
+itgr#:#itgr_unassign#:#Unassign
+itgr#:#itgr_unassigned_first#:#Unassigned First
 jscalendar#:#about_calendar#:#About the calendar
 jscalendar#:#about_calendar_long#:#DHTML Date/Time Selector © dynarch.com 2002-2003 For latest version visit: http://dynarch.com/mishoo/calendar.epl Distributed under GNU LGPL.  See http://gnu.org/licenses/lgpl.html for details.  Date selection: - Use the buttons « and » to select year - Use the buttons < and > to select month - Hold mouse button on any of the above buttons for faster selection.
 jscalendar#:#about_time#:#  Time selection: - Click on any of the time parts to increase it - or Shift-click to decrease it - or click and drag for faster selection.
@@ -11685,6 +11680,7 @@ mail#:#mail_global_reply_to_addr#:#Reply-To
 mail#:#mail_global_reply_to_addr_info#:#Please enter the desired 'Reply-To' address.
 mail#:#mail_grp_roles#:#Send Mail to Group Roles
 mail#:#mail_hint_add_placeholder_x#:#Add the placeholder '%s' to the message body.
+mail#:#mail_inbox_external_delivery_only_info#:#Your account is configured to receive messages at an external email address.<br>You can only see mails in this inbox if your account is configured to (also) receive them locally.
 mail#:#mail_incoming#:#Incoming Mail
 mail#:#mail_incoming_both#:#Receive Mail Locally and Forward to:
 mail#:#mail_incoming_local#:#Receive Mail Locally Only
@@ -11877,7 +11873,6 @@ maps#:#maps_custom_tile_server_info#:#Server URL to provide tile-data. Multiple 
 maps#:#maps_enable_maps#:#Enable Maps
 maps#:#maps_enable_maps_info#:#Activates Maps in user profiles, groups and courses.
 maps#:#maps_geolocation_server#:#Server for Reverse Geolocation
-maps#:#maps_google_maps#:#Google Maps
 maps#:#maps_https_for_reverse_lookup#:#Https for Reverse Lookup
 maps#:#maps_latitude#:#Latitude
 maps#:#maps_longitude#:#Longitude
@@ -13043,7 +13038,6 @@ news#:#news_allow_shorter_periods#:#Allow Shorter Periods
 news#:#news_allow_shorter_periods_info#:#Users may select shorter news periods on the dashboard.
 news#:#news_attached_to#:#Attached to
 news#:#news_block_information#:#The <b>News</b> block lists all news that are related to your <b>Favourites</b>.
-news#:#news_block_news_for_context#:#News
 news#:#news_cache#:#News Cache (Minutes)
 news#:#news_cache_info#:#Update news blocks all x minutes. ‘0’ means every time. Higher values improve performance, but news may link to non-accessible items.
 news#:#news_default_visibility#:#Default Access
@@ -13154,8 +13148,6 @@ notes#:#notes_add_comment#:#Add Comment
 notes#:#notes_add_edit_comment#:#Add/Edit Comment
 notes#:#notes_add_edit_message#:#Add/Edit Message
 notes#:#notes_add_edit_note#:#Add/Edit Note
-notes#:#notes_all_comments#:#All Comments
-notes#:#notes_comment#:#Comment
 notes#:#notes_comment_deleted#:#Comment deleted.
 notes#:#notes_comments#:#Comments
 notes#:#notes_comments_deleted#:#Comments deleted.
@@ -13163,15 +13155,12 @@ notes#:#notes_deactivate_comments#:#Deactivate Public Comments
 notes#:#notes_delete_comment#:#Are you sure you want to delete this comment?
 notes#:#notes_delete_message#:#Are you sure you want to delete this message?
 notes#:#notes_delete_note#:#Are you sure you want to delete this note?
-notes#:#notes_hide_comments#:#Hide Comments
 notes#:#notes_html_export#:#HTML Export
 notes#:#notes_latest_comment#:#Latest Comment
 notes#:#notes_latest_message#:#Latest Message
-notes#:#notes_message_author_counterpart#:#Respondent
 notes#:#notes_message_author_you#:#You
 notes#:#notes_message_deleted#:#Message deleted.
 notes#:#notes_messages#:#Messages
-notes#:#notes_my_comments#:#My Comments
 notes#:#notes_no_comments#:#No comments have been posted yet.
 notes#:#notes_no_comments_found#:#No comments found that match your search criteria.
 notes#:#notes_no_messages#:#No messages have been left yet.
@@ -13182,7 +13171,6 @@ notes#:#notes_note_deleted#:#Note deleted.
 notes#:#notes_notes_deleted#:#Notes deleted.
 notes#:#notes_origin#:#Origin
 notes#:#notes_public_comments#:#Public Comments
-notes#:#notes_show_comments#:#Show Comments
 notes#:#notes_sort_asc#:#Sort Ascending
 notes#:#notes_sort_desc#:#Sort Descending
 notes#:#notes_text#:#Text
@@ -13908,6 +13896,7 @@ prtf#:#prtf_edit_content#:#Edit Content
 prtf#:#prtf_edit_data#:#Edit Data
 prtf#:#prtf_edit_embedded_blog#:#Edit Blog "%s"
 prtf#:#prtf_edit_portfolio#:#Edit Portfolio
+prtf#:#prtf_edit_title#:#Edit Title
 prtf#:#prtf_exercise_info#:#This portfolio is part of the assignment "%s" of exercise "%s".
 prtf#:#prtf_exercise_submitted_info#:#You submitted your portfolio on %s. Additionally, you might want to save a copy for your own files.
 prtf#:#prtf_existing_portfolio#:#Existing Portfolio
@@ -15224,7 +15213,7 @@ rep#:#rep_fav_intro1#:#You have not yet selected any favourites. To do so, there
 rep#:#rep_fav_intro2#:#Click on '%s' and select a learning object from those available, for example a learning module or a forum.
 rep#:#rep_fav_intro3#:#When you have found something that interests you, you can easily add it to your favourites. Select the desired item in the <i>Actions</i> menu and select "<i>Add to favourites</i>".
 rep#:#rep_favourites#:#Favourites
-rep#:#rep_favourites_info#:#Users can mark individual repository items as favourites. A 'Favourites' list can be activated for the dashboard and the main menu. 
+rep#:#rep_favourites_info#:#Users can mark individual repository items as favourites. A 'Favourites' list can be activated for the dashboard and the main menu.
 rep#:#rep_input_not_empty#:#This field must not be empty, please provide a value.
 rep#:#rep_intro#:#Welcome to the Repository!
 rep#:#rep_intro1#:#In this area you can create learning and working resources for all users. All resources are organised in categories. Categories can reflect the structure of your organisation (e.g. departments), a hierarchy of disciplines, or classes of a school.
@@ -15680,8 +15669,6 @@ search#:#search_show_limited_user_info#:#If enabled, the user search will also s
 search#:#search_sort_by#:#Sortation:
 search#:#search_sort_creation_date_asc#:#Oldest
 search#:#search_sort_creation_date_desc#:#Latest
-search#:#search_sort_generic_asc#:#%s, asc.
-search#:#search_sort_generic_desc#:#%s, desc.
 search#:#search_sort_relevance#:#By Relevance
 search#:#search_sort_title_asc#:#Alphabetically: A-Z
 search#:#search_sort_title_desc#:#Alphabetically: Z-A
@@ -15786,7 +15773,6 @@ sess#:#sess_registration_notification#:#Notification
 sess#:#sess_registration_notification_info#:#Shows column in tab 'Participants' to select users being notified about new or leaving participants
 sess#:#sess_section_reg#:#Registration Settings
 sess#:#sess_setting_header_presentation#:#Presentation
-sess#:#sess_show_members#:#Show Participants
 sess#:#sess_show_participants_info#:#If activated, session participants can access the participant gallery
 sess#:#sess_title#:#Title of Session
 sess#:#sess_users_added#:#Registered selected users for the session.
@@ -17111,6 +17097,7 @@ svy#:#svy_codes#:#Access Codes
 svy#:#svy_current_page#:#Current Page
 svy#:#svy_finish_survey#:#Take part in survey ‘%1’
 svy#:#svy_finished_x_appraisees#:#You have already left feedback for %s appraisee(s).
+svy#:#svy_info_participants#:#Add users to this survey as participants, using one of the following search options. These users will have the survey added as a task on their dashboard.
 svy#:#svy_information#:#Information
 svy#:#svy_invite_participants#:#Add to Tasks of Users
 svy#:#svy_link_to_svy#:#Link to Survey
@@ -17128,7 +17115,7 @@ svy#:#svy_status_in_progress#:#In progress
 svy#:#svy_status_invited#:#Added to tasks
 svy#:#svy_user_added_appraisee#:#Survey ‘%1’
 svy#:#svy_user_added_appraisee_close_mail#:#The survey has been closed for your raters.
-svy#:#svy_user_added_appraisee_mail#:#You have been added to the survey as an appraisee.
+svy#:#svy_user_added_appraisee_mail#:#You have been added to the following survey as an appraisee. To be taken to the survey, click on the link below.
 svy#:#svy_user_added_rater#:#Survey ‘%1’
 svy#:#svy_user_added_rater_mail#:#You have been added as a rater to the survey.
 svy#:#svy_user_added_rater_reminder_mail#:#Please don’t forget to rate the following appraisees:
@@ -17409,7 +17396,7 @@ trac#:#trac_mode_lti_outcome_info#:#The Learning Progress will be evaluated from
 trac#:#trac_mode_manual#:#Users Monitor and Set Status Themselves (Complete Module)
 trac#:#trac_mode_manual_by_tutor#:#Tutors Monitor and Set Status
 trac#:#trac_mode_manual_by_tutor_info#:#Tutors decide if users have accomplished the object. Tutors manually set the overall status i.e. ‘Completed’ or ‘Failed’.
-trac#:#trac_mode_manual_info#:#Users decide themselves if they have accomplished the object. Once they are done, they have to set their status to ‘Completed’ on the 'Info'-tab.
+trac#:#trac_mode_manual_info#:#Users decide themselves if they have accomplished the object. Once they are done, they have to set their status to ‘Completed’ on the ‘Learning Progress’ tab.
 trac#:#trac_mode_objectives#:#Status is Determined by Learning Objectives
 trac#:#trac_mode_objectives_info#:#The learning progress will be automatically determined according to the number of passed learning objectives.
 trac#:#trac_mode_plugin#:#Plugin
@@ -17852,6 +17839,8 @@ wiki#:#wiki_change_notification_page_link#:#URL
 wiki#:#wiki_change_notification_salutation#:#Hello %s,
 wiki#:#wiki_change_notification_subject#:#Wiki "%1$s" has been changed: %2$s
 wiki#:#wiki_changed_by#:#Changed by
+wiki#:#wiki_comment#:#Comment
+wiki#:#wiki_comment_for_learner#:#Feedback for contributor
 wiki#:#wiki_commented_by#:#Commented by
 wiki#:#wiki_contributor#:#Contributor
 wiki#:#wiki_contributors#:#Contributors

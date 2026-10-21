@@ -32,23 +32,15 @@ class SuperGlobalDropInReplacementTest extends AbstractBaseTestCase
     {
         return new Refinery(
             new DataFactory(),
-            $this->getMockBuilder(ilLanguage::class)->disableOriginalConstructor()->getMock()
+            $this->createStub(ilLanguage::class)
         );
     }
 
-    public function testValueCanBeAssignedIfSuperGlobalIsMutable(): void
-    {
-        $super_global = new SuperGlobalDropInReplacement($this->getRefinery(), ['foo' => 'bar']);
-        $super_global['foo'] = 'phpunit';
-
-        $this->assertEquals('phpunit', $super_global['foo']);
-    }
-
-    public function testExceptionIsRaisedIfValueIsAssignedButSuperGlobalIsImmutable(): void
+    public function testExceptionIsRaisedIfValueIsAssigned(): void
     {
         $this->expectException(OutOfBoundsException::class);
 
-        $super_global = new SuperGlobalDropInReplacement($this->getRefinery(), ['foo' => 'bar'], true);
+        $super_global = new SuperGlobalDropInReplacement($this->getRefinery(), ['foo' => 'bar']);
         $super_global['foo'] = 'phpunit';
     }
 }

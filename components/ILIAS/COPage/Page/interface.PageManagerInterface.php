@@ -31,4 +31,49 @@ interface PageManagerInterface
         int $old_nr = 0,
         string $lang = "-"
     ): \ilPageObject;
+
+    public function lookupParentId(int $a_id, string $a_type): int;
+
+    public function writeParentId(string $a_parent_type, int $a_pg_id, int $a_par_id): void;
+
+    public function writeActive(int $page_id, string $parent_type, bool $active): void;
+
+    public function lookupContainsDeactivatedElements(
+        int $page_id,
+        string $parent_type,
+        string $lang = "-"
+    ): bool;
+
+    public function preloadActivationDataByParentId(int $parent_id): void;
+
+    public function lookupActive(
+        int $page_id,
+        string $parent_type,
+        bool $check_scheduled_activation = false,
+        string $lang = "-"
+    ): bool;
+
+    public function isScheduledActivation(
+        int $page_id,
+        string $parent_type,
+        string $lang = "-"
+    ): bool;
+
+    public function lookupActivationData(
+        int $page_id,
+        string $parent_type,
+        string $lang = "-"
+    ): array;
+
+    public function getParentObjectContributors(
+        string $parent_type,
+        int $parent_id,
+        string $lang = "-"
+    ): array;
+
+    public function getPageContributors(
+        string $parent_type,
+        int $page_id,
+        string $lang = "-"
+    ): array;
 }

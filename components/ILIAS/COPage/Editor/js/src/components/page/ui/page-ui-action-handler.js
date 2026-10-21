@@ -99,7 +99,7 @@ export default class PageUIActionHandler {
             params.pcid,
             params.hierid,
             params.pluginName,
-          ));
+          ), this.ui.getPCFormAction(params.cname));
           form_sent = true;
         }
         // generic
@@ -142,7 +142,7 @@ export default class PageUIActionHandler {
             params.cname,
             params.pcid,
             params.hierid,
-          ));
+          ), this.ui.getPCFormAction(params.cname));
           form_sent = true;
         }
         break;
@@ -159,7 +159,7 @@ export default class PageUIActionHandler {
           params.cname,
           params.pcid,
           params.hierid,
-        ));
+        ), this.ui.getPCFormAction(params.cname));
         form_sent = true;
         break;
 
@@ -239,6 +239,10 @@ export default class PageUIActionHandler {
 
       case 'format.media':
         this.ui.setMediaFormat(model.getMediaFormat());
+        break;
+
+      case 'format.table':
+        this.ui.setTableFormat(model.getTableFormat());
         break;
 
       case 'format.save':
@@ -366,6 +370,7 @@ export default class PageUIActionHandler {
       params.parFormat,
       params.secFormat,
       params.medFormat,
+      params.tableFormat,
     );
 
     this.client.sendCommand(drop_action).then((result) => {

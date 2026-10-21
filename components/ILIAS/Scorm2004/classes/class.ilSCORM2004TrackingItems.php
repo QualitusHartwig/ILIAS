@@ -542,11 +542,11 @@ class ilSCORM2004TrackingItems extends ilSCORMTrackingItems
             $skey = $data["cp_node_id"] . ':' . $data["id"];
             $all = $data["counter_all"];
             $correct = 0;
-            if ($a_correct[$skey] != null) {
+            if (($a_correct[$skey] ?? null) != null) {
                 $correct = $a_correct[$skey];
             }
             $incorrect = 0;
-            if ($a_incorrect[$skey] != null) {
+            if (($a_incorrect[$skey] ?? null) != null) {
                 $incorrect = $a_incorrect[$skey];
             }
             $other = $all - ($correct + $incorrect);
@@ -679,15 +679,15 @@ class ilSCORM2004TrackingItems extends ilSCORMTrackingItems
         foreach ($dbdata as $data) {
             $skey = $data["user_id"] . ':' . $data["cp_node_id"];
             $correct = 0;
-            if ($a_correct[$skey] != null) {
+            if (($a_correct[$skey] ?? null) != null) {
                 $correct = $a_correct[$skey];
             }
             $incorrect = 0;
-            if ($a_incorrect[$skey] != null) {
+            if (($a_incorrect[$skey] ?? null) != null) {
                 $incorrect = $a_incorrect[$skey];
             }
             $other = 0;
-            if ($a_other[$skey] != null) {
+            if (($a_other[$skey] ?? null) != null) {
                 $other = $a_other[$skey];
             }
             $all = $correct + $incorrect + $other;
@@ -723,7 +723,7 @@ class ilSCORM2004TrackingItems extends ilSCORMTrackingItems
             $data["c_entry"] = "" . $data["c_entry"];
             $data["c_exit"] = "" . $data["c_exit"];
             $data["c_language"] = "" . $data["c_language"];
-            $data["c_location"] = "" . str_replace('"', '', $data["c_location"]);
+            $data["c_location"] = str_replace('"', '', (string) ($data["c_location"] ?? ''));
             $data["c_mode"] = "" . $data["c_mode"];
             $data["progress_measure"] = "" . $data["progress_measure"];
             $data["c_max"] = "" . $data["c_max"];
@@ -809,7 +809,7 @@ class ilSCORM2004TrackingItems extends ilSCORMTrackingItems
             if ($exist == false) {
                 $a_interaction[] = $key;
             }
-            if ($a_interactionDescription[$key] == null) {
+            if (($a_interactionDescription[$key] ?? null) == null) {
                 $a_interactionDescription[$key] = "" . $data["description"];
             }
         }
@@ -828,7 +828,7 @@ class ilSCORM2004TrackingItems extends ilSCORMTrackingItems
             //				$cols["interaction_description".$i] = array("txt" => $lng->txt("interaction_description").' '.$i,"default" => false);
             //			}
             //			$cols["interaction_value".$i] = array("txt" => $lng->txt("interaction_value").' '.$i,"default" => true);//$a_interactionDescription[$a_interaction[$i]]
-            $cols["interaction_value" . $i . " " . $a_interactionDescription[$a_interaction[$i]]] = array(
+            $cols["interaction_value" . $i . " " . rawurlencode((string) $a_interactionDescription[$a_interaction[$i]])] = array(
                 "txt" => sprintf(
                     $lng->txt("interaction_value"),
                     $i
@@ -929,10 +929,10 @@ class ilSCORM2004TrackingItems extends ilSCORMTrackingItems
                 // $data["interaction_value".$i] = "";
                 // $ukey=$a_interaction[$i].':'.$data["user_id"];
                 // if ($a_interactionUser[$ukey] != null) $data["interaction_value".$i] = $a_interactionUser[$ukey];
-                $intdesc = "interaction_value" . $i . " " . $a_interactionDescription[$a_interaction[$i]];
+                $intdesc = "interaction_value" . $i . " " . rawurlencode((string) $a_interactionDescription[$a_interaction[$i]]);
                 $data[$intdesc] = "";
                 $ukey = $a_interaction[$i] . ':' . $data["user_id"];
-                if ($a_interactionUser[$ukey] != null) {
+                if (($a_interactionUser[$ukey] ?? null) != null) {
                     $data[$intdesc] = $a_interactionUser[$ukey];
                 }
             }

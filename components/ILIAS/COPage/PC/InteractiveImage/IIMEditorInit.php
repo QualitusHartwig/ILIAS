@@ -44,7 +44,16 @@ class IIMEditorInit
 
         \ILIAS\Repository\Form\FormAdapterGUI::initJavascript();
 
-        $lang_vars = ["delete", "rename", "save", "cont_add_popup", "add", "cont_iim_add_overlay"];
+        $lang_vars = [
+            "delete",
+            "rename",
+            "save",
+            "cont_add_popup",
+            "add",
+            "cont_iim_add_overlay",
+            "cont_delete_content",
+            "copg_confirm_el_deletion",
+        ];
         foreach ($lang_vars as $l) {
             $lng->toJS($l);
         }
@@ -79,9 +88,10 @@ class IIMEditorInit
 ></span><div id='il-copg-iim-main'></div>
 EOT;
         $debug = "";
+        $asset_version = \ILIAS\COPage::getEditorAssetVersion();
         //$debug = ".";
         $module_tag = <<<EOT
-<script type="module" src="$debug./components/ILIAS/COPage/PC/InteractiveImage/js/editor/src/editor.js"></script>
+<script type="module" src="$debug./components/ILIAS/COPage/$asset_version/PC/InteractiveImage/js/editor/src/editor.js"></script>
 EOT;
         return $init_span . $module_tag;
     }

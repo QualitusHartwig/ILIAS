@@ -581,6 +581,7 @@ assessment#:#concatenation#:#Verknüpfung
 assessment#:#conf_delete_pass#:#Durchgang wirklich löschen?
 assessment#:#confirm_log_deletion#:#Sind Sie sicher, dass Sie die ausgewählten Protokolleinträge löschen möchten? Die gelöschten Einträge werden unwiderruflich gelöscht.
 assessment#:#confirm_sync_questions#:#Die Frage, die Sie geändert haben, wurde mit dem Einfügen in den Test als Kopie eines Originals angelegt. Wollen Sie Ihre Änderungen jetzt auch auf die Originalfrage anwenden?
+assessment#:#contained_question_types#:#Enthaltene Fragentypen
 assessment#:#coordinates#:#Koordinaten
 assessment#:#copy_and_link_to_questionpool#:#Zu Fragenpool hinzufügen
 assessment#:#copy_no_questions_selected#:#Bitte wählen Sie mindestens eine Frage zum Kopieren aus.
@@ -1518,27 +1519,6 @@ assessment#:#tst_hide_info_tab#:#Info-Tab ausblenden
 assessment#:#tst_hide_info_tab_desc#:#Blendet den Tab „Info“ des Tests aus.
 assessment#:#tst_hide_pagecontents#:#Seiteninhalte ausblenden
 assessment#:#tst_hide_pagecontents_desc#:#Inhalte, die über den Button „Seite bearbeiten" vor und hinter dem eigentlichen Fragentext platziert wurden, werden in den Ergebnisansichten und der Druckausgabe nicht angezeigt.
-assessment#:#tst_highscore_achieved_ts#:#Datum / Uhrzeit
-assessment#:#tst_highscore_achieved_ts_description#:#Es wird eine zusätzliche Spalte eingeblendet, die anzeigt, wann der Test beendet wurde.
-assessment#:#tst_highscore_all_tables#:#Eigener Rang und Bestenliste
-assessment#:#tst_highscore_all_tables_description#:#Zeigt sowohl eine Tabelle mit der eigenen Platzierung als auch eine Tabelle mit den besten Platzierungen.
-assessment#:#tst_highscore_anon#:#Keine Namen anzeigen
-assessment#:#tst_highscore_anon_description#:#Die Platzierungen anderer Teilnehmerinnen und Teilnehmer werden ohne Angabe der Namen angezeigt. Dies geschieht automatisch bei anonymisierten Tests.
-assessment#:#tst_highscore_description#:#Im Reiter „Meine Ergebnisse“ wird ein zusätzlicher Unterreiter „Platzierung“ angezeigt. Es wird eine Tabelle über das Abschneiden der verschiedenen Personen im Test angezeigt. Sie müssen die Option „Eigenes Testergebnis einsehen“ aktivieren, um diese Funktion zu nutzen.
-assessment#:#tst_highscore_enabled#:#Platzierungen
-assessment#:#tst_highscore_mode#:#Modus
-assessment#:#tst_highscore_own_table#:#Eigenen Rang anzeigen
-assessment#:#tst_highscore_own_table_description#:#Teilnehmerinnen und Teilnehmern wird eine Tabelle mit ihrem Rang innerhalb aller Platzierungen angezeigt.
-assessment#:#tst_highscore_percentage#:#Prozentwert
-assessment#:#tst_highscore_percentage_description#:#Es wird einen zusätzliche Spalte mit der Angabe des erreichten Prozentwerts eingeblendet.
-assessment#:#tst_highscore_score#:#Punkte
-assessment#:#tst_highscore_score_description#:#Es wird einen zusätzliche Spalte mit der Angabe der erreichten Punkte eingeblendet.
-assessment#:#tst_highscore_top_num#:#Länge der Bestenliste
-assessment#:#tst_highscore_top_num_description#:#Bestimmt, wie viele Einträge in der Bestenliste angezeigt werden.
-assessment#:#tst_highscore_top_table#:#Bestenliste
-assessment#:#tst_highscore_top_table_description#:#Teilnehmerinnen und Teilnehmern wird eine Tabelle mit den besten Platzierungen angezeigt.
-assessment#:#tst_highscore_wtime#:#Bearbeitungsdauer
-assessment#:#tst_highscore_wtime_description#:#Es wird einen zusätzliche Spalte mit der Bearbeitungsdauer eingeblendet.
 assessment#:#tst_imap_qst_mode#:#Antwortmodus
 assessment#:#tst_imap_qst_mode_mc#:#Multiple Choice
 assessment#:#tst_imap_qst_mode_sc#:#Single Choice
@@ -3407,6 +3387,7 @@ cmps#:#cmps_db_update#:#Skript für Datenbankaktualisierung
 cmps#:#cmps_deactivate#:#Deaktivieren
 cmps#:#cmps_detailed_information#:#Detaillierte Informationen
 cmps#:#cmps_dir#:#Verzeichnis
+cmps#:#cmps_disable_creation#:#Erstellung ausschalten
 cmps#:#cmps_enable_creation#:#Erstellung einschalten
 cmps#:#cmps_file_version#:#Dateiversion aktualisieren
 cmps#:#cmps_group#:#Gruppe
@@ -4659,7 +4640,6 @@ common#:#main_menu#:#Hauptmenü
 common#:#mainbar_aria_label#:#Hauptleiste
 common#:#mainbar_more_label#:#Mehr
 common#:#manage_members#:#Mitglieder verwalten
-common#:#marked_entries#:#Markierte Einträge
 common#:#matriculation#:#Matrikelnummer
 common#:#max_previews_per_object#:#Anzahl Vorschaubilder
 common#:#max_previews_per_object_info#:#Anzahl an Vorschaubildern, die pro Datei angezeigt werden.
@@ -6412,6 +6392,7 @@ content#:#cont_def_organization#:#Standard
 content#:#cont_default#:#Standard
 content#:#cont_definition#:#Erklärung
 content#:#cont_delete_content#:#Inhalte löschen
+content#:#cont_delete_file_item_confirm#:#Möchten Sie die ausgewählten Dateien wirklich löschen?###21 09 2026 new variable
 content#:#cont_delete_selected#:#Löschen
 content#:#cont_delete_style#:#Style Löschen
 content#:#cont_delete_track_data#:#Lösche Trackingdaten
@@ -7163,7 +7144,7 @@ content#:#cont_standard#:#Standard
 content#:#cont_start#:#Start
 content#:#cont_start_file_set_to#:#%s wurde als Startdatei festgelegt.
 content#:#cont_start_value#:#Startwert
-content#:#cont_start_value_info#:#Geben Sie eine Startwert als Dezimalzahl ein. Standardwert ist 1.
+content#:#cont_start_value_info#:#Geben Sie eine Startwert als Dezimalzahl ein. Standardwert ist 1. Falls Sie einen eigenen counter() über ::before nutzen, wirkt sich der Startwert nur aus, wenn Sie denn internen 'list-item' counter verwenden.
 content#:#cont_startfile#:#Startdatei
 content#:#cont_status#:#Status
 content#:#cont_std_is_in_dir#:#Löschen nicht möglich. Datei für Standardansicht liegt im Verzeichnis.
@@ -7298,6 +7279,8 @@ content#:#cont_versions#:#Versionen
 content#:#cont_whole_glossary#:#Gesamtes Glossar
 content#:#cont_width#:#Breite in Pixel
 content#:#cont_width_height_info#:#Die Größe der Darstellung kann festgelegt werden. In der Praxis hat sich eine Breite von 950 Pixeln und eine Höhe von 650 Pixeln bewährt. Wenn keine Angabe gemacht wird, bestimmt der Browser die Fenstergröße.
+content#:#cont_width_px_perc#:#Breite
+content#:#cont_width_px_perc_info#:#(z.B. px oder %)
 content#:#cont_wiki_link_dialog#:#Wikiseite (Dialog)
 content#:#cont_wiki_page#:#Wiki-Seite
 content#:#cont_wiki_page_link#:#Wiki-Seiten-Link
@@ -8056,7 +8039,6 @@ crs#:#event_csv_export#:#CSV-Export
 crs#:#event_date_time#:#Datum und Zeit
 crs#:#event_desc#:#Beschreibung
 crs#:#event_details_workflow#:#Details zur Sitzung
-crs#:#event_digit#:#Ziffer
 crs#:#event_edit_members#:#Teilnahmen verwalten
 crs#:#event_etime_smaller_stime#:#Der Endtermin ist früher als der Starttermin. Bitte geben Sie eine gültige Zeitspanne ein.
 crs#:#event_file#:#Datei
@@ -8237,7 +8219,6 @@ dateplaner#:#back_to_grp#:#Gruppeninhalt
 dateplaner#:#back_to_pd#:#zurück
 dateplaner#:#btn_ical#:#Abonnieren
 dateplaner#:#c_date#:#erstelle Termin
-dateplaner#:#cal_accepted#:#Angenommen
 dateplaner#:#cal_add_appointment#:#Termin anlegen
 dateplaner#:#cal_add_calendar#:#Neuen Kalender anlegen
 dateplaner#:#cal_add_category#:#Neuen Kalender anlegen
@@ -8409,7 +8390,6 @@ dateplaner#:#cal_day_selection#:#Tagesauswahl
 dateplaner#:#cal_day_start#:#Tagesbeginn
 dateplaner#:#cal_day_week_view#:#Einstellungen Tages-/Wochenansicht
 dateplaner#:#cal_deadline#:#Endtermin
-dateplaner#:#cal_declined#:#Abgelehnt
 dateplaner#:#cal_def_date_format#:#Default-Datums-Eingabeformat
 dateplaner#:#cal_def_date_format_info#:#Bitte wählen Sie ein Format für die Darstellung von Daten aus.
 dateplaner#:#cal_def_day_end#:#Default-Tagesende
@@ -8594,7 +8574,6 @@ dateplaner#:#cal_type_rl#:#Ort des Kalenders
 dateplaner#:#cal_type_sess#:#Sitzungskalender
 dateplaner#:#cal_type_system#:#Öffentlicher Kalender
 dateplaner#:#cal_type_tals#:#Gespräche
-dateplaner#:#cal_unshare#:#Freigabe beenden
 dateplaner#:#cal_unshare_cal#:#Freigabe beenden
 dateplaner#:#cal_unshared_selected_usr#:#Die Freigabe für die ausgewählten Benutzer/Rollen wurde beendet.
 dateplaner#:#cal_upcoming_events_header#:#Zukünftige Termine
@@ -9355,6 +9334,10 @@ exc#:#exc_assignment_type#:#Abgabetyp
 exc#:#exc_assignment_view#:#Je Übungseinheit
 exc#:#exc_assignments#:#Übungseinheiten
 exc#:#exc_assignments_deleted#:#Die Übungseinheiten wurden gelöscht.
+exc#:#exc_auto_last_save#:#Zuletzt gespeichert:
+exc#:#exc_auto_save_info#:#Der Text wird alle 30 Sekunden automatisch gespeichert, falls Sie Änderungen vornehmen.
+exc#:#exc_auto_saved_minutes_p#:#Vor %s Minuten
+exc#:#exc_auto_saved_minutes_s#:#Vor %s Minute
 exc#:#exc_blog_created#:#Blog wurde erstellt.
 exc#:#exc_blog_returned#:#Blog zur Übungseinheit
 exc#:#exc_blog_selected#:#Das Blog wurde verknüpft.
@@ -9424,10 +9407,10 @@ exc#:#exc_export_excel#:#Export (Excel)
 exc#:#exc_fb_files#:#Bewertungsdateien
 exc#:#exc_fb_tutor_info#:#Wird eine Datei zur Bewertung der Übungseinheit hochgeladen, erhält die Teilnehmerin oder der Teilnehmer eine Benachrichtigung und kann dann die Datei in der Übersicht der Übungseinheiten herunterladen und einsehen.
 exc#:#exc_feedback#:#Rückmeldungen
-exc#:#exc_feedback_notification_body#:#Das Feedback zur folgenden Übungseinheit wurde freigeschaltet.
+exc#:#exc_feedback_notification_body#:#Die Musterlösung zur folgenden Übungseinheit wurde freigeschaltet.
 exc#:#exc_feedback_notification_link#:#Link zur Übung
 exc#:#exc_feedback_notification_reason#:#Sie erhalten diese Nachricht, da Sie an der oben genannten Übung teilnehmen.
-exc#:#exc_feedback_notification_subject#:#Feedback für Übungseinheit der Übung „%s“ freigeschaltet
+exc#:#exc_feedback_notification_subject#:#Musterlösung für Übungseinheit der Übung „%s“ freigeschaltet
 exc#:#exc_files_returned_text#:#Abgegebener Text
 exc#:#exc_find_zip_error#:#Die Abgabe kann nicht geöffnet werden. Die Originaldateien wurden nicht gefunden.
 exc#:#exc_fixed_date#:#Festes Datum
@@ -9481,7 +9464,7 @@ exc#:#exc_mandatory_info#:#Verpflichtende Übungseinheiten müssen bestanden wer
 exc#:#exc_mandatory_rand_determined#:#Zufällige Auswahl
 exc#:#exc_max_char_limit#:#Höchstanzahl Zeichen
 exc#:#exc_max_file#:#Maximale Dateianzahl
-exc#:#exc_max_file_info#:#Es kann höchstens die angegebene Anzahl von Dateien hochgeladen werden. Für Übungseinheiten, die als Team bearbeitet werden, gilt diese Obergrenze pro Person und nicht für das gesamte Team.
+exc#:#exc_max_file_info#:#Nach Erreichen des Limits können Teilnehmer keine weiteren Dateien hochladen.
 exc#:#exc_max_file_reached#:#Sie können maximal %s Dateien hochladen.
 exc#:#exc_max_file_tgl#:#Uploads begrenzen
 exc#:#exc_max_team_participants#:#Maximale Anzahl
@@ -9656,6 +9639,7 @@ exc#:#exc_reminder_submit_setting#:#An Abgabe erinnern
 exc#:#exc_reminder_submit_subject#:#Übungseinheit „%s“ wurde noch nicht abgegeben
 exc#:#exc_reminders_cron#:#Erinnerungen für Übungseinheiten
 exc#:#exc_reminders_cron_info#:#Bei Aktivierung werden drei Erinnerungen versendet: Ausstehende Abgaben, ausstehende Bewertungen und ausstehende Peer-Feedbacks
+exc#:#exc_reminders_cron_not_active#:#Hinweis: Benachrichtigungen werden erst versendet, wenn der Cron-Job „Erinnerungen für Übungseinheiten“ aktiviert ist. Aktuell ist der Cron-Job deaktiviert.
 exc#:#exc_request_deadline#:#Abgabefrist anfragen
 exc#:#exc_requirement#:#Anforderung
 exc#:#exc_review_anytime#:#Jederzeit Feedback geben
@@ -10163,6 +10147,7 @@ forum#:#frm_default_view#:#Standardansicht
 forum#:#frm_edit_title#:#Titel bearbeiten
 forum#:#frm_enable_print_option#:#Druckoption aktivieren
 forum#:#frm_enable_print_option_desc#:#Wenn diese Funktion deaktiviert ist, kann niemand die Druckoption im Forum auswählen.
+forum#:#frm_forum_push_notification_info#:#Foren-Benachrichtigungen werden als Push-Benachrichtigungen statt per E-Mail versendet. Wenn die Push-Benachrichtigung nicht zugestellt werden kann, wird stattdessen eine E-Mail versendet.
 forum#:#frm_mark_as_read#:#Als gelesen markieren
 forum#:#frm_mark_as_unread#:#Als ungelesen markieren
 forum#:#frm_max_notification_age#:#Schwellenwert für Benachrichtigungen
@@ -10193,6 +10178,7 @@ forum#:#frm_noti_subject_new_post#:#Neuer Beitrag im Forum "%1$s"%2$s zum Thema 
 forum#:#frm_noti_subject_uncens_post#:#Zensur aufgehoben für einen Beitrag im Forum "%1$s"%2$s zum Thema "%3$s"
 forum#:#frm_noti_subject_upt_post#:#Beitrag im Forum "%1$s"%2$s zum Thema "%3$s" geändert
 forum#:#frm_notification_activated#:#Benachrichtigung aktiviert
+forum#:#frm_notification_bg_task_title#:#Foren-Benachrichtigungen
 forum#:#frm_notification_deactivated#:#Benachrichtigung deaktiviert
 forum#:#frm_post_not_activated_yet#:#Der Beitrag wurde noch nicht freigeschaltet.
 forum#:#frm_posts#:#Forenbeiträge
@@ -10596,7 +10582,7 @@ help#:#gdtr_deleted_step#:#Der Schritt wurde gelöscht.
 help#:#gdtr_deleted_tour#:#Die Tour wurde gelöscht.
 help#:#gdtr_edit_content#:#Inhalt bearbeiten
 help#:#gdtr_edit_page_info#:#Bearbeiten Sie den Inhalt, der erscheinen soll um das ausgewählte Bedienelement zu beschreiben.
-help#:#gdtr_edit_properties#:#Eigenschaften bearbeiten
+help#:#gdtr_edit_properties#:#Bedienelemente bearbeiten
 help#:#gdtr_edit_step_info#:#Wählen Sie das Bedienelement aus, das mit einem Erklärungstext versehen werden soll.
 help#:#gdtr_edit_steps#:#Schritte bearbeiten
 help#:#gdtr_element_id#:#Element-ID
@@ -10639,7 +10625,7 @@ help#:#gdtr_tour_has_been_reset#:#Die Tour wurde zurückgesetzt.
 help#:#gdtr_tour_settings#:#Einstellungen bearbeiten
 help#:#gdtr_tour_steps#:#Schritte
 help#:#gdtr_tours#:#Touren
-help#:#gdtr_type#:#Typ
+help#:#gdtr_type#:#Bedienelemente
 help#:#guided_tour#:#Interaktive Touren
 help#:#help_all#:#Alle
 help#:#help_component#:#Komponente
@@ -10773,6 +10759,9 @@ irss#:#by_size_asc#:#Dateigröße (aufsteigend)
 irss#:#by_size_desc#:#Dateigröße (absteigend)
 irss#:#by_title_asc#:#Titel (aufsteigend)
 irss#:#by_title_desc#:#Titel (absteigend)
+irss#:#confidential#:#Vertraulich
+irss#:#confidential_no_download#:#Diese Ressource ist vertraulich und kann nur von ihrem Besitzer heruntergeladen werden.
+irss#:#confidential_redacted#:#[Vertraulich]
 irss#:#create_directory#:#Verzeichnis erstellen
 irss#:#creation_date#:#Erstellungsdatum (Diese Revision)
 irss#:#directory_name#:#Verzeichnisname
@@ -10819,12 +10808,15 @@ irss#:#type#:#Dateityp
 irss#:#upload_field_title#:#Ausgewählte Dateien
 irss#:#upload_modal_title#:#Dateien hinzufügen
 itgr#:#itgr_always_open#:#Immer offen
+itgr#:#itgr_assign#:#Zuordnen
 itgr#:#itgr_assign_materials#:#Objekte auswählen
+itgr#:#itgr_assigned_first#:#Zugewiesene zuerst
 itgr#:#itgr_assigned_materials#:#Objekte im Objekteblock
 itgr#:#itgr_assignment#:#Eingebunden in diesem Objekteblock
 itgr#:#itgr_assignment_to_other_itgr#:#Bereits einem anderen Objekteblock zugeordnet
 itgr#:#itgr_behaviour#:#Verhalten
 itgr#:#itgr_behaviour_info#:#Das System merkt sich den Zustand (geöffnet/geschlossen) je Benutzer bis zur Abmeldung (Logout).
+itgr#:#itgr_create_and_assign_object#:#Objekt erstellen und zuweisen
 itgr#:#itgr_desc_info#:#Die Beschreibung wird bei der Anzeige des Objekteblocks nicht mit ausgegeben.
 itgr#:#itgr_display#:#Anzeige
 itgr#:#itgr_display_with_title#:#Mit Titel
@@ -10842,10 +10834,13 @@ itgr#:#itgr_list_default#:#Standard
 itgr#:#itgr_list_default_info#:#Übernimmt die Einstellung des übergeordneten Containers.
 itgr#:#itgr_list_presentation#:#Präsentationsansicht für Inhalte
 itgr#:#itgr_materials#:#Objekte
+itgr#:#itgr_organise_objects#:#Objekte verwalten
 itgr#:#itgr_show_title#:#Titel anzeigen
 itgr#:#itgr_show_title_info#:#Der Titel des Objekteblocks wird angezeigt.
 itgr#:#itgr_tile#:#Kacheln
 itgr#:#itgr_tile_size#:#Kachelgröße
+itgr#:#itgr_unassign#:#Zuordnung aufheben
+itgr#:#itgr_unassigned_first#:#Nicht zugewiesene zuerst
 jscalendar#:#about_calendar#:#Über den Kalender
 jscalendar#:#about_calendar_long#:#DHTML Date/Time Selector © dynarch.com 2002-2003 For latest version visit: http://dynarch.com/mishoo/calendar.epl Distributed under GNU LGPL. See http://gnu.org/licenses/lgpl.html for details.  Auswahl des Datums: - Verwenden Sie die Schaltflächen « und » , um das Jahr auszuwählen - Verwenden Sie die Schaltflächen < und > , um den Monat auszuwählen - Lassen Sie die Maustaste über jeder der oberen Schaltflächen gedrückt, um eine Schnellauswahl zu erhalten.
 jscalendar#:#about_time#:#Auswahl der Zeit: Auf die Zeitfelder klicken, um den Wert zu erhöhen oder Umschalten und Klicken, um den Wert zu verringern oder Klicken und Ziehen für eine Schnellauswahl.
@@ -11713,6 +11708,7 @@ mail#:#mail_global_reply_to_addr#:#Reply-To
 mail#:#mail_global_reply_to_addr_info#:#Bitte tragen Sie hier die gewünschte 'Reply-To'-E-Mail-Adresse ein.
 mail#:#mail_grp_roles#:#alle Personen mit folgenden lokalen Rollen. Label is now generalised for all components that support ‘mail to members‘
 mail#:#mail_hint_add_placeholder_x#:#Füge Platzhalter „%s“ in den Textkörper der Nachricht ein.
+mail#:#mail_inbox_external_delivery_only_info#:#Ihr Konto ist so konfiguriert, dass E-Mails an Ihre E-Mail-Adresse gesendet werden. <br>Sie können E-Mails in diesem Posteingang nur sehen, wenn Ihr Konto so konfiguriert ist, dass diese (auch) lokal empfangen werden.
 mail#:#mail_incoming#:#Maileingang
 mail#:#mail_incoming_both#:#Lokal und Weiterleitung an E-Mail
 mail#:#mail_incoming_local#:#Nur lokal empfangen
@@ -11905,7 +11901,6 @@ maps#:#maps_custom_tile_server_info#:#URL des Servers für die Bereitstellung de
 maps#:#maps_enable_maps#:#Karten aktivieren
 maps#:#maps_enable_maps_info#:#Karten können systemweit in Profilen, Kursen und Gruppen angezeigt werden.
 maps#:#maps_geolocation_server#:#Server für Reverse Geolocation
-maps#:#maps_google_maps#:#Google Maps
 maps#:#maps_https_for_reverse_lookup#:#Https für Reverse Lookup
 maps#:#maps_latitude#:#Breitengrad
 maps#:#maps_longitude#:#Längengrad
@@ -13073,7 +13068,6 @@ news#:#news_allow_shorter_periods#:#Kürzere Zeiträume zulassen
 news#:#news_allow_shorter_periods_info#:#Benutzer können kürzere Zeiträume für Neuigkeiten ihrer Favoriten auswählen.
 news#:#news_attached_to#:#Zugeordnet zu
 news#:#news_block_information#:#Der Block "Neuigkeiten" zeigt chronologisch alle <b>Neuigkeiten</b> zu Ihren Favoriten an.
-news#:#news_block_news_for_context#:#Neuigkeiten
 news#:#news_cache#:#Neuigkeiten-Cache (Minuten)
 news#:#news_cache_info#:#Aktualisierung des Blocks "Neuigkeiten" alle x-Minuten. '0' bedeutet jederzeit. Werte größer Null erhöhen die Performanz entsprechend. Allerdings können Links in Einzelfällen auf nicht mehr zugängliche Objekte verweisen.
 news#:#news_default_visibility#:#Voreinstellung Zugriff
@@ -13939,6 +13933,7 @@ prtf#:#prtf_edit_content#:#Inhalt bearbeiten
 prtf#:#prtf_edit_data#:#Felder ausfüllen
 prtf#:#prtf_edit_embedded_blog#:#Blog „%s“ bearbeiten
 prtf#:#prtf_edit_portfolio#:#Portfolio bearbeiten
+prtf#:#prtf_edit_title#:#Seitentitel bearbeiten
 prtf#:#prtf_exercise_info#:#Dieses Portfolio ist der Übungseinheit „%s“ der Übung „%s“ zugeordnet.
 prtf#:#prtf_exercise_submitted_info#:#Sie haben Ihr Portfolio am %s eingereicht. Wenn Sie möchten, speichern Sie sich eine Kopie für Ihre persönliche Ablage.
 prtf#:#prtf_existing_portfolio#:#Vorhandenes Portfolio
@@ -15711,8 +15706,6 @@ search#:#search_show_limited_user_info#:#In der Personensuche werden auch Konten
 search#:#search_sort_by#:#Sortierung:
 search#:#search_sort_creation_date_asc#:#Ältestes
 search#:#search_sort_creation_date_desc#:#Neuestes
-search#:#search_sort_generic_asc#:#%s, aufst.
-search#:#search_sort_generic_desc#:#%s, abst.
 search#:#search_sort_relevance#:#Nach Relevanz
 search#:#search_sort_title_asc#:#Alphabetisch: A-Z
 search#:#search_sort_title_desc#:#Alphabetisch: Z-A
@@ -15817,7 +15810,6 @@ sess#:#sess_registration_notification#:#Benachrichtigung
 sess#:#sess_registration_notification_info#:#Im Unterreiter „Verwalten“ können Anmeldekonten ausgewählt werden, die über An- oder Abmeldungen benachrichtigt werden.
 sess#:#sess_section_reg#:#Anmeldung durch Benutzer
 sess#:#sess_setting_header_presentation#:#Darstellung
-sess#:#sess_show_members#:#Teilnehmergalerie
 sess#:#sess_show_participants_info#:#Personen, die sich angemeldet oder an der Sitzung teilgenommen haben, sehen einander in der Galerie im Reiter „Teilnahmen“.
 sess#:#sess_title#:#Titel der Sitzung
 sess#:#sess_users_added#:#Die Benutzer wurden für die Sitzung angemeldet.
@@ -17164,6 +17156,7 @@ svy#:#svy_codes#:#Zugangscodes
 svy#:#svy_current_page#:#Aktuelle Seite
 svy#:#svy_finish_survey#:#An Umfrage "%1" teilnehmen
 svy#:#svy_finished_x_appraisees#:#Sie haben Bewertungen bereits für %s Feedback-Nehmer abgegeben.
+svy#:#svy_info_participants#:#Fügen Sie Personen über eine der folgenden Suchoptionen zu dieser Umfrage hinzu. Die Umfrage wird diesen Personen als Aufgabe auf ihrem Dashboard angezeigt.
 svy#:#svy_information#:#Information
 svy#:#svy_invite_participants#:#Personen hinzufügen
 svy#:#svy_link_to_svy#:#Link zur Umfrage
@@ -17351,7 +17344,7 @@ trac#:#trac_assigned#:#Ausgewählt
 trac#:#trac_average#:#Durchschnitt
 trac#:#trac_begin_at#:#Startdatum
 trac#:#trac_closed_expire#:#Timeout
-trac#:#trac_closed_login#:#Statusänderung - Anonym zu angemeldet 
+trac#:#trac_closed_login#:#Statusänderung - Anonym zu angemeldet
 trac#:#trac_closed_manual#:#Logout
 trac#:#trac_closed_misc#:#Sonstige
 trac#:#trac_collection_assign#:#Für Lernfortschritts-Bestimmung auswählen
@@ -17462,7 +17455,7 @@ trac#:#trac_mode_lti_outcome_info#:#Der Lernfortschritt gilt als abgeschlossen, 
 trac#:#trac_mode_manual#:#Selbsteinschätzung für gesamtes Objekt
 trac#:#trac_mode_manual_by_tutor#:#Manuelle Bewertung
 trac#:#trac_mode_manual_by_tutor_info#:#Ob eine Person das Objekt erfolgreich bearbeitet hat, entscheiden Personen mit dem Recht „Mitglieder verwalten“ (zum Beispiel die Kurs- oder Gruppenadministration). Dazu muss der Status händisch auf „Bearbeitet“ gesetzt werden.
-trac#:#trac_mode_manual_info#:#Eine Person entscheidet selbst, ob sie das Objekt erfolgreich durchgearbeitet hat. Dazu setzt sie im Reiter „Info“ den Status auf „Bearbeitet“.
+trac#:#trac_mode_manual_info#:#Eine Person entscheidet selbst, ob sie das Objekt erfolgreich durchgearbeitet hat. Dazu setzt sie im Reiter „Lernfortschritt“ den Status auf „Bearbeitet“.
 trac#:#trac_mode_objectives#:#Lernziele
 trac#:#trac_mode_objectives_info#:#Der Lernfortschritt wird automatisch aus der Anzahl der erfüllten Lernziele ermittelt.
 trac#:#trac_mode_plugin#:#Plugin
@@ -17905,6 +17898,8 @@ wiki#:#wiki_change_notification_page_link#:#URL
 wiki#:#wiki_change_notification_salutation#:#Hallo %s,
 wiki#:#wiki_change_notification_subject#:#Wiki "%1$s" wurde bearbeitet: %2$s
 wiki#:#wiki_changed_by#:#Geändert von
+wiki#:#wiki_comment#:#Kommentar
+wiki#:#wiki_comment_for_learner#:#Feedback für Mitwirkende/n
 wiki#:#wiki_commented_by#:#Von
 wiki#:#wiki_contributor#:#Mitwirkende/r
 wiki#:#wiki_contributors#:#Mitwirkende

@@ -1516,27 +1516,6 @@ assessment#:#tst_hide_info_tab#:#Hide Info Tab###26 08 2024 new variable
 assessment#:#tst_hide_info_tab_desc#:#Hides the tab ‘Info’ of the test.###26 08 2024 new variable
 assessment#:#tst_hide_pagecontents#:#Hide page content###26 08 2024 new variable
 assessment#:#tst_hide_pagecontents_desc#:#ILIAS content placed before and after the actual question text via the "Edit Page" button will not be displayed in the result views and print output.###26 08 2024 new variable
-assessment#:#tst_highscore_achieved_ts#:#Show date of test
-assessment#:#tst_highscore_achieved_ts_description#:#Controls, if a column with the test date should be shown.
-assessment#:#tst_highscore_all_tables#:#All Rankings
-assessment#:#tst_highscore_all_tables_description#:#If selected, the test provides both ranking tables.
-assessment#:#tst_highscore_anon#:#Anonymization of the entries.
-assessment#:#tst_highscore_anon_description#:#Controls, if names are anonymized with the ranks. This option may be overriden by the test anonymization switch.
-assessment#:#tst_highscore_description#:#Should the display of highscores be available?
-assessment#:#tst_highscore_enabled#:#Highscore display activated
-assessment#:#tst_highscore_mode#:#Mode
-assessment#:#tst_highscore_own_table#:#Show table 'own ranking'
-assessment#:#tst_highscore_own_table_description#:#Controls, if the table 'own ranking' should be shown.
-assessment#:#tst_highscore_percentage#:#Show percentage
-assessment#:#tst_highscore_percentage_description#:#Controls, if a column with the tests percentage should be shown.
-assessment#:#tst_highscore_score#:#Show score
-assessment#:#tst_highscore_score_description#:#Controls, if a column with the score should be shown.
-assessment#:#tst_highscore_top_num#:#Number of ranks
-assessment#:#tst_highscore_top_num_description#:#Controls, how many ranks should be included in the top ranking table.
-assessment#:#tst_highscore_top_table#:#Show table 'top ranking'
-assessment#:#tst_highscore_top_table_description#:#Controls, if the table 'top ranking' should be shown.
-assessment#:#tst_highscore_wtime#:#Show working time
-assessment#:#tst_highscore_wtime_description#:#Controls, if a column with the tests working time should be shown.
 assessment#:#tst_imap_qst_mode#:#Mode
 assessment#:#tst_imap_qst_mode_mc#:#Multiple Choice
 assessment#:#tst_imap_qst_mode_sc#:#Single Choice
@@ -6349,6 +6328,7 @@ content#:#cont_def_organization#:#vaikimisi
 content#:#cont_default#:#Vaikimisi
 content#:#cont_definition#:#Definitsioon
 content#:#cont_delete_content#:#Delete Content###29 07 2022 new variable
+content#:#cont_delete_file_item_confirm#:#Do you really want to delete the selected file(s)?###21 09 2026 new variable
 content#:#cont_delete_selected#:#Kustuta
 content#:#cont_delete_style#:#Kustuta kujunduslaad
 content#:#cont_delete_track_data#:#Kustuta jälgimisandmed
@@ -12915,7 +12895,6 @@ news#:#news_allow_shorter_periods#:#Luba lühemad perioodid
 news#:#news_allow_shorter_periods_info#:#Kasutajad võivad töölauale valida lühemad uudiste perioodid.
 news#:#news_attached_to#:#Lisatud
 news#:#news_block_information#:#<b>Uudiste</b> plokk kuvab kõik uued elemendid, mis on seotud <b>Minu asjadega</b> isiklikul töölaual.
-news#:#news_block_news_for_context#:#Uudised
 news#:#news_cache#:#Uudiste vahemälu (minutit)
 news#:#news_cache_info#:#Uuenda uudisteplokid iga x minut. '0' tähendab kogu aeg. Higher values improve performance, but news may link to non-accessible items.
 news#:#news_default_visibility#:#Juurdepääs vaikimisi
@@ -17002,6 +16981,7 @@ svy#:#svy_codes#:#Access Codes###07 02 2020 new variable
 svy#:#svy_current_page#:#Current Page###29 07 2022 new variable
 svy#:#svy_finish_survey#:#Finish survey '%1'###07 02 2020 new variable
 svy#:#svy_finished_x_appraisees#:#You have finished the survey for %s appraisee(s).###28 10 2024 new variable
+svy#:#svy_info_participants#:#Lisage kasutajad selle küsitluse osalejateks, kasutades üht järgmistest otsinguvõimalustest. Küsitlus lisatakse nende kasutajate töölauale ülesandena.
 svy#:#svy_information#:#Information###28 10 2024 new variable
 svy#:#svy_invite_participants#:#Invite Participants###07 02 2020 new variable
 svy#:#svy_link_to_svy#:#Link to Survey###26 08 2024 new variable

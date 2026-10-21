@@ -93,7 +93,7 @@ class ilScormAiccImporter extends ilXmlImporter
                     ): ?\ILIAS\Data\Result {
                         if ($a_id !== '' &&
                             $a_mapping !== null &&
-                            ($new_id = $a_mapping->getMapping('Services/Container', 'objs', $a_id))) {
+                            ($new_id = $a_mapping->getMapping('components/ILIAS/Container', 'objs', $a_id))) {
                             $new_object = ilObjectFactory::getInstanceByObjId((int) $new_id, false);
                             $xml_directory = $this->getImportDirectory();
                         }
@@ -166,7 +166,7 @@ class ilScormAiccImporter extends ilXmlImporter
 
                             foreach ($this->module_properties as $key => $property_node) {
                                 $property_value = $property_node->__toString();
-                                $filteredValue = preg_replace('%\s%', '', $property_value);
+                                $filteredValue = trim($property_value);
                                 $this->module_properties[$key] = ilUtil::stripSlashes($filteredValue);
                             }
 
@@ -185,7 +185,7 @@ class ilScormAiccImporter extends ilXmlImporter
                     if ($a_id !== '' &&
                         $a_mapping !== null &&
                         ($new_id = $a_mapping->getMapping(
-                            'Services/Container',
+                            'components/ILIAS/Container',
                             'objs',
                             $a_id
                         ))) {

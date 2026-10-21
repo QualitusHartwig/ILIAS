@@ -17,7 +17,7 @@
  *********************************************************************/
 
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 
 require_once("./components/ILIAS/MediaObjects/ImageMap/class.ilMapArea.php");
 
@@ -27,13 +27,11 @@ require_once("./components/ILIAS/MediaObjects/ImageMap/class.ilMapArea.php");
 class PCMediaObjectTest extends COPageTestBase
 {
     /**
-     * @return (\ILIAS\Repository\Object\ObjectAdapter&\PHPUnit\Framework\MockObject\MockObject)|\PHPUnit\Framework\MockObject\MockObject
+     * @return (\ILIAS\Repository\Object\ObjectAdapter&Stub)|Stub
      */
-    protected function getObjectAdapterMock(): MockObject
+    protected function getObjectAdapterMock(): Stub
     {
-        $object_adapter = $this->getMockBuilder(\ILIAS\Repository\Object\ObjectAdapter::class)
-                             ->disableOriginalConstructor()
-                             ->getMock();
+        $object_adapter = $this->createStub(\ILIAS\Repository\Object\ObjectAdapter::class);
         $object_adapter->method("getTypeForObjId")
                      ->willReturnCallback(fn() => "dummy");
         return $object_adapter;
@@ -292,6 +290,35 @@ EOT
 <PageObject><PageContent><MediaObject><MediaAlias OriginId="il__mob_0"></MediaAlias><MediaAliasItem Purpose="Standard"><Layout HorizontalAlign="Left"></Layout></MediaAliasItem><MediaAliasItem Purpose="Fullscreen"><Layout Width="100" Height="50"></Layout></MediaAliasItem></MediaObject></PageContent></PageObject>
 EOT
         );
+    }
+
+    public function testQuickEditCaption(): void
+    {
+        $page = $this->getEmptyPageWithDom();
+        $media_item = new ilMediaItem();
+        $media_item->setCaption("Source caption");
+        $media_object = $this->getMockBuilder(ilObjMediaObject::class)
+                             ->disableOriginalConstructor()
+                             ->getMock();
+        $media_object->method("getMediaItem")
+                     ->willReturn($media_item);
+        $media_object->method("getUsages")
+                     ->willReturn([]);
+
+        $pc = new ilPCMediaObject($page);
+        $pc->setMediaObject($media_object);
+        $pc->createAlias($page, "pg");
+        $page->addHierIDs();
+        $pc->setHierId("1");
+        $page->insertPCIds();
+        $pc->setPCId($page->getPCIdForHierId("1"));
+
+        $quick_edit = new ilPCMediaObjectQuickEdit($pc);
+        $this->assertEquals("Source caption", $quick_edit->getCaption());
+
+        $pc->getStandardMediaAliasItem()->setCaption("");
+
+        $this->assertEquals("", $quick_edit->getCaption());
     }
 
     public function testTextRepresentation(): void

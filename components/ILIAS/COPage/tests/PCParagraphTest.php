@@ -107,6 +107,8 @@ class PCParagraphTest extends COPageTestBase
             // internal links
             'xx [iln cat="106"] xx [/iln] xx'
                 => 'xx <IntLink Target="il__obj_106" Type="RepositoryItem"> xx </IntLink> xx',
+            'xx [iln cat="106" anchor="moin"] xx [/iln] xx'
+                => 'xx <IntLink Target="il__obj_106" Type="RepositoryItem" Anchor="moin"> xx </IntLink> xx',
             'xx [iln page="106"] xx [/iln] xx'
                 => 'xx <IntLink Target="il__pg_106" Type="PageObject"> xx </IntLink> xx',
             'xx [iln page="106"] xx  xx'
@@ -159,6 +161,8 @@ class PCParagraphTest extends COPageTestBase
             => 'xx <ExtLink Href="http://ilias.de">www</ExtLink> xxxx',
             'xx [xln url="http://ilias.php?x=1&y=2"]www[/xln] xxxx'
             => 'xx <ExtLink Href="http://ilias.php?x=1&y=2">www</ExtLink> xxxx',
+            'xx [xln url="https://bs.lehrplan.ch/index.php?code=a|10|0|1|0|1"]curriculum[/xln] xxxx'
+            => 'xx <ExtLink Href="https://bs.lehrplan.ch/index.php?code=a|10|0|1|0|1">curriculum</ExtLink> xxxx',
             'xx [xln url="http://ilias.de/my+document.pdf"]doc[/xln] xxxx'
             => 'xx <ExtLink Href="http://ilias.de/my+document.pdf">doc</ExtLink> xxxx',
             'xx [xln url="http://ilias.de/my(document.pdf"]doc[/xln] xxxx'
@@ -227,6 +231,19 @@ class PCParagraphTest extends COPageTestBase
     public function testHandleAjaxContentSpans(): void
     {
         $cases = [
+            // Table cells send HTML line breaks directly to handleAjaxContent.
+            '<div>First<br>Second<br><br>Fourth</div>'
+            => [
+                "text" => "First\nSecond\n\nFourth",
+                "id" => '',
+                "class" => 'Standard'
+            ],
+            '<div>First<br />Second<br/>Third</div>'
+            => [
+                "text" => "First\nSecond\nThird",
+                "id" => '',
+                "class" => 'Standard'
+            ],
             // Standard, Strong
             '<div id="1:1234" class="ilc_text_block_Standard">xxx<span class="ilc_text_inline_Strong">xxx</span>xxx</div>'
             => [

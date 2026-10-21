@@ -217,7 +217,9 @@ class ilBlogPostingGUI extends ilPageObjectGUI
                 false,
                 $this->enable_public_notes,
                 $may_delete_comments,
-                $callback
+                $callback,
+                false,
+                !$this->isInWorkspace()
             ));
         }
         // permanent link
@@ -316,7 +318,7 @@ class ilBlogPostingGUI extends ilPageObjectGUI
                 $authors[] = $this->profile_gui->getNamePresentation($author_id);
             }
 
-            foreach (ilBlogPosting::getPageContributors("blp", $this->getBlogPosting()->getId()) as $editor) {
+            foreach ($this->page_manager->getPageContributors("blp", $this->getBlogPosting()->getId()) as $editor) {
                 if ($editor["user_id"] != $author_id) {
                     $authors[] = $this->profile_gui->getNamePresentation($editor["user_id"]);
                 }
@@ -869,7 +871,8 @@ class ilBlogPostingGUI extends ilPageObjectGUI
             $this->enable_public_notes,
             false,
             null,
-            true
+            true,
+            !$this->isInWorkspace()
         );
     }
 

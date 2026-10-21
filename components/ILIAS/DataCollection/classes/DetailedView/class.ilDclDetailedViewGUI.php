@@ -39,6 +39,7 @@ class ilDclDetailedViewGUI
     protected ?int $record_id;
     protected ilCommentGUI $commentGUI;
     protected ilDclBaseFieldModel $currentField;
+    private \ILIAS\ResourceStorage\Services $irss;
 
     public function __construct(ilObjDataCollectionGUI $a_dcl_object, int $tableview_id)
     {
@@ -53,6 +54,7 @@ class ilDclDetailedViewGUI
         $this->main_tpl = $DIC->ui()->mainTemplate();
         $this->ui_factory = $DIC->ui()->factory();
         $this->renderer = $DIC->ui()->renderer();
+        $this->irss = $DIC->resourceStorage();
 
         if (
             !$this->http->wrapper()->query()->has('table_id') ||
@@ -152,6 +154,11 @@ class ilDclDetailedViewGUI
 
     public function renderRecord(bool $editComments = false): void
     {
+        if (!(new ilDclDetailedViewDefinitionGUI($this->tableview_id))->getPageObject()->isActive()) {
+            $this->main_tpl->setOnScreenMessage('failure', $this->lng->txt('permission_denied'), true);
+            return;
+        }
+
         global $DIC;
         $x = $DIC->help();
         $DIC->help()->setScreenId('dcl_record');
@@ -218,6 +225,26 @@ class ilDclDetailedViewGUI
         }
 
         $tpl->setContent($rctpl->get());
+    }
+
+    public function sendFile(): void
+    {
+        $rec_id = $this->http->wrapper()->query()->retrieve('record_id', $this->refinery->kindlyTo()->int());
+
+        $record = ilDclCache::getRecordCache($rec_id);
+
+        if ($this->dcl_gui_object->getObjectId() != $record->getTable()->getCollectionObject()->getId()) {
+            return;
+        }
+
+        $field_id = $this->http->wrapper()->query()->retrieve('field_id', $this->refinery->kindlyTo()->string());
+        $rid_string = $record->getRecordFieldValue($field_id);
+        $identification = $this->irss->manage()->find($rid_string);
+        if ($identification === null) {
+            return;
+        }
+        $current_revision = $this->irss->manage()->getCurrentRevision($identification);
+        $this->irss->consume()->download($identification)->overrideFileName($current_revision->getTitle())->run();
     }
 
     public function doReplace(array $found): string
@@ -306,9 +333,6 @@ class ilDclDetailedViewGUI
 
     protected function checkAccess(): bool
     {
-        $page = new ilDclDetailedViewDefinitionGUI($this->tableview_id);
-        $has_accass = ilObjDataCollectionAccess::hasAccessTo($this->dcl_gui_object->getRefId(), $this->table->getId(), $this->tableview_id);
-        $is_active = $page->getPageObject()->isActive();
-        return $has_accass && $is_active;
+        return ilObjDataCollectionAccess::hasAccessTo($this->dcl_gui_object->getRefId(), $this->table->getId(), $this->tableview_id);
     }
 }

@@ -117,6 +117,9 @@ class ilObjSAHSLearningModuleGUI extends ilObjectGUI
                 break;
 
             case "ilfilesystemgui":
+                if (!$ilAccess->checkAccess('write', '', $this->object->getRefId())) {
+                    $ilErr->raiseError($this->lng->txt('permission_denied'), $ilErr->WARNING);
+                }
                 $fs_gui = new ilFileSystemGUI($this->object->getDataDirectory());
                 $fs_gui->setUseUploadDirectory(true);
                 $fs_gui->setTableId("sahsfs" . $this->object->getId());
@@ -124,6 +127,9 @@ class ilObjSAHSLearningModuleGUI extends ilObjectGUI
                 break;
 
             case "ilcertificategui":
+                if (!$ilAccess->checkAccess('write', '', $this->object->getRefId())) {
+                    $ilErr->raiseError($this->lng->txt('permission_denied'), $ilErr->WARNING);
+                }
                 $this->setSettingsSubTabs();
                 $ilTabs->setSubTabActive('certificate');
 
@@ -535,6 +541,11 @@ class ilObjSAHSLearningModuleGUI extends ilObjectGUI
         // Cleanup
         ilFileUtils::delDir($lm_temp_dir, false);
         ilFileUtils::renameExecutables($new_obj->getDataDirectory());
+
+        $title = $new_obj->readObject();
+        if ($title !== "") {
+            ilObject::_writeTitle($new_obj->getId(), $title);
+        }
 
         //auto set learning progress settings
         $new_obj->setLearningProgressSettingsAtUpload();

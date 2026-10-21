@@ -1516,27 +1516,6 @@ assessment#:#tst_hide_info_tab#:#Hide Info Tab###21 11 2023 new variable
 assessment#:#tst_hide_info_tab_desc#:#Hides the tab ‘Info’ of the test.###21 11 2023 new variable
 assessment#:#tst_hide_pagecontents#:# Dölj sidans innehåll
 assessment#:#tst_hide_pagecontents_desc#:#ILIAS-innehåll som placeras före och efter den faktiska frågetexten via knappen "Redigera sida" visas inte i resultatvyerna och utskriften.
-assessment#:#tst_highscore_achieved_ts#:#Datum
-assessment#:#tst_highscore_achieved_ts_description#:#En extra kolumn med tiden för testet visas.
-assessment#:#tst_highscore_all_tables#:#Egen rankning och leaderboard
-assessment#:#tst_highscore_all_tables_description#:#Visar både en tabell med din egen ranking och en tabell med de bästa rankingarna.
-assessment#:#tst_highscore_anon#:#Visa inga namn
-assessment#:#tst_highscore_anon_description#:#Rankingen för andra deltagare visas utan att deras namn anges. Detta görs automatiskt för anonymiserade tester.
-assessment#:#tst_highscore_description#:#På fliken 'Resultat' visas ytterligare en underflik 'Placering'. En tabell som visar de olika personernas resultat i testet visas. Du måste aktivera alternativet "Visa eget testresultat" för att kunna använda denna funktion.
-assessment#:#tst_highscore_enabled#:#Placeringar
-assessment#:#tst_highscore_mode#:#Mode
-assessment#:#tst_highscore_own_table#:#Visa egen rankning
-assessment#:#tst_highscore_own_table_description#:#Deltagarna kommer att få se en tabell med sin rangordning inom alla placeringar.
-assessment#:#tst_highscore_percentage#:#Procent
-assessment#:#tst_highscore_percentage_description#:#Ytterligare en kolumn visas med det uppnådda procentuella värdet.
-assessment#:#tst_highscore_score#:#Poäng
-assessment#:#tst_highscore_score_description#:#Ytterligare en kolumn visas med antalet uppnådda poäng.
-assessment#:#tst_highscore_top_num#:#Bästa listlängd
-assessment#:#tst_highscore_top_num_description#:#Bestämmer hur många poster som visas i topplistan.
-assessment#:#tst_highscore_top_table#:#Bästalista
-assessment#:#tst_highscore_top_table_description#:#Deltagarna kommer att få se en tabell med de bästa placeringarna.
-assessment#:#tst_highscore_wtime#:#Bearbetningstid
-assessment#:#tst_highscore_wtime_description#:#Ytterligare en kolumn med behandlingstiden visas.
 assessment#:#tst_imap_qst_mode#:#Svarsläge
 assessment#:#tst_imap_qst_mode_mc#:#Multipla valmöjligheter
 assessment#:#tst_imap_qst_mode_sc#:#Enskilt val
@@ -4763,7 +4742,7 @@ common#:#msg_no_perm_paste#:#Du har inte tillräckligt tillstånd för att infog
 common#:#msg_no_perm_paste_object_in_folder#:#Du har inte tillräcklig behörighet för att infoga objektet %s i mappen %s.
 common#:#msg_no_perm_perm#:#Du har inte tillräcklig behörighet för att komma åt rättighetsinställningarna!
 common#:#msg_no_perm_read#:#Du har inte tillräcklig behörighet för att komma åt detta objekt.
-common#:#msg_no_perm_read_item#:#Du har inte behörighet att komma åt objektet '%s'.
+common#:#msg_no_perm_read_item#:#Du har inte behörighet att komma åt objektet.
 common#:#msg_no_perm_read_lm#:#Du har inte tillräcklig behörighet för att visa denna utbildningsmodul.
 common#:#msg_no_perm_view_roles_of_user#:#You have no permission to view the role assignment of this user###29 10 2025 new variable
 common#:#msg_no_perm_write#:#Du har inte skrivtillstånd!
@@ -6349,6 +6328,7 @@ content#:#cont_def_organization#:#Standard
 content#:#cont_default#:#Standard
 content#:#cont_definition#:#Definition
 content#:#cont_delete_content#:#Ta bort innehåll
+content#:#cont_delete_file_item_confirm#:#Do you really want to delete the selected file(s)?###21 09 2026 new variable
 content#:#cont_delete_selected#:#Radera
 content#:#cont_delete_style#:#Style Radera
 content#:#cont_delete_track_data#:#Radera spårningsdata
@@ -9398,7 +9378,7 @@ exc#:#exc_mandatory_info#:#Obligatoriska övningsmoment måste godkännas för a
 exc#:#exc_mandatory_rand_determined#:#Slumpmässigt urval
 exc#:#exc_max_char_limit#:#Maximalt antal tecken
 exc#:#exc_max_file#:#Maximalt antal filer
-exc#:#exc_max_file_info#:#När gränsen har uppnåtts kan deltagarna inte ladda upp fler filer. Även i teamträningspass räknas gränsen per deltagare och inte för hela teamet.
+exc#:#exc_max_file_info#:#När gränsen har uppnåtts kan deltagarna inte ladda upp fler filer.
 exc#:#exc_max_file_reached#:#Du kan ladda upp högst %s filer.
 exc#:#exc_max_file_tgl#:#Begränsa uppladdningar
 exc#:#exc_max_team_participants#:#Maximalt antal
@@ -12915,7 +12895,6 @@ news#:#news_allow_shorter_periods#:#Tillåt kortare perioder
 news#:#news_allow_shorter_periods_info#:#Användare kan välja kortare nyhetsperioder för sina favoriter.
 news#:#news_attached_to#:#Tilldelad till
 news#:#news_block_information#:#I blocket "Nyheter" visas alla <b>nyheter</b> om dina favoriter i kronologisk ordning.
-news#:#news_block_news_for_context#:#Nyheter
 news#:#news_cache#:#Cache för nyheter (minuter)
 news#:#news_cache_info#:#Uppdatera blocket "Nyheter" var x:e minut. 0' betyder när som helst. Värden större än noll ökar prestandan i motsvarande grad. I enskilda fall kan dock länkar hänvisa till objekt som inte längre är tillgängliga.
 news#:#news_default_visibility#:#Förvald åtkomst
@@ -17002,6 +16981,7 @@ svy#:#svy_codes#:#Nyckel för åtkomst
 svy#:#svy_current_page#:#Aktuell sida
 svy#:#svy_finish_survey#:#Redigera undersökning "%1
 svy#:#svy_finished_x_appraisees#:#You have finished the survey for %s appraisee(s).###28 10 2024 new variable
+svy#:#svy_info_participants#:#Lägg till användare som deltagare i den här enkäten med ett av följande sökalternativ. Enkäten läggs till för dessa användare som en uppgift på deras instrumentpanel.
 svy#:#svy_information#:#Information###28 10 2024 new variable
 svy#:#svy_invite_participants#:#Bjud in deltagare
 svy#:#svy_link_to_svy#:#Länk till undersökningen

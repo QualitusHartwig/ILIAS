@@ -1515,27 +1515,6 @@ assessment#:#tst_hide_info_tab#:#Hide Info Tab###30 04 2024 new variable
 assessment#:#tst_hide_info_tab_desc#:#Hides the tab ‘Info’ of the test.###30 04 2024 new variable
 assessment#:#tst_hide_pagecontents#:#Hide page content###31 03 2023 new variable
 assessment#:#tst_hide_pagecontents_desc#:#ILIAS content placed before and after the actual question text via the "Edit Page" button will not be displayed in the result views and print output.###31 03 2023 new variable
-assessment#:#tst_highscore_achieved_ts#:#Mostra data del test
-assessment#:#tst_highscore_achieved_ts_description#:#Viene visualizzata una colonna aggiuntiva con l'ora del test.
-assessment#:#tst_highscore_all_tables#:#Proprio grado e classifica
-assessment#:#tst_highscore_all_tables_description#:#Mostra sia una tabella con il proprio posizionamento che una tabella con i migliori posizionamenti.
-assessment#:#tst_highscore_anon#:#Anonimizzazione delle voci.
-assessment#:#tst_highscore_anon_description#:#I posizionamenti degli altri partecipanti vengono visualizzati senza specificare i loro nomi. Ciò accade comunque con i test resi anonimi.
-assessment#:#tst_highscore_description#:#Nella scheda "Risultati", i partecipanti vedranno una sottoscheda "Posizionamento". Dopo aver cliccato, ai partecipanti verrà mostrata una tabella che mostra le prestazioni dei vari partecipanti al test. È necessario abilitare l'opzione "I partecipanti vedranno i risultati del test" per utilizzare questa funzione.
-assessment#:#tst_highscore_enabled#:#Visualizzazione dei punteggi piu' alti attivata
-assessment#:#tst_highscore_mode#:#Modalità
-assessment#:#tst_highscore_own_table#:#Mostra tabella 'punteggi personali'
-assessment#:#tst_highscore_own_table_description#:#Ai partecipanti viene mostrata una tabella con la loro posizione in tutti i posizionamenti.
-assessment#:#tst_highscore_percentage#:#Mostra percentuale
-assessment#:#tst_highscore_percentage_description#:#Viene visualizzata un'ulteriore colonna con l'indicazione del valore percentuale raggiunto.
-assessment#:#tst_highscore_score#:#Mostra punteggio
-assessment#:#tst_highscore_score_description#:#Viene visualizzata una colonna aggiuntiva con il dettaglio dei punti ottenuti.
-assessment#:#tst_highscore_top_num#:#Lunghezza della classifica
-assessment#:#tst_highscore_top_num_description#:#Determina il numero di voci visualizzate nella classifica.
-assessment#:#tst_highscore_top_table#:#Classifica dei migliori
-assessment#:#tst_highscore_top_table_description#:#I partecipanti vedranno una tabella con le prime classifiche.
-assessment#:#tst_highscore_wtime#:#Tempo di elaborazione
-assessment#:#tst_highscore_wtime_description#:#Viene visualizzata una colonna aggiuntiva con il tempo di elaborazione.
 assessment#:#tst_imap_qst_mode#:#Modalità di risposta
 assessment#:#tst_imap_qst_mode_mc#:#Scelta multipla
 assessment#:#tst_imap_qst_mode_sc#:#Scelta singola
@@ -6350,6 +6329,7 @@ content#:#cont_def_organization#:#Organizzazione predefinita
 content#:#cont_default#:#Impostazione predefinita
 content#:#cont_definition#:#Definizione
 content#:#cont_delete_content#:#Cancella Contenuti
+content#:#cont_delete_file_item_confirm#:#Do you really want to delete the selected file(s)?###21 09 2026 new variable
 content#:#cont_delete_selected#:#Cancella
 content#:#cont_delete_style#:#Cancella stile
 content#:#cont_delete_track_data#:#cancella dati di tracking
@@ -12918,7 +12898,6 @@ news#:#news_allow_shorter_periods#:#Permetti periodi più corti
 news#:#news_allow_shorter_periods_info#:#Gli utenti posso scegliere periodi di News, sul proprio Desktop Personale, più corti.
 news#:#news_attached_to#:#Assegnato a
 news#:#news_block_information#:#Il blocco delle <b>News</b> mostra cronologicamente l'elenco di tutte le news che sono relazionate ai <b>Contenuti personali</b> che hai selezionato nel Desktop Personale.
-news#:#news_block_news_for_context#:#Notizie
 news#:#news_cache#:#Cache delle notizie (Minuti)
 news#:#news_cache_info#:#Aggiorna notizie blocca tutti i x minuti. '0' significa ogni volta. Valori più alti migliorano le prestazioni, ma le notizie potrebbero essere collegate ad elementi non accessibili.
 news#:#news_default_visibility#:#Accesso predefinito
@@ -17009,6 +16988,7 @@ svy#:#svy_codes#:#Codici di accesso
 svy#:#svy_current_page#:#Current Page###31 03 2023 new variable
 svy#:#svy_finish_survey#:#Finish survey '%1'
 svy#:#svy_finished_x_appraisees#:#You have already completed the survey for %s appraisee(s).###28 11 2025 new variable
+svy#:#svy_info_participants#:#Aggiungi utenti come partecipanti a questo sondaggio utilizzando una delle seguenti opzioni di ricerca. Il sondaggio verrà aggiunto come attività nella dashboard di questi utenti.
 svy#:#svy_information#:#Information###28 11 2025 new variable
 svy#:#svy_invite_participants#:#Invita partecipanti
 svy#:#svy_link_to_svy#:#Link to Survey###31 03 2023 new variable
